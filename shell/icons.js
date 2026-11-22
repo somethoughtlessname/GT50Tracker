@@ -24,6 +24,25 @@
     };
     const GLYPHS = Object.keys(ICONS);
 
+    // ===== TYPE ICONS: Nest, Cycle, Import =====
+    // One rounded box for all three; what's inside tells them apart.
+    // GT50.typeIcon('nest' | 'cycle' | 'import', size) returns the SVG.
+    (function() {
+        const W = 'stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"';
+        const BOX = `<rect x="2.6" y="2.6" width="18.8" height="18.8" rx="4" fill="none" stroke-width="3.2" ${W}/>`;
+        const C1 = '<path d="M19.2 9.5 A7.6 7.6 0 0 0 5.6 7.6 M5.2 3.8 V7.9 H9.3 M4.8 14.5 A7.6 7.6 0 0 0 18.4 16.4 M18.8 20.2 V16.1 H14.7"/>';
+        const INSIDE = {
+            nest: `<rect x="12.8" y="12.8" width="3.8" height="3.8" rx="1.2" fill="currentColor" stroke-width="2" ${W}/>`,
+            cycle: `<g transform="translate(12 12) scale(.6) translate(-12 -12)" fill="none" stroke-width="3.6" ${W}>${C1}</g>`,
+            'import': `<path d="M12 8.2 V15.6 M9 12.8 L12 15.8 L15 12.8" fill="none" stroke-width="2.2" ${W}/>`
+        };
+        window.GT50.typeIcon = function(type, size) {
+            const s = size || 22;
+            return `<svg class="gt-type-icon" viewBox="0 0 24 24" width="${s}" height="${s}" style="display:block;color:var(--font-color-3)" aria-hidden="true">${BOX}${INSIDE[type] || INSIDE.nest}</svg>`;
+        };
+    })();
+
+
     // Size from the part of the button you can see, so the open/close square,
     // ▲ ▼ and × in one row all get the same icon size
     function sizeFor(el) {

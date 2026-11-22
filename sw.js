@@ -1,10 +1,12 @@
 // The Joystick Journal service worker: keeps the app's files so it works fully offline.
 // Same approach as Stack Tracker. Bump VERSION whenever files change so phones pick up the update.
-const VERSION = 'joystick-journal-v600';
+const VERSION = 'joystick-journal-v621';
 const FILES = [
   "./",
   "./index.html",
   "./app.webmanifest",
+  "./shell/splash.js",
+  "./fonts/playfair-display-latin-700-normal.woff2",
   "./shell/registry.js",
   "./shell/icons.js",
   "./shell/fit-text.js",

@@ -777,7 +777,7 @@ const itemDropdownColor = cardColor;
                             left: 0;
                             height: 100%;
                             width: ${isCompleted ? 100 : Math.min(100, percent)}%;
-                            background: ${isCompleted ? '#d4af37' : (tabColor || 'var(--color-6)')};
+                            background: ${isCompleted ? '#9a6b09' : (tabColor || 'var(--color-6)')};
                             transition: width 0.3s ease;
                         "></div>
                         <div style="

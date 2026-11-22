@@ -58,21 +58,26 @@
             position: fixed; inset: 0; z-index: 2000;
             background: var(--bg-1); display: flex; flex-direction: column; overflow-y: auto;
         }
+        /* Header matches the main window band: walnut strip, cards inset 4px
+           with a 2.5px black edge, black line under it and the soft shadow */
         .gt-sp-head {
-            flex: none; display: flex; height: var(--card-height);
-            background: var(--bg-3); border-bottom: var(--border-width) solid var(--border-color);
+            flex: none; display: flex; padding: 0 2px;
+            background: var(--bg-3);
+            border-top: var(--border-width) solid var(--border-color);
+            border-bottom: var(--border-width) solid var(--border-color);
             position: sticky; top: 0; z-index: 1;
+            box-shadow: 0 1px 0 var(--border-color);   /* closes a sub-pixel gap under the line on phones */
         }
-        .gt-sp-head button {
-            width: 90px; border: 0; border-right: var(--border-width) solid var(--border-color);
-            background: var(--bg-4); color: var(--font-color-3);
-            font: 600 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; cursor: pointer;
+        .gt-sp-head::after {
+            content: ''; position: absolute; left: 0; right: 0; top: 100%; height: calc(14px + var(--border-width));
+            pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.32), rgba(0,0,0,.12) 40%, rgba(0,0,0,0));
         }
-        .gt-sp-head h2 {
-            flex: 1; display: flex; align-items: center; justify-content: center; padding-right: 90px;
-            color: var(--color-10); font-size: 14px; font-weight: 600;
-        }
-        .gt-sp-body { padding: 4px; display: flex; flex-direction: column; gap: 4px; }
+        .gt-sp-head .gt-tab { cursor: default; }
+        .gt-sp-head .gt-tab.back { flex: 1 1 0; cursor: pointer; }
+        .gt-sp-head .gt-tab.title { flex: 2 1 0; }
+        .gt-sp-head .gt-tab.back:active::before { background: var(--bg-4); }
+        .gt-sp-body { padding: 18px 4px 4px; }
+        .gt-sp-body { display: flex; flex-direction: column; gap: 4px; }
         .gt-div {
             display: flex; align-items: center; gap: 8px; margin: 6px 0 2px;
             color: var(--bg-2); font: 700 12px Arial, sans-serif; text-transform: uppercase;
@@ -190,7 +195,7 @@
 
             const draw = () => {
                 page.innerHTML = `
-                    <div class="gt-sp-head"><button type="button" data-action="back">BACK</button><h2>SORT AND FILTER</h2></div>
+                    <div class="gt-sp-head"><div class="gt-tab back" role="button" data-action="back"><span>Back</span></div><div class="gt-tab title active" style="--tab-color:var(--color-1)"><span>Sort and Filter</span></div></div>
                     <div class="gt-sp-body">
                         <div class="gt-div">Filter</div>
                         ${FILTERS.map(f => `

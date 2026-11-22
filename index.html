@@ -153,6 +153,7 @@ html {
     <div id="nestEditWindow"></div>
 
 <!-- ===== APP SHELL (always loaded) ===== -->
+<script src="shell/splash.js"></script>
 <script src="shell/registry.js"></script>
 <script src="shell/icons.js"></script>
 <script src="shell/fit-text.js"></script>
@@ -1417,11 +1418,13 @@ html {
             
             if (isMainView() && mainTab !== 'main') {
                 tabsContainer.style.cssText = 'display: none;';
+                tabsContainer.className = '';
                 tabsContainer.innerHTML = '';
                 return;
             }
             if (isMainView()) {
                 tabsContainer.style.cssText = '';
+                tabsContainer.className = '';
                 tabsContainer.innerHTML = '<div class="gt-row2"></div>';
                 GT50.Sort.renderBar(tabsContainer.firstChild, {
                     sort: getMainSort(),
@@ -1467,12 +1470,11 @@ html {
             }
             
             if (activeMode === 'view' && currentContext.tabs.tabs.length === 0) {
-                tabsContainer.style.display = 'none';
-                document.body.style.paddingTop = 'calc(var(--card-height) + 4px)';
+                tabsContainer.style.cssText = 'display: none;';
+                tabsContainer.className = '';
+                tabsContainer.innerHTML = '';
+                fitMainBody();
                 return;
-            } else {
-                tabsContainer.style.display = '';
-                document.body.style.paddingTop = 'calc((var(--card-height) * 2) + var(--border-width) + 5px)';
             }
             
             if (activeMode === 'build') {
@@ -1480,6 +1482,7 @@ html {
             } else {
                 GT50Lib.Tabs.renderView(tabsContainer, currentContext.tabs, render);
             }
+            fitMainBody();   // tab row sits right under the nest bar; cards 4px below, same as the main window
         }
 
         function renderFooter() {

@@ -58,18 +58,7 @@
                         cursor: pointer;
                         transition: filter 0.2s;
                     ">
-                        <div style="
-                            position: relative;
-                            width: 20px;
-                            height: 20px;
-                            border: var(--border-width) solid var(--font-color-3);
-                        ">
-                            <div style="
-                                position: absolute;
-                                inset: 6px;
-                                border: var(--border-width) solid var(--font-color-3);
-                            "></div>
-                        </div>
+                        ${GT50.typeIcon('nest')}
                     </div>
                     <div style="
                         flex: 1;
@@ -295,7 +284,7 @@
                             const difference = Math.abs(tabSummary.completedValue - tabSummary.totalCards);
                             const isComplete = difference < 0.001;
                             if (isComplete) {
-                                barColor = '#d4af37';
+                                barColor = '#9a6b09';
                             }
                         }
                         
@@ -316,7 +305,7 @@
                                 const difference = Math.abs(tabSummary.completedValue - tabSummary.totalCards);
                                 const isComplete = difference < 0.001;
                                 if (isComplete) {
-                                    barColor = '#d4af37';
+                                    barColor = '#9a6b09';
                                 }
                             }
                             
@@ -337,7 +326,7 @@
                         // Check if 100% complete
                         const difference = Math.abs(summary.completedValue - summary.totalCards);
                         const isComplete = difference < 0.001;
-                        progressColor = isComplete ? '#d4af37' : 'var(--color-4)';
+                        progressColor = isComplete ? '#9a6b09' : 'var(--color-4)';
                     }
                 }
             }
@@ -594,7 +583,7 @@
                             <div class="tab-bar-clickable" data-tab-index="${tabIndex}" style="
                                 flex: 1;
                                 height: 22.5px;
-                                background: var(--bg-1);
+                                background: var(--bg-4);
                                 border: var(--border-width) solid var(--border-color);
                                 border-radius: 8px;
                                 position: relative;
@@ -603,7 +592,7 @@
                                 transition: filter 0.2s;
                             ">
                                 <div style="
-                                    background: var(--bg-1);
+                                    background: var(--bg-4);
                                     height: 100%;
                                     position: relative;
                                 ">

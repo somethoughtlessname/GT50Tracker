@@ -264,78 +264,7 @@
                 }
             } else {
                 // ===== NESTED WINDOW HEADER (BUILD MODE) =====
-                container.innerHTML = `
-                    <div style="
-                        height: var(--card-height);
-                        background: var(--bg-3);
-                        border-bottom: var(--border-width) solid var(--border-color);
-                        display: flex;
-                        align-items: center;
-                    ">
-                        <div data-action="back" style="
-                            width: var(--square-section);
-                            min-width: var(--square-section);
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            background: var(--color-1);
-                            padding: 0;
-                            font-size: 18px;
-                            border-right: var(--border-width) solid var(--border-color);
-                            cursor: pointer;
-                            color: var(--color-10);
-                            transition: filter 0.2s;
-                        ">◀</div>
-                        <div style="
-                            flex: 1;
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            padding: 0 var(--margin);
-                            background: var(--bg-3);
-                        ">
-                            <div style="
-                                width: 100%;
-                                color: var(--color-10);
-                                font-size: 14px;
-                                font-weight: 600;
-                                font-family: inherit;
-                                text-align: center;
-                            ">${state.title || 'Untitled'}</div>
-                        </div>
-                        <div data-action="home" style="
-                            width: var(--square-section);
-                            min-width: var(--square-section);
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            background: var(--color-4);
-                            border-left: var(--border-width) solid var(--border-color);
-                            cursor: pointer;
-                            font-size: 18px;
-                            color: var(--color-10);
-                            transition: filter 0.2s;
-                        ">▶</div>
-                    </div>
-                `;
-                
-                // ===== EVENT LISTENERS =====
-                const backBtn = container.querySelector('[data-action="back"]');
-                if (backBtn && onBack) {
-                    backBtn.onclick = () => onBack();
-                    backBtn.onmouseover = () => backBtn.style.filter = 'brightness(1.2)';
-                    backBtn.onmouseout = () => backBtn.style.filter = 'brightness(1)';
-                }
-                
-                const homeBtn = container.querySelector('[data-action="home"]');
-                if (homeBtn && onHome) {
-                    homeBtn.onclick = () => onHome();
-                    homeBtn.onmouseover = () => homeBtn.style.filter = 'brightness(1.2)';
-                    homeBtn.onmouseout = () => homeBtn.style.filter = 'brightness(1)';
-                }
+                this.renderNestBar(container, state.title, 'build', onBack, onHome);
             }
         },
         
@@ -522,88 +451,52 @@
                 }
             } else {
                 // ===== NESTED WINDOW HEADER =====
-                container.innerHTML = `
-                    <div style="
-                        height: var(--card-height);
-                        background: var(--bg-3);
-                        border-bottom: var(--border-width) solid var(--border-color);
-                        display: flex;
-                        align-items: center;
-                    ">
-                        <div data-action="back" style="
-                            width: var(--square-section);
-                            min-width: var(--square-section);
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            background: var(--bg-4);
-                            padding: 0;
-                            font-size: 18px;
-                            border-right: var(--border-width) solid var(--border-color);
-                            cursor: pointer;
-                            color: var(--color-10);
-                        ">◀</div>
-                        <div style="
-                            flex: 1;
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            padding: 0 var(--margin);
-                            background: var(--bg-3);
-                        ">
-                            <div style="
-                                width: 100%;
-                                color: var(--color-10);
-                                font-size: 14px;
-                                font-weight: 600;
-                                font-family: inherit;
-                                text-align: center;
-                            ">${state.title || 'Untitled'}</div>
-                        </div>
-                        <div data-action="home" style="
-                            width: var(--square-section);
-                            min-width: var(--square-section);
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            background: var(--bg-4);
-                            border-left: var(--border-width) solid var(--border-color);
-                            cursor: pointer;
-                            position: relative;
-                        ">
-                            <div style="
-                                width: 20px;
-                                height: 20px;
-                                border: 3px solid var(--color-10);
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                            ">
-                                <div style="
-                                    width: 6px;
-                                    height: 6px;
-                                    background: var(--color-10);
-                                    border-radius: 50%;
-                                "></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // ===== EVENT LISTENERS =====
-                const backBtn = container.querySelector('[data-action="back"]');
-                if (backBtn && onBack) {
-                    backBtn.onclick = () => onBack();
-                }
-                
-                const homeBtn = container.querySelector('[data-action="home"]');
-                if (homeBtn && onHome) {
-                    homeBtn.onclick = () => onHome();
-                }
+                this.renderNestBar(container, state.title, 'view', onBack, onHome);
             }
+        },
+
+        // ===== NEST WINDOW BAR =====
+        // Matches row 1 of the main window: walnut band with a black line above
+        // and below, a 42px row split into sections by 3px black lines. Back card on the left, the title
+        // card in the middle, and Home (build) or the home square (view) on the right.
+        renderNestBar: function(container, title, mode, onBack, onHome) {
+            if (!document.getElementById('jj-nestbar-css')) {
+                const st = document.createElement('style');
+                st.id = 'jj-nestbar-css';
+                st.textContent = `
+                    .jj-nb { display: flex; background: var(--bg-3);
+                        border-top: var(--border-width) solid var(--border-color);
+                        border-bottom: var(--border-width) solid var(--border-color); }
+                    .jj-nb .c { height: 42px; min-width: 0; padding: 0 10px; background: var(--cbg, var(--color-10));
+                        display: flex; align-items: center; justify-content: center;
+                        color: #000; font: 700 min(.74rem, 2.95vw) Arial, sans-serif; text-transform: uppercase;
+                        white-space: nowrap; user-select: none; -webkit-user-select: none; }
+                    .jj-nb .c + .c { border-left: var(--border-width) solid var(--border-color); }
+                    .jj-nb .t { flex: 1 1 auto; }
+                    .jj-nb .t span { overflow: hidden; text-overflow: ellipsis; }
+                    .jj-nb .b { flex: 0 0 48px; box-sizing: border-box; cursor: pointer; }
+                    .jj-nb .b:active { filter: brightness(.9); }
+                    .jj-nb .b svg { width: 26px; height: 26px; display: block; overflow: visible; }
+                    .jj-nb .sq { width: 14px; height: 14px; border: 2.5px solid #fff; border-radius: 3px;
+                        box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+                    .jj-nb .sq::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #fff; }
+                `;
+                document.head.appendChild(st);
+            }
+            const esc = (window.GT50 && GT50.escapeHTML) ? GT50.escapeHTML : (x) => String(x);
+            const tri = (pts) => `<svg viewBox="0 0 40 40"><polygon points="${pts}" fill="#fff" stroke="#fff" stroke-width="5" stroke-linejoin="round"/></svg>`;
+            const left = tri('27,10.4 27,29.6 10.4,20');
+            const right = mode === 'build' ? tri('13,10.4 13,29.6 29.6,20') : '<i class="sq"></i>';
+            container.innerHTML = `
+                <div class="jj-nb">
+                    <div class="c b" data-action="back" role="button" aria-label="Back" style="--cbg: var(--color-1)">${left}</div>
+                    <div class="c t"><span>${esc(title || 'Untitled')}</span></div>
+                    <div class="c b" data-action="home" role="button" aria-label="Home" style="--cbg: ${mode === 'build' ? 'var(--color-4)' : 'var(--bg-4)'}">${right}</div>
+                </div>`;
+            const backBtn = container.querySelector('[data-action="back"]');
+            if (backBtn && onBack) backBtn.onclick = () => onBack();
+            const homeBtn = container.querySelector('[data-action="home"]');
+            if (homeBtn && onHome) homeBtn.onclick = () => onHome();
         }
     };
     

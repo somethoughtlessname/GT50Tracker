@@ -28,7 +28,7 @@
             --bg-1: #efeadf;
             --bg-2: #2b2620;
             --bg-3: #6b4a32;
-            --bg-4: #8a6a4f;
+            --bg-4: #8f7658;
             --bg-5: #4a3f35;
             --bg-9: #2b2620;
             
@@ -37,13 +37,13 @@
             /* ========================================= */
             --color-1: #7a2f2b;      /* Red (brick) */
             --color-2: #9a5b2e;      /* Orange (rust) */
-            --color-3: #a88a12;      /* Yellow (mustard) */
+            --color-3: #8a710f;      /* Yellow (mustard) */
             --color-4: #5b6633;      /* Green (olive) */
             --color-5: #303d66;      /* Blue (navy) */
             --color-6: #66304c;      /* Purple (plum) */
             --color-7: #8c4f66;      /* Pink (rose) */
             --color-8: #000000;      /* Black */
-            --color-9: #8a8378;      /* Gray (taupe) */
+            --color-9: #7a746a;      /* Gray (taupe) */
             --color-10: #ffffff;     /* White */
             
             /* ========================================= */
@@ -63,9 +63,9 @@
             /* ========================================= */
             /* RAINBOW COLORS - YELLOW VARIATIONS */
             /* ========================================= */
-            --color-3-2: #866e0e;    /* -20% brightness */
-            --color-3-3: #65530b;    /* -40% brightness */
-            --color-3-4: #433707;    /* -60% brightness */
+            --color-3-2: #6e5a0c;    /* -20% brightness */
+            --color-3-3: #534409;    /* -40% brightness */
+            --color-3-4: #372d06;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - GREEN VARIATIONS */
@@ -98,9 +98,9 @@
             /* ========================================= */
             /* RAINBOW COLORS - GRAY VARIATIONS */
             /* ========================================= */
-            --color-9-2: #6e6960;    /* -20% brightness */
-            --color-9-3: #534f48;    /* -40% brightness */
-            --color-9-4: #373430;    /* -60% brightness */
+            --color-9-2: #625d55;    /* -20% brightness */
+            --color-9-3: #494640;    /* -40% brightness */
+            --color-9-4: #312e2a;    /* -60% brightness */
             
             /* ========================================= */
             /* FONT COLORS */

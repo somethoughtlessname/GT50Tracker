@@ -317,18 +317,9 @@
             const nameInput = container.querySelector('input[placeholder="Nest"]');
             if (nameInput) nameInput.placeholder = 'Cycle';
             
-            // Replace the icon with cycle icon (⟳ circular arrow)
+            // Swap Nest's icon for the Cycle icon (same box, arrows inside)
             const iconSection = container.querySelector('div > div[data-action="open"]');
-            if (iconSection) {
-                const existingIcon = iconSection.querySelector('div');
-                if (existingIcon) {
-                    existingIcon.innerHTML = `
-                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;">
-                            <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" fill="var(--font-color-3)"/>
-                        </svg>
-                    `;
-                }
-            }
+            if (iconSection && window.GT50 && GT50.typeIcon) iconSection.innerHTML = GT50.typeIcon('cycle');
         },
         
         // ===== VIEW MODE RENDERER =====

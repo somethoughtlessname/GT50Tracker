@@ -192,7 +192,7 @@
             const difference = Math.abs(summary.completedValue - summary.totalCards);
             const isComplete = difference < 0.001;
             
-            const fillColor = isComplete ? '#d4af37' : tabColor;
+            const fillColor = isComplete ? '#9a6b09' : tabColor;
             
             // Determine display text based on summaryDisplayMode
             let displayText = '';
@@ -393,7 +393,7 @@
                 // Determine color: gold if 100% complete
                 const difference = Math.abs(tabSummary.completedValue - tabSummary.totalCards);
                 const isComplete = difference < 0.001;
-                const barColor = isComplete ? '#d4af37' : tabColor;
+                const barColor = isComplete ? '#9a6b09' : tabColor;
                 
                 tabProgressData.push({
                     name: tabName,

@@ -270,18 +270,19 @@
                         cursor: ${showDropdown ? 'pointer' : 'default'};
                     ">
                         <div style="
-                            font-size: 8px;
-                            font-weight: 600;
+                            font-size: 9px;
+                            font-weight: 700;
                             color: var(--color-10);
                             line-height: 1;
+                            letter-spacing: .04em;
                         ">${state.title || 'Total Count'}</div>
                         <div style="
-                            font-size: 18px;
-                            font-weight: 700;
-                            color: ${tabColor || 'var(--color-10)'};
+                            font-size: 20px;
+                            font-weight: 800;
+                            color: var(--color-10);
                             line-height: 1;
                             margin-top: 2px;
-                            ${tabColor ? 'filter: brightness(1.2);' : ''}
+                            text-shadow: 0 1px 0 rgba(0,0,0,.45), 0 0 6px rgba(0,0,0,.25);
                         ">${state.value}</div>
                     </div>
                     <div data-action="increment" style="

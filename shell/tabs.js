@@ -21,22 +21,39 @@
             'var(--color-1)', 'var(--color-2)', 'var(--color-3)'
         ],
         
+        // The tab row matches row 2 of the main window: a walnut band 42px tall
+        // plus its black line, split into tab sections by 3px black lines.
+        prepRow: function(outer) {
+            if (!document.getElementById('jj-tabrow-css')) {
+                const st = document.createElement('style');
+                st.id = 'jj-tabrow-css';
+                st.textContent = `
+                    .jj-tabrow { position: fixed; left: 0; right: 0; z-index: 1000; box-sizing: border-box;
+                        height: calc(42px + var(--border-width)); padding: 0; background: var(--bg-3);
+                        border-bottom: var(--border-width) solid var(--border-color);
+                        box-shadow: 0 -2px 0 var(--border-color); }
+                    .jj-tabrow::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: calc(14px + var(--border-width));
+                        pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.32), rgba(0,0,0,.12) 40%, rgba(0,0,0,0)); }
+                    .jj-tabcard { height: 100%; display: flex; overflow: hidden; background: var(--bg-4); }
+                    .jj-tabcard > div { height: 100% !important; }
+                `;
+                document.head.appendChild(st);
+            }
+            outer.innerHTML = '';
+            const top = outer.style.top;
+            outer.style.cssText = top ? 'top:' + top : '';
+            outer.className = 'jj-tabrow';
+            const card = document.createElement('div');
+            card.className = 'jj-tabcard';
+            outer.appendChild(card);
+            return card;
+        },
+
         // Build mode renderer
         renderBuild: function(container, state, onChange, externalArrays) {
             const count = state.tabs.length;
             
-            container.innerHTML = '';
-            container.style.cssText = `
-                position: fixed;
-                top: var(--card-height);
-                left: 0;
-                right: 0;
-                height: calc(var(--card-height) + 4px);
-                background: var(--bg-3);
-                border-bottom: var(--border-width) solid var(--border-color);
-                z-index: 1000;
-                display: flex;
-            `;
+            container = this.prepRow(container);
             
             // If no tabs, show "ADD TABS" button
             if (count === 0) {
@@ -64,7 +81,7 @@
             
             if (count <= 3) {
                 // Single row
-                container.className = 'tabs-container single-row';
+                container.classList.add('tabs-container', 'single-row');
                 
                 // Delete button
                 const deleteBtn = this.createControlButton('×', () => this.deleteTab(state, onChange));
@@ -88,7 +105,7 @@
                 container.appendChild(addBtn);
             } else {
                 // Double row
-                container.className = 'tabs-container double-row';
+                container.classList.add('tabs-container', 'double-row');
                 
                 let topCount, bottomCount;
                 if (count === 4) {
@@ -126,6 +143,7 @@
                 topRow.style.cssText = `
                     flex: 1;
                     display: flex;
+                    min-height: 0;
                     border-bottom: var(--border-width) solid var(--border-color);
                 `;
                 for (let i = 0; i < topCount; i++) {
@@ -138,6 +156,7 @@
                 bottomRow.style.cssText = `
                     flex: 1;
                     display: flex;
+                    min-height: 0;
                 `;
                 for (let i = topCount; i < count; i++) {
                     bottomRow.appendChild(this.createBuildTab(i, state, onChange, i === topCount));
@@ -160,25 +179,14 @@
         renderView: function(container, state, onChange) {
             const count = state.tabs.length;
             
-            container.innerHTML = '';
-            container.style.cssText = `
-                position: fixed;
-                top: var(--card-height);
-                left: 0;
-                right: 0;
-                height: calc(var(--card-height) + 4px);
-                background: transparent;
-                z-index: 1000;
-                display: flex;
-                flex-direction: column;
-            `;
+            container = this.prepRow(container);
             
             // Create wrapper for actual tab content that accounts for header border
             const tabWrapper = document.createElement('div');
             tabWrapper.style.cssText = `
                 flex: 1;
                 display: flex;
-                border-bottom: var(--border-width) solid var(--border-color);
+                min-width: 0;
             `;
             
             // If no tabs, show empty space
@@ -210,13 +218,13 @@
                         flex: 1;
                         min-width: 0;
                         height: 100%;
-                        background: ${i === state.activeViewTab ? state.tabs[i].color : 'var(--bg-4)'};
+                        background: ${i === state.activeViewTab ? state.tabs[i].color : 'var(--color-10)'};
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 14px;
-                        font-weight: 600;
-                        color: var(--font-color-3);
+                        font: 700 min(.74rem, 2.95vw) Arial, sans-serif;
+                        text-transform: uppercase;
+                        color: ${i === state.activeViewTab ? 'var(--color-10)' : '#000'};
                         cursor: pointer;
                         transition: filter 0.2s;
                         ${i < count - 1 ? 'border-right: var(--border-width) solid var(--border-color);' : ''}
@@ -261,6 +269,7 @@
                 topRow.style.cssText = `
                     flex: 1;
                     display: flex;
+                    min-height: 0;
                     border-bottom: var(--border-width) solid var(--border-color);
                 `;
                 for (let i = 0; i < topCount; i++) {
@@ -269,13 +278,13 @@
                         flex: 1;
                         min-width: 0;
                         height: 100%;
-                        background: ${i === state.activeViewTab ? state.tabs[i].color : 'var(--bg-4)'};
+                        background: ${i === state.activeViewTab ? state.tabs[i].color : 'var(--color-10)'};
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 14px;
-                        font-weight: 600;
-                        color: var(--font-color-3);
+                        font: 700 min(.74rem, 2.95vw) Arial, sans-serif;
+                        text-transform: uppercase;
+                        color: ${i === state.activeViewTab ? 'var(--color-10)' : '#000'};
                         cursor: pointer;
                         transition: filter 0.2s;
                         ${i < topCount - 1 ? 'border-right: var(--border-width) solid var(--border-color);' : ''}
@@ -300,6 +309,7 @@
                 bottomRow.style.cssText = `
                     flex: 1;
                     display: flex;
+                    min-height: 0;
                 `;
                 for (let i = topCount; i < count; i++) {
                     const tab = document.createElement('div');
@@ -307,13 +317,13 @@
                         flex: 1;
                         min-width: 0;
                         height: 100%;
-                        background: ${i === state.activeViewTab ? state.tabs[i].color : 'var(--bg-4)'};
+                        background: ${i === state.activeViewTab ? state.tabs[i].color : 'var(--color-10)'};
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 14px;
-                        font-weight: 600;
-                        color: var(--font-color-3);
+                        font: 700 min(.74rem, 2.95vw) Arial, sans-serif;
+                        text-transform: uppercase;
+                        color: ${i === state.activeViewTab ? 'var(--color-10)' : '#000'};
                         cursor: pointer;
                         transition: filter 0.2s;
                         ${i < count - 1 ? 'border-right: var(--border-width) solid var(--border-color);' : ''}
@@ -462,13 +472,13 @@
                 flex: 1;
                 min-width: 0;
                 height: 100%;
-                background: ${index === state.selectedBuildTab ? state.tabs[index].color : 'var(--bg-4)'};
+                background: ${index === state.selectedBuildTab ? state.tabs[index].color : 'var(--color-10)'};
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 14px;
-                font-weight: 600;
-                color: var(--font-color-3);
+                font: 700 min(.74rem, 2.95vw) Arial, sans-serif;
+                text-transform: uppercase;
+                color: ${index === state.selectedBuildTab ? 'var(--color-10)' : '#000'};
                 cursor: pointer;
                 transition: filter 0.2s;
                 ${isFirst ? '' : 'border-left: var(--border-width) solid var(--border-color);'}
@@ -490,9 +500,9 @@
                     border: none;
                     outline: none;
                     text-align: center;
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: var(--font-color-3);
+                    font: inherit;
+                    text-transform: uppercase;
+                    color: inherit;
                     padding: 0;
                 `;
                 input.oninput = (e) => {

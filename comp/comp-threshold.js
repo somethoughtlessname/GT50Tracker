@@ -498,7 +498,7 @@ const itemDropdownColor = cardColor;
             let checkboxBg, checkboxSymbol, checkboxFontSize, checkboxPadding, checkboxColor;
             
             if (allCompleted) {
-                checkboxBg = '#d4af37';
+                checkboxBg = '#9a6b09';
                 checkboxSymbol = '✓';
                 checkboxFontSize = 'var(--check-size)';
                 checkboxPadding = 'var(--check-position)';
@@ -544,11 +544,11 @@ const itemDropdownColor = cardColor;
                         ${Array.from({ length: totalBarSegments }, (_, idx) => {
     let segmentColor;
     if (allCompleted) {
-        segmentColor = '#d4af37';  // ← ALL segments gold when everything complete
+        segmentColor = '#9a6b09';  // ← ALL segments gold when everything complete
     } else if (idx < requiredComplete) {
-        segmentColor = idx < completed ? (tabColor || 'var(--color-5)') : 'var(--color-9-3)';
+        segmentColor = idx < completed ? (tabColor || 'var(--color-5)') : 'var(--bg-1)';
     } else {
-        segmentColor = idx < completed ? '#d4af37' : 'var(--color-9-3)';  // ← GOLD for bonus completions beyond threshold
+        segmentColor = idx < completed ? '#9a6b09' : 'var(--bg-1)';  // ← GOLD for bonus completions beyond threshold
     }
     return `<div style="flex: 1; background: ${segmentColor}; border-radius: 2px;"></div>`;
 }).join('')}

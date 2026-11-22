@@ -55,23 +55,7 @@
                         cursor: pointer;
                         transition: filter 0.2s;
                     ">
-                        <div style="
-                            position: relative;
-                            width: 20px;
-                            height: 20px;
-                            border: var(--border-width) solid var(--font-color-3);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                        ">
-                            <div style="
-                                width: 0;
-                                height: 0;
-                                border-left: 5px solid transparent;
-                                border-right: 5px solid transparent;
-                                border-top: 8px solid var(--font-color-3);
-                            "></div>
-                        </div>
+                        ${window.GT50 && GT50.typeIcon ? GT50.typeIcon('import') : ''}
                     </div>
                     <div style="
                         flex: 1;

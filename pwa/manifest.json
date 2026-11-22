@@ -1,14 +1,14 @@
 {
-  "name": "GT50 - Gaming Tracker",
-  "short_name": "GT50",
-  "description": "Modular card-based productivity and tracking dashboard",
+  "name": "The Joystick Journal",
+  "short_name": "Joystick Journal",
+  "description": "Track your games: story, side quests, collectibles and more",
   "id": "../",
   "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#243342",
-  "theme_color": "#243342",
+  "background_color": "#6b4a32",
+  "theme_color": "#6b4a32",
   "icons": [
     {
       "src": "icons/icon-72.png",
@@ -59,6 +59,9 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
   "screenshots": []
 }

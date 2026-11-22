@@ -1,6 +1,6 @@
 
 // ===== IMPORT LOADER =====
-// Dynamically loads all import files listed in imports-list.js
+// Dynamically loads all template and preset files listed in templates/list.js
 // No need to manually add script tags to Index.html!
 
 (function() {
@@ -59,12 +59,15 @@
             
             // Load all scripts in parallel
             const loadPromises = window.GT50ImportsList.map(filename => {
-                const path = `import/${filename}`;
+                const path = `templates/${filename}`;
                 return loadScript(path);
             });
             
-            // Wait for all to load
-            await Promise.all(loadPromises);
+            // Wait for all to load; a missing or broken file is skipped and
+            // the rest still register (each file is its own plug-in)
+            const results = await Promise.allSettled(loadPromises);
+            const failed = results.filter(r => r.status === 'rejected').length;
+            if (failed) console.warn(`${failed} template file(s) could not be loaded`);
             
             console.log('=== All Imports Loaded Successfully ===');
             console.log(`Total imports registered: ${window.GT50.Imports.getAll().length}`);

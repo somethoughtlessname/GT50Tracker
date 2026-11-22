@@ -18,95 +18,95 @@
             /* ========================================= */
             /* PRIMARY COLORS */
             /* ========================================= */
-            --primary: #5A8DB8;
-            --secondary: #3b82f6;
-            --accent: #08a971;
+            --primary: #2b5752;
+            --secondary: #303d66;
+            --accent: #5b6633;
             
             /* ========================================= */
             /* BACKGROUND COLORS */
             /* ========================================= */
-            --bg-1: #243342;
-            --bg-2: #374151;
-            --bg-3: #0f1520;
-            --bg-4: #636B76;
-            --bg-5: #4a4a4a;
-            --bg-9: #374151;
+            --bg-1: #efeadf;
+            --bg-2: #2b2620;
+            --bg-3: #6b4a32;
+            --bg-4: #8a6a4f;
+            --bg-5: #4a3f35;
+            --bg-9: #2b2620;
             
             /* ========================================= */
             /* RAINBOW COLORS - BASE */
             /* ========================================= */
-            --color-1: #C85A5A;      /* Red */
-            --color-2: #C7824A;      /* Orange */
-            --color-3: #d4c956;      /* Yellow */
-            --color-4: #48a971;      /* Green */
-            --color-5: #5A8DB8;      /* Blue */
-            --color-6: #8a7ca8;      /* Purple */
-            --color-7: #B87390;      /* Pink */
+            --color-1: #7a2f2b;      /* Red (brick) */
+            --color-2: #9a5b2e;      /* Orange (rust) */
+            --color-3: #a88a12;      /* Yellow (mustard) */
+            --color-4: #5b6633;      /* Green (olive) */
+            --color-5: #303d66;      /* Blue (navy) */
+            --color-6: #66304c;      /* Purple (plum) */
+            --color-7: #8c4f66;      /* Pink (rose) */
             --color-8: #000000;      /* Black */
-            --color-9: #6b7280;      /* Gray */
+            --color-9: #8a8378;      /* Gray (taupe) */
             --color-10: #ffffff;     /* White */
             
             /* ========================================= */
             /* RAINBOW COLORS - RED VARIATIONS */
             /* ========================================= */
-            --color-1-2: #a04848;    /* -20% brightness */
-            --color-1-3: #783636;    /* -40% brightness */
-            --color-1-4: #502424;    /* -60% brightness */
+            --color-1-2: #622622;    /* -20% brightness */
+            --color-1-3: #491c1a;    /* -40% brightness */
+            --color-1-4: #311311;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - ORANGE VARIATIONS */
             /* ========================================= */
-            --color-2-2: #9f683b;    /* -20% brightness */
-            --color-2-3: #774e2c;    /* -40% brightness */
-            --color-2-4: #4f341d;    /* -60% brightness */
+            --color-2-2: #7b4925;    /* -20% brightness */
+            --color-2-3: #5c371c;    /* -40% brightness */
+            --color-2-4: #3e2412;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - YELLOW VARIATIONS */
             /* ========================================= */
-            --color-3-2: #aaa145;    /* -20% brightness */
-            --color-3-3: #7f7934;    /* -40% brightness */
-            --color-3-4: #555023;    /* -60% brightness */
+            --color-3-2: #866e0e;    /* -20% brightness */
+            --color-3-3: #65530b;    /* -40% brightness */
+            --color-3-4: #433707;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - GREEN VARIATIONS */
             /* ========================================= */
-            --color-4-2: #3a875a;    /* -20% brightness */
-            --color-4-3: #2b6544;    /* -40% brightness */
-            --color-4-4: #1d442d;    /* -60% brightness */
+            --color-4-2: #495229;    /* -20% brightness */
+            --color-4-3: #373d1f;    /* -40% brightness */
+            --color-4-4: #242914;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - BLUE VARIATIONS */
             /* ========================================= */
-            --color-5-2: #487193;    /* -20% brightness */
-            --color-5-3: #36556e;    /* -40% brightness */
-            --color-5-4: #24384a;    /* -60% brightness */
+            --color-5-2: #263152;    /* -20% brightness */
+            --color-5-3: #1d253d;    /* -40% brightness */
+            --color-5-4: #131829;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - PURPLE VARIATIONS */
             /* ========================================= */
-            --color-6-2: #6e6386;    /* -20% brightness */
-            --color-6-3: #534a65;    /* -40% brightness */
-            --color-6-4: #373243;    /* -60% brightness */
+            --color-6-2: #52263d;    /* -20% brightness */
+            --color-6-3: #3d1d2e;    /* -40% brightness */
+            --color-6-4: #29131e;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - PINK VARIATIONS */
             /* ========================================= */
-            --color-7-2: #935c73;    /* -20% brightness */
-            --color-7-3: #6e4556;    /* -40% brightness */
-            --color-7-4: #4a2e3a;    /* -60% brightness */
+            --color-7-2: #703f52;    /* -20% brightness */
+            --color-7-3: #542f3d;    /* -40% brightness */
+            --color-7-4: #382029;    /* -60% brightness */
             
             /* ========================================= */
             /* RAINBOW COLORS - GRAY VARIATIONS */
             /* ========================================= */
-            --color-9-2: #565b66;    /* -20% brightness */
-            --color-9-3: #40444d;    /* -40% brightness */
-            --color-9-4: #2b2e33;    /* -60% brightness */
+            --color-9-2: #6e6960;    /* -20% brightness */
+            --color-9-3: #534f48;    /* -40% brightness */
+            --color-9-4: #373430;    /* -60% brightness */
             
             /* ========================================= */
             /* FONT COLORS */
             /* ========================================= */
             --font-color-1: #000000;
-            --font-color-2: #9ca3af;
+            --font-color-2: #8a8378;
             --font-color-3: #ffffff;
             
             /* ========================================= */
@@ -259,23 +259,23 @@
         /* PLACEHOLDER STYLING */
         /* ========================================= */
         ::placeholder {
-            color: var(--font-color-3);
-            opacity: 0.5;
+            color: var(--ph-color, rgba(255,255,255,0.6));
+            opacity: var(--ph-opacity, 1);
         }
 
         ::-webkit-input-placeholder {
-            color: var(--font-color-3);
-            opacity: 0.5;
+            color: var(--ph-color, rgba(255,255,255,0.6));
+            opacity: var(--ph-opacity, 1);
         }
 
         ::-moz-placeholder {
-            color: var(--font-color-3);
-            opacity: 0.5;
+            color: var(--ph-color, rgba(255,255,255,0.6));
+            opacity: var(--ph-opacity, 1);
         }
 
         :-ms-input-placeholder {
-            color: var(--font-color-3);
-            opacity: 0.5;
+            color: var(--ph-color, rgba(255,255,255,0.6));
+            opacity: var(--ph-opacity, 1);
         }
         
         /* ========================================= */
@@ -296,6 +296,26 @@
             scroll-behavior: smooth;
         }
         
+        /* ========================================= */
+        /* NO SCROLL BARS */
+        /* ========================================= */
+        /* Every window still scrolls; only the bar on the right is hidden */
+        html, body, * { scrollbar-width: none; -ms-overflow-style: none; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+        /* ========================================= */
+        /* EDIT-MODE CARDS: SHARED LAYOUT */
+        /* ========================================= */
+        /* Every card's header row works the same way: a fixed square on the
+           left, a title that gives up space first, and fixed ▲ ▼ × squares on
+           the right that never get pushed off the card. */
+        #cards-main input[data-field="title"],
+        #cards-main div:has(> input[data-field="title"]) { min-width: 0; }
+        #cards-main [data-action="toggle"][style*="--square-section"],
+        #cards-main [data-action="move-up-card"],
+        #cards-main [data-action="move-down-card"],
+        #cards-main [data-action="delete-card"] { flex-shrink: 0; }
+
         /* ========================================= */
         /* SELECTION STYLING */
         /* ========================================= */

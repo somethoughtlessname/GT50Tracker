@@ -402,8 +402,11 @@
                 ">
                     <div data-action="toggle" style="
                         width: var(--square-section);
+                        min-width: var(--square-section);
+                        max-width: var(--square-section);
+                        flex-shrink: 0;
                         height: var(--card-height);
-                        background: ${count > 0 ? 'var(--color-2-2)' : 'var(--bg-3)'};
+                        background: var(--color-10);
                         border-right: var(--border-width) solid var(--border-color);
                         display: flex;
                         align-items: center;
@@ -465,7 +468,7 @@
                                 background: var(--color-2-2);
                                 filter: brightness(0.75);
                                 z-index: -1;
-                            "></div>↑
+                            "></div>▲
                         </button>
                         <button data-action="move-down-card" style="
                             width: var(--square-section);
@@ -494,7 +497,7 @@
                                 background: var(--color-2-2);
                                 filter: brightness(0.75);
                                 z-index: -1;
-                            "></div>↓
+                            "></div>▼
                         </button>
                         <button data-action="delete-card" style="
                             width: var(--square-section);
@@ -1076,4 +1079,20 @@
             }
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and HISTORY leaves the footer and
+    // Card Info; saved HISTORY cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'history',
+            label: 'HISTORY',
+            color: 'var(--color-2-2)',
+            lib: window.GT50Lib.History,
+            about: { desc: 'Record when things happen with timestamps', color: 'var(--color-2-2)' },
+            info: function(state) {
+                return { title: state.title || '', done: false, text: [state.title, state.dropdownText].join(' ') };
+            }
+        });
+    }
 })();

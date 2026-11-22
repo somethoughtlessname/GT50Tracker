@@ -313,6 +313,9 @@
             
             // Use nest's build renderer with correct signature
             GT50Lib.Nest.renderBuild(container, state, depth, onNavigate, onChange, onMove, onDelete, isDeletePending);
+            // its own name hint, so a new Cycle doesn't read as a Nest
+            const nameInput = container.querySelector('input[placeholder="Nest"]');
+            if (nameInput) nameInput.placeholder = 'Cycle';
             
             // Replace the icon with cycle icon (⟳ circular arrow)
             const iconSection = container.querySelector('div > div[data-action="open"]');
@@ -1245,4 +1248,20 @@
             }
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and CYCLE leaves the footer and
+    // Card Info; saved CYCLE cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'cycle',
+            label: 'CYCLE',
+            color: 'var(--color-5-2)',
+            lib: window.GT50Lib.Cycle,
+            about: { desc: 'Auto-resets daily, weekly, or monthly', color: 'var(--color-5-2)' },
+            info: function(state) {
+                return { title: state.name || '', done: false, text: state.name || '' };
+            }
+        });
+    }
 })();

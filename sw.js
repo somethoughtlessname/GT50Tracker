@@ -1,6 +1,6 @@
-// GT50 Service Worker - bare-bones shell
-const VERSION = '3.1.0';
-const CACHE_NAME = 'gt50-cache-' + VERSION;
+// The Joystick Journal - service worker
+const VERSION = '5.2.6';
+const CACHE_NAME = 'gt50-cache-' + VERSION;   // keeps the gt50- prefix so old caches are cleared
 
 // Detect if we're on GitHub Pages
 const isGitHubPages = self.location.hostname.includes('github.io');
@@ -17,13 +17,58 @@ console.log('========================================');
 const STATIC_CACHE_URLS = [
   BASE_PATH,
   BASE_PATH + 'index.html',
-  BASE_PATH + 'shell/styles.js',
   BASE_PATH + 'shell/registry.js',
-  BASE_PATH + 'shell/utils.js',
+  BASE_PATH + 'shell/icons.js',
+  BASE_PATH + 'shell/fit-text.js',
+  BASE_PATH + 'shell/search.js',
+  BASE_PATH + 'shell/styles.js',
   BASE_PATH + 'shell/header.js',
-  BASE_PATH + 'shell/sort.js',
+  BASE_PATH + 'shell/insert.js',
+  BASE_PATH + 'shell/impex.js',
+  BASE_PATH + 'shell/settings.js',
+  BASE_PATH + 'shell/import-registry.js',
+  BASE_PATH + 'templates/list.js',
+  BASE_PATH + 'shell/import-loader.js',
+  BASE_PATH + 'shell/create-new.js',
+  BASE_PATH + 'shell/utility.js',
   BASE_PATH + 'shell/footer.js',
+  BASE_PATH + 'shell/format-gt50.js',
+  BASE_PATH + 'shell/format-encrypted.js',
+  BASE_PATH + 'shell/format-import.js',
+  BASE_PATH + 'shell/tabs.js',
+  BASE_PATH + 'shell/info.js',
+  BASE_PATH + 'shell/sort-filter.js',
+  BASE_PATH + 'shell/summary.js',
+  BASE_PATH + 'shell/nest.js',
+  BASE_PATH + 'shell/sort.js',
+  BASE_PATH + 'shell/main-bar.js',
+  BASE_PATH + 'shell/backup.js',
   BASE_PATH + 'comp/comp-list.js',
+  BASE_PATH + 'comp/comp-progress.js',
+  BASE_PATH + 'comp/comp-checklist.js',
+  BASE_PATH + 'comp/comp-radio.js',
+  BASE_PATH + 'comp/comp-threshold.js',
+  BASE_PATH + 'comp/comp-accumulation.js',
+  BASE_PATH + 'comp/comp-history.js',
+  BASE_PATH + 'comp/comp-tier.js',
+  BASE_PATH + 'comp/comp-divider.js',
+  BASE_PATH + 'comp/comp-text.js',
+  BASE_PATH + 'comp/comp-scale.js',
+  BASE_PATH + 'comp/comp-cycle.js',
+  BASE_PATH + 'comp/comp-import.js',
+  BASE_PATH + 'templates/game-gta5.js',
+  BASE_PATH + 'templates/game-hogwarts.js',
+  BASE_PATH + 'templates/game-holygoshdarn.js',
+  BASE_PATH + 'templates/game-infamous1.js',
+  BASE_PATH + 'templates/game-infamous2.js',
+  BASE_PATH + 'templates/game-legoharrypottercollection.js',
+  BASE_PATH + 'templates/game-spiderman2.js',
+  BASE_PATH + 'templates/game-splitfiction.js',
+  BASE_PATH + 'templates/game-stray.js',
+  BASE_PATH + 'templates/game-thelongdark.js',
+  BASE_PATH + 'templates/game-uncharted1.js',
+  BASE_PATH + 'templates/import-example-rpg.js',
+  BASE_PATH + 'templates/template-game-tracker.js',
   BASE_PATH + 'pwa/manifest.json'
 ];
 

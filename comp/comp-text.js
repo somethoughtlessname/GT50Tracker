@@ -68,7 +68,7 @@
                     <input type="text" 
                         data-field="title"
                         value="${state.title || ''}"
-                        placeholder="TEXT"
+                        placeholder="Text"
                         style="
                             flex: 1;
                             background: transparent;
@@ -361,4 +361,20 @@ renderView: function(container, state, onChange) {
     `;
 }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and TEXT leaves the footer and
+    // Card Info; saved TEXT cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'text',
+            label: 'TEXT',
+            color: 'var(--color-6-2)',
+            lib: window.GT50Lib.Text,
+            about: { desc: 'Store notes and info you need to see', color: 'var(--color-6-2)' },
+            info: function(state) {
+                return { title: state.title || '', done: false, text: [state.title, state.text].join(' ') };
+            }
+        });
+    }
 })();

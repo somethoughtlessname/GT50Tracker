@@ -143,7 +143,7 @@ renderContent: function(container, settingsState, onChange, cardInfoState) {
             padding: 0 12px;
             font-size: 12px;
             font-weight: 700;
-            color: var(--font-color-3);
+            color: var(--bg-2);   /* ink: the label sits on the light page */
             text-transform: uppercase;
             letter-spacing: 0.5px;
             position: relative;

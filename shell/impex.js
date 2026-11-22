@@ -146,7 +146,7 @@
             const exportPackage = {
                 version: "1.0",
                 timestamp: new Date().toISOString(),
-                app: "GT50 Tester",
+                app: "The Joystick Journal",
                 data: {
                     tabs: cleaned.tabs,
                     tabComponents: cleaned.tabComponents
@@ -223,7 +223,7 @@
             const exportPackage = {
                 version: "1.0",
                 timestamp: new Date().toISOString(),
-                app: "GT50 Tester",
+                app: "The Joystick Journal",
                 type: "nest",
                 name: nestName || cleanedNest.name || "Nest",
                 data: {
@@ -515,7 +515,10 @@
             
             // Render content area
             const contentContainer = container.querySelector('#impex-content');
-            if (isExportOnly || state.activeTab === 'export') {
+            if (!isExportOnly && state.activeTab === 'backup' && window.GT50 && window.GT50.Backup) {
+                contentContainer.style.height = 'auto';
+                window.GT50.Backup.renderTab(contentContainer);
+            } else if (isExportOnly || state.activeTab === 'export' || state.activeTab === 'backup') {
                 this.renderExportTab(contentContainer, appState, state, onChange);
             } else if (state.activeTab === 'import') {
                 this.renderImportTab(contentContainer, onClose, appState, state, onChange);
@@ -532,6 +535,20 @@
                     display: flex;
                     align-items: center;
                 ">
+                    ${window.GT50 && window.GT50.Backup ? `<div data-tab="backup" style="
+                        flex: 1;
+                        height: 100%;
+                        background: ${state.activeTab === 'backup' ? 'var(--color-4)' : 'var(--bg-4)'};
+                        border-right: var(--border-width) solid var(--border-color);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: var(--font-color-3);
+                        cursor: pointer;
+                        transition: filter 0.2s;
+                    ">BACKUP</div>` : ''}
                     <div data-tab="export" style="
                         flex: 1;
                         height: 100%;
@@ -562,6 +579,8 @@
                 </div>
             `;
             
+            const backupTab = container.querySelector('[data-tab="backup"]');
+            if (backupTab) backupTab.onclick = () => { state.activeTab = 'backup'; onChange(); };
             const exportTab = container.querySelector('[data-tab="export"]');
             const importTab = container.querySelector('[data-tab="import"]');
             
@@ -604,7 +623,7 @@
                 const exportPackage = {
                     version: "1.0",
                     timestamp: new Date().toISOString(),
-                    app: "GT50 Tester",
+                    app: "The Joystick Journal",
                     data: {
                         tabs: cleaned.tabs,
                         tabComponents: cleaned.tabComponents

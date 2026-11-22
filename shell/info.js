@@ -115,35 +115,33 @@
             this.renderCardList(contentContainer);
         },
         
+        // App parts that are always there (part of the shell, not plug-ins)
+        appParts: [
+            { label: 'TABS', color: 'var(--color-7)', desc: 'Split your cards into separate pages' },
+            { label: 'FOOTER', color: 'var(--color-7-2)', desc: 'The menu at the bottom for adding cards' },
+            { label: 'IMPORT/EXPORT', color: 'var(--color-7-3)', desc: 'Save or load your entire workspace' },
+            { label: 'SELECTOR', color: 'var(--color-7-4)', desc: 'Choose where new cards get placed' }
+        ],
+
+        // Card entries come from the card files themselves: each comp file puts
+        // its description in its GT50.register() call (about: { desc, color }).
+        // Only installed card types appear; remove a file and its entry goes too.
+        installedCards: function() {
+            if (!window.GT50 || typeof window.GT50.listTypes !== 'function') return [];
+            return window.GT50.listTypes()
+                .filter(t => t.about)
+                .map(t => ({ label: t.label, color: t.about.color || t.color, desc: t.about.desc || '' }));
+        },
+
         renderCardList: function(contentContainer) {
-            const allCards = [
-                { type: 'list', label: 'LIST', color: 'var(--color-1)', desc: 'Check off tasks as you complete them' },
-                { type: 'checklist', label: 'CHECKLIST', color: 'var(--color-1-2)', desc: 'Watch a progress bar fill up as you go' },
-                { type: 'radio', label: 'RADIO', color: 'var(--color-1-3)', desc: 'Pick one option from your list' },
-                { type: 'threshold', label: 'THRESHOLD', color: 'var(--color-1-4)', desc: 'Count up to a target number for each item' },
-                { type: 'accumulation', label: 'COUNT', color: 'var(--color-2)', desc: 'Keep a running total that goes up or down' },
-                { type: 'history', label: 'HISTORY', color: 'var(--color-2-2)', desc: 'Record when things happen with timestamps' },
-                { type: 'progress', label: 'PROGRESS', color: 'var(--color-3)', desc: 'Watch a bar fill from start to finish' },
-                { type: 'tier', label: 'TIER', color: 'var(--color-4)', desc: 'Level up through ranks as you earn points' },
-                { type: 'nest', label: 'NEST', color: 'var(--color-5)', desc: 'Click to open a whole new workspace inside' },
-                { type: 'cycle', label: 'CYCLE', color: 'var(--color-5-2)', desc: 'Auto-resets daily, weekly, or monthly' },
-                { type: 'import', label: 'IMPORT', color: 'var(--color-5-3)', desc: 'Load saved templates and backups' },
-                { type: 'divider', label: 'DIVIDER', color: 'var(--color-6)', desc: 'Add labeled sections to organize cards' },
-                { type: 'text', label: 'TEXT', color: 'var(--color-6-2)', desc: 'Store notes and info you need to see' },
-                { type: 'scale', label: 'SCALE', color: 'var(--color-6-3)', desc: 'Multiply recipe amounts automatically' },
-                { type: 'tabs', label: 'TABS', color: 'var(--color-7)', desc: 'Split your cards into separate pages' },
-                { type: 'footer', label: 'FOOTER', color: 'var(--color-7-2)', desc: 'The menu at the bottom for adding cards' },
-                { type: 'impex', label: 'IMPORT/EXPORT', color: 'var(--color-7-3)', desc: 'Save or load your entire workspace' },
-                { type: 'selector', label: 'SELECTOR', color: 'var(--color-7-4)', desc: 'Choose where new cards get placed' }
-            ];
-            
-            contentContainer.innerHTML = allCards.map((card, index) => `
+            const esc = (window.GT50 && window.GT50.escapeHTML) || (v => String(v));
+            const entry = (card, last) => `
                 <div style="
                     width: 100%;
                     height: var(--card-height);
                     border: var(--border-width) solid var(--border-color);
                     border-radius: 8px;
-                    margin-bottom: ${index === allCards.length - 1 ? '0' : 'var(--margin)'};
+                    margin-bottom: ${last ? '0' : 'var(--margin)'};
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
@@ -158,16 +156,31 @@
                         letter-spacing: 0.5px;
                         margin-bottom: 2px;
                         color: var(--font-color-3);
-                    ">${card.label}</div>
+                    ">${esc(card.label)}</div>
                     <div style="
                         font-size: 9px;
                         font-weight: 600;
                         opacity: 0.9;
                         line-height: 1.1;
                         color: var(--font-color-3);
-                    ">${card.desc}</div>
-                </div>
-            `).join('');
+                    ">${esc(card.desc)}</div>
+                </div>`;
+            const divider = (label) => `
+                <div style="display: flex; align-items: center; gap: 12px; margin: 8px 0 6px;">
+                    <div style="flex: 1; height: var(--border-width); background: var(--border-color);"></div>
+                    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.5px; color: var(--bg-2);">${label}</div>
+                    <div style="flex: 1; height: var(--border-width); background: var(--border-color);"></div>
+                </div>`;
+
+            const cards = this.installedCards();
+            const app = this.appParts;
+            contentContainer.innerHTML =
+                divider('CARDS') +
+                (cards.length
+                    ? cards.map((c, i) => entry(c, i === cards.length - 1)).join('')
+                    : '<div style="text-align:center; padding:12px; color: var(--font-color-2); font-size: 12px; font-weight: 700;">NO CARD TYPES INSTALLED</div>') +
+                divider('APP') +
+                app.map((c, i) => entry(c, i === app.length - 1)).join('');
         }
     };
 })();

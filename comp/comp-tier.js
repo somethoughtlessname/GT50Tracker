@@ -1021,4 +1021,20 @@ const itemDropdownColor = cardColor;
             }
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and TIER leaves the footer and
+    // Card Info; saved TIER cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'tier',
+            label: 'TIER',
+            color: 'var(--color-4)',
+            lib: window.GT50Lib.Tier,
+            about: { desc: 'Level up through ranks as you earn points', color: 'var(--color-4)' },
+            info: function(state) {
+                const tiers = state.tiers || []; const total = tiers.reduce((s, t) => s + (parseInt(t.amount) || 0), 0); return { title: state.title || '', done: total > 0 && (Number(state.current) || 0) >= total, text: [state.title, state.dropdownText].concat(tiers.map(t => t.name || '')).join(' ') };
+            }
+        });
+    }
 })();

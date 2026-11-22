@@ -748,4 +748,20 @@ const itemDropdownColor = cardColor;
             }
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and THRESHOLD leaves the footer and
+    // Card Info; saved THRESHOLD cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'threshold',
+            label: 'THRESHOLD',
+            color: 'var(--color-1-4)',
+            lib: window.GT50Lib.Threshold,
+            about: { desc: 'Count up to a target number for each item', color: 'var(--color-1-4)' },
+            info: function(state) {
+                const items = state.items || []; const need = Number(state.number1) || 0; return { title: state.title || '', done: need > 0 && items.filter(i => i.completed).length >= need, text: [state.title, state.dropdownText].concat(items.map(i => i.text)).join(' ') };
+            }
+        });
+    }
 })();

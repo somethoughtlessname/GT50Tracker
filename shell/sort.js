@@ -5,9 +5,9 @@
     window.GT50 = window.GT50 || {};
 
     const FILTERS = [
-        { id: 'all',  name: 'All cards',   desc: 'Every card on this tab' },
-        { id: 'open', name: 'In progress', desc: 'Cards not finished yet' },
-        { id: 'done', name: 'Completed',   desc: 'Finished cards only' }
+        { id: 'all',  name: 'All',         desc: 'Everything on this tab' },
+        { id: 'open', name: 'In progress', desc: 'Not finished yet' },
+        { id: 'done', name: 'Completed',   desc: 'Finished only' }
     ];
     const SORTS = [
         { id: 'manual',  name: 'Manual order', desc: 'The order you built them in', rdesc: 'Reversed' },
@@ -22,17 +22,17 @@
 
     const css = `
         .gt-sort {
-            position: relative; height: 32px; padding: 0 31px;
+            position: relative; height: 21px; padding: 0 27px; line-height: 15px;
             display: flex; align-items: center; justify-content: center; gap: 5px;
             background: var(--color-10); color: #000;
             border: var(--border-width) solid var(--border-color); border-radius: 8px;
             font: 700 min(.74rem, 2.95vw) Arial, sans-serif; text-transform: uppercase;
             white-space: nowrap; overflow: hidden; cursor: pointer; user-select: none;
         }
-        .gt-sort .k { color: var(--bg-4); }
+        .gt-sort .k { color: #8a8378; }
         .gt-sort .v { overflow: hidden; text-overflow: ellipsis; }
         .gt-sort .s, .gt-sort .x {
-            position: absolute; top: 0; bottom: 0; width: 28px;
+            position: absolute; top: 0; bottom: 0; width: 24px;
             display: flex; align-items: center; justify-content: center;
         }
         .gt-sort .s { left: 0; border-right: var(--border-width) solid var(--border-color); }
@@ -40,7 +40,7 @@
         .gt-sort .x { right: 0; border-left: var(--border-width) solid var(--border-color); background: var(--color-1); display: none; }
         .gt-sort .s svg, .gt-sort .x svg { width: 12px; height: 12px; display: block; }
         .gt-sort input {
-            position: absolute; left: 28px; right: 28px; top: 0; bottom: 0; width: auto;
+            position: absolute; left: 24px; right: 24px; top: 0; bottom: 0; width: auto;
             display: none; margin: 0; padding: 0 8px; border: 0; outline: 0; background: transparent;
             font: inherit; text-transform: uppercase; color: #000; -webkit-appearance: none;
         }
@@ -75,7 +75,7 @@
         .gt-sp-body { padding: 4px; display: flex; flex-direction: column; gap: 4px; }
         .gt-div {
             display: flex; align-items: center; gap: 8px; margin: 6px 0 2px;
-            color: var(--color-10); font: 700 12px Arial, sans-serif; text-transform: uppercase;
+            color: var(--bg-2); font: 700 12px Arial, sans-serif; text-transform: uppercase;
         }
         .gt-div::before, .gt-div::after { content: ''; flex: 1; height: var(--border-width); background: var(--border-color); }
         .gt-opt {
@@ -123,8 +123,8 @@
             out.sort((a, b) => {
                 let d = 0;
                 if (by === 'title') d = (a.meta.title || '').localeCompare(b.meta.title || '', undefined, { sensitivity: 'base' });
-                else if (by === 'added') d = (a.card.added || 0) - (b.card.added || 0);
-                else if (by === 'updated') d = (a.card.updated || a.card.added || 0) - (b.card.updated || b.card.added || 0);
+                else if (by === 'added') d = (a.card.added || a.card.id || 0) - (b.card.added || b.card.id || 0);
+                else if (by === 'updated') d = (a.card.lastUpdated || a.card.updated || 0) - (b.card.lastUpdated || b.card.updated || 0);
                 if (d === 0) d = a.index - b.index;
                 return sort.desc ? -d : d;
             });
@@ -134,18 +134,18 @@
         // The bar in header row 2
         // opts: { sort, query, searching, onOpenPage, onSearchOpen, onSearch(q), onSearchClose }
         renderBar: function(slot, opts) {
-            const esc = window.GT50.Utils.escapeHTML;
+            const esc = window.GT50.escapeHTML;
             const f = findIn(FILTERS, opts.sort.filter);
             const s = findIn(SORTS, opts.sort.by);
 
             slot.innerHTML = `
                 <div class="gt-sort ${opts.searching ? 'searching' : ''}" role="button" aria-label="Sort and filter">
                     <span class="s" aria-label="Search">${SEARCH_ICON}</span>
-                    <input type="text" value="${esc(opts.query || '')}" aria-label="Search cards"
+                    <input type="text" value="${esc(opts.query || '')}" aria-label="Search"
                         autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
                     <span class="x" aria-label="Close search">${CLOSE_ICON}</span>
-                    <span class="k">Filter:</span><span class="v">${esc(f.name)}</span>
-                    <span class="k">• Sort:</span>
+                    <span class="k">Filter by:</span><span class="v">${esc(f.name)}</span>
+                    <span class="k">• Sort by:</span>
                     <i class="dir ${opts.sort.desc ? 'desc' : ''}" aria-hidden="true">${DIR_ICON}</i>
                     <span class="v">${esc(s.name)}</span>
                 </div>`;

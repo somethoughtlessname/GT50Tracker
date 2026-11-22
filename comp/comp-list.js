@@ -157,6 +157,7 @@
                     ">${state.open ? '−' : (count > 0 ? count : '+')}</div>
                     <div style="
                         flex: 1;
+                        min-width: 0;
                         background: ${cardColor};
                         height: 100%;
                         display: flex;
@@ -167,6 +168,7 @@
                             placeholder="List" 
                             style="
                                 flex: 1;
+                                min-width: 0;
                                 background: transparent;
                                 border: none;
                                 color: var(--font-color-3);
@@ -616,6 +618,7 @@
             label: 'LIST',
             color: 'var(--color-1)',
             lib: window.GT50Lib.List,
+            about: { desc: 'Check off tasks as you complete them', color: 'var(--color-1)' },
             info: function(state) {
                 const items = state.items || [];
                 return {

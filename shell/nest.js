@@ -2287,4 +2287,31 @@
             }
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Nest is core: every tracker made with Add New is a Nest, so this file
+    // lives in shell/ and is always loaded. It still registers so the footer
+    // can offer it as a card and the sort/search bar can read its name.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'nest',
+            label: 'NEST',
+            color: 'var(--color-9)',
+            lib: window.GT50Lib.Nest,
+            about: { desc: 'Click to open a whole new workspace inside', color: 'var(--color-5)' },
+            // A tracker counts as completed when it holds cards and every one of them is done
+            info: function(state) {
+                const children = [].concat(...((state.tabComponents || []).filter(Array.isArray)));
+                let total = 0, done = 0;
+                children.forEach(child => {
+                    const def = window.GT50.getType(child.type);
+                    if (!def) return;
+                    const meta = def.info(child.state) || {};
+                    total++;
+                    if (meta.done) done++;
+                });
+                return { title: state.name || '', done: total > 0 && done === total, text: state.name || '' };
+            }
+        });
+    }
 })();

@@ -213,7 +213,7 @@
                         font-weight: 700;
                         color: ${state.open ? 'var(--color-9)' : (count > 0 ? cardColor : 'var(--color-9)')};
                         cursor: pointer;
-                    ">${state.open ? '−' : (count > 0 ? count : '')}</div>
+                    ">${state.open ? '−' : (count > 0 ? count : '+')}</div>
                     <div data-action="toggle" style="
                         flex: 1;
                         background: transparent;
@@ -649,4 +649,20 @@
             });
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and SCALE leaves the footer and
+    // Card Info; saved SCALE cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'scale',
+            label: 'SCALE',
+            color: 'var(--color-6-3)',
+            lib: window.GT50Lib.Scale,
+            about: { desc: 'Multiply recipe amounts automatically', color: 'var(--color-6-3)' },
+            info: function(state) {
+                const items = state.items || []; return { title: state.title || state.dropdownText || '', done: false, text: [state.title, state.dropdownText].concat(items.map(i => i.name || i.text || '')).join(' ') };
+            }
+        });
+    }
 })();

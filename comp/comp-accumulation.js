@@ -1,22 +1,17 @@
 (function() {
-    // ===== PROGRESS COMPONENT =====
+    // ===== ACCUMULATION COMPONENT =====
     
     window.GT50Lib = window.GT50Lib || {};
     
-    window.GT50Lib.Progress = {
+    window.GT50Lib.Accumulation = {
         // ===== STATE FACTORY =====
         defaultState: function() {
-    return { current: 0, total: '', title: '', dropdownText: '' };
-},
+            return { value: 0, open: false, numpadOpen: false, title: '', dropdownText: '' };
+        },
         
         // ===== BUILD MODE RENDERER =====
         renderBuild: function(container, state, onChange, onMove, onDelete, isDeletePending) {
-    // Initialize open state if not present
-    if (typeof state.open === 'undefined') {
-        state.open = false;
-    }
-    
-    const cardColor = 'var(--color-3)';
+    const cardColor = 'var(--color-2)';
     
     container.innerHTML = `
         <div style="
@@ -48,48 +43,27 @@
             ">${state.open ? '−' : '+'}</div>
                     <div style="
                         flex: 1;
-                        background: var(--color-3);
+                        background: var(--color-2);
                         height: 100%;
-                        display: flex;
-                        padding-right: 135px;
                     ">
-                       <input type="text" 
-    data-field="title"
-    value="${state.title || ''}"
-    placeholder="Progress" 
-    style="
-        width: 66.67%;
-        background: transparent;
-        border: none;
-        border-right: var(--border-width) solid var(--border-color);
-        color: var(--font-color-3);
-        padding: 0 var(--text-padding-right) 0 var(--text-padding-left);
-        font-size: 16px;
-        font-weight: 600;
-        height: 100%;
-        outline: none;
-        font-family: inherit;
-    ">
-                        <input type="number" 
-    data-field="total"
-    value="${state.total || ''}"
-    placeholder="Number"
+                        <input type="text" 
+                            data-field="title"
+                            value="${state.title || ''}"
+                            placeholder="Accumulation" 
                             style="
-                                width: 33.33%;
+                                width: 100%;
                                 background: transparent;
                                 border: none;
                                 color: var(--font-color-3);
-                                padding: 0 var(--text-padding-right) 0 var(--text-padding-left);
+                                padding: 0 0 0 var(--text-padding-left);
                                 font-size: 16px;
                                 font-weight: 600;
+                                height: var(--card-height);
                                 outline: none;
                                 font-family: inherit;
                             ">
                     </div>
                     <div style="
-                        position: absolute;
-                        top: 0;
-                        right: 0;
                         display: flex;
                         height: var(--card-height);
                         border-left: var(--border-width) solid var(--border-color);
@@ -168,7 +142,7 @@
                     margin-bottom: var(--margin);
                 ">
                     <div style="
-                        background: var(--color-3);
+                        background: var(--color-2);
                         border: var(--border-width) solid var(--border-color);
                         border-radius: 8px;
                         height: 32px;
@@ -211,13 +185,6 @@
                 };
             }
             
-            const totalInput = container.querySelector('[data-field="total"]');
-            if (totalInput) {
-                totalInput.oninput = (e) => {
-                    state.total = parseInt(e.target.value) || 0;
-                };
-            }
-            
             const dropdownTextInput = container.querySelector('[data-field="dropdownText"]');
             if (dropdownTextInput) {
                 dropdownTextInput.oninput = (e) => {
@@ -244,26 +211,40 @@
         
         // ===== VIEW MODE RENDERER =====
         renderView: function(container, state, onChange, tabColor) {
-    console.log('Progress renderView - tabColor:', tabColor); // ADD THIS LINE
-    const percent = state.total > 0 ? (state.current / state.total * 100) : 0;
-            const isCompleted = state.current === state.total && state.total > 0;
             const hasDropdownText = state.dropdownText && state.dropdownText.trim() !== '';
+            const showDropdown = hasDropdownText;
             
-            // Initialize viewOpen state if not present
-            if (typeof state.viewOpen === 'undefined') {
-                state.viewOpen = false;
+            // ===== NUMPAD HTML =====
+            let numpadCard = '';
+            if (state.numpadOpen) {
+                numpadCard = `
+                    <div style="
+                        background: var(--primary);
+                        border: var(--border-width) solid var(--border-color);
+                        border-radius: 8px;
+                        height: 32px;
+                        display: flex;
+                        overflow: hidden;
+                        margin-bottom: var(--margin);
+                    ">
+                        ${['◄', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '×'].map(key => `
+                            <button data-numpad="${key}" style="flex: 1; background: #7a6cb8; border: none; ${key !== '×' ? 'border-right: var(--border-width) solid var(--border-color);' : ''} color: var(--color-10); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;">${key}</button>
+                        `).join('')}
+                    </div>
+                `;
             }
             
+            // ===== MAIN CARD =====
             container.innerHTML = `
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.viewOpen && hasDropdownText ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open && showDropdown ? '8px 8px 0 0' : '8px'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
                     overflow: hidden;
-                    margin-bottom: ${state.viewOpen && hasDropdownText ? '0' : 'var(--margin)'};
+                    margin-bottom: ${state.open && showDropdown ? '0' : 'var(--margin)'};
                 ">
                     <div data-action="decrement" style="
                         width: var(--square-section);
@@ -278,53 +259,30 @@
                         color: var(--color-10);
                         cursor: pointer;
                     ">−</div>
-                    <div ${hasDropdownText ? 'data-action="toggle-dropdown"' : ''} style="
+                    <div ${showDropdown ? 'data-action="toggle-dropdown"' : ''} style="
                         flex: 1;
                         background: var(--bg-4);
-                        position: relative;
                         height: 100%;
-                        overflow: hidden;
-                        ${hasDropdownText ? 'cursor: pointer;' : ''}
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: ${showDropdown ? 'pointer' : 'default'};
                     ">
                         <div style="
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            height: 100%;
-                            width: ${percent}%;
-                            background: ${isCompleted ? '#d4af37' : (tabColor || 'var(--color-5)')};
-                            transition: width 0.3s ease;
-                        "></div>
+                            font-size: 8px;
+                            font-weight: 600;
+                            color: var(--color-10);
+                            line-height: 1;
+                        ">${state.title || 'Total Count'}</div>
                         <div style="
-                            position: relative;
-                            z-index: 2;
-                            height: 100%;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            justify-content: center;
-                        ">
-                            <div style="
-                                flex: 1;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 12px;
-                                font-weight: 600;
-                                color: var(--color-10);
-                                line-height: 1;
-                            ">${state.title || 'Progress'}</div>
-                            <div style="
-                                flex: 1;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 12px;
-                                font-weight: 700;
-                                color: var(--color-10);
-                                line-height: 1;
-                            ">${state.current} / ${state.total}</div>
-                        </div>
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: ${tabColor || 'var(--color-10)'};
+                            line-height: 1;
+                            margin-top: 2px;
+                            ${tabColor ? 'filter: brightness(1.2);' : ''}
+                        ">${state.value}</div>
                     </div>
                     <div data-action="increment" style="
                         width: var(--square-section);
@@ -340,7 +298,7 @@
                         cursor: pointer;
                     ">+</div>
                 </div>
-                ${state.viewOpen && hasDropdownText ? `<div style="
+                ${state.open && showDropdown ? `<div style="
                     background: var(--bg-2);
                     border-radius: 0 0 8px 8px;
                     display: block;
@@ -358,6 +316,7 @@
                         align-items: center;
                         justify-content: center;
                         overflow: hidden;
+                        margin-bottom: var(--margin);
                     ">
                         <div style="
                             flex: 1;
@@ -365,6 +324,7 @@
                             height: 100%;
                             display: flex;
                             align-items: center;
+                            justify-content: center;
                             padding: 0 var(--text-padding-small);
                             font-size: 10px;
                             font-weight: 600;
@@ -379,44 +339,123 @@
                                 text-overflow: ellipsis;
                                 line-height: 1.2;
                                 word-break: break-word;
+                                text-align: center;
                             ">${state.dropdownText}</div>
                         </div>
                     </div>
+                    <div style="
+                        background: var(--primary);
+                        border: var(--border-width) solid var(--border-color);
+                        border-radius: 8px;
+                        height: 32px;
+                        display: flex;
+                        overflow: hidden;
+                        margin-bottom: var(--margin);
+                    ">
+                        <button data-action="adjust" data-amount="10" style="flex: 1; background: #7a6cb8; border: none; border-right: var(--border-width) solid var(--border-color); color: var(--color-10); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;">+10</button>
+                        <button data-action="adjust" data-amount="100" style="flex: 1; background: #7a6cb8; border: none; border-right: var(--border-width) solid var(--border-color); color: var(--color-10); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;">+100</button>
+                        <button data-action="adjust" data-amount="-100" style="flex: 1; background: #7a6cb8; border: none; border-right: var(--border-width) solid var(--border-color); color: var(--color-10); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;">-100</button>
+                        <button data-action="adjust" data-amount="-10" style="flex: 1; background: #7a6cb8; border: none; color: var(--color-10); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;">-10</button>
+                    </div>
+                    ${numpadCard}
+                    <button data-action="toggle-numpad" style="background: var(--color-10); border: var(--border-width) solid var(--border-color); border-radius: 8px; height: 32px; width: 100%; font-weight: 600; color: var(--color-9); font-size: 12px; cursor: pointer; font-family: inherit;">${state.numpadOpen ? '×' : 'Input Exact Number'}</button>
                 </div>` : ''}
             `;
             
             // ===== EVENT LISTENERS =====
             const dec = container.querySelector('[data-action="decrement"]');
-            if (dec) dec.onclick = () => {
-                state.current = Math.max(0, state.current - 1);
+            if (dec) dec.onclick = () => { 
+                state.value = Math.max(0, state.value - 1); 
                 
                 // Trigger timestamp update for sort-filter
                 if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
                     window.GT50Lib.SortFilter.onComponentChanged(container);
                 }
                 
-                onChange();
+                onChange(); 
             };
             
             const inc = container.querySelector('[data-action="increment"]');
-            if (inc) inc.onclick = () => {
-                state.current = Math.min(state.total, state.current + 1);
+            if (inc) inc.onclick = () => { 
+                state.value++; 
                 
                 // Trigger timestamp update for sort-filter
                 if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
                     window.GT50Lib.SortFilter.onComponentChanged(container);
                 }
                 
-                onChange();
+                onChange(); 
             };
             
-            const toggleDropdown = container.querySelector('[data-action="toggle-dropdown"]');
-            if (toggleDropdown) {
-                toggleDropdown.onclick = () => {
-                    state.viewOpen = !state.viewOpen;
+            if (showDropdown) {
+                const toggle = container.querySelector('[data-action="toggle-dropdown"]');
+                if (toggle) toggle.onclick = () => { state.open = !state.open; onChange(); };
+            }
+            
+            container.querySelectorAll('[data-action="adjust"]').forEach(btn => {
+                const amount = parseInt(btn.dataset.amount);
+                btn.onclick = () => {
+                    state.value = Math.max(0, state.value + amount);
+                    
+                    // Trigger timestamp update for sort-filter
+                    if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
+                        window.GT50Lib.SortFilter.onComponentChanged(container);
+                    }
+                    
                     onChange();
                 };
-            }
+            });
+            
+            const numpadToggle = container.querySelector('[data-action="toggle-numpad"]');
+            if (numpadToggle) numpadToggle.onclick = () => { state.numpadOpen = !state.numpadOpen; onChange(); };
+            
+            container.querySelectorAll('[data-numpad]').forEach(btn => {
+                const key = btn.dataset.numpad;
+                btn.onclick = () => {
+                    if (key === '×') {
+                        state.numpadOpen = false;
+                    } else if (key === 'C') {
+                        state.value = 0;
+                        
+                        // Trigger timestamp update for sort-filter
+                        if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
+                            window.GT50Lib.SortFilter.onComponentChanged(container);
+                        }
+                    } else if (key === '◄') {
+                        let str = state.value.toString();
+                        state.value = str.length > 1 ? parseInt(str.slice(0, -1)) : 0;
+                        
+                        // Trigger timestamp update for sort-filter
+                        if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
+                            window.GT50Lib.SortFilter.onComponentChanged(container);
+                        }
+                    } else {
+                        state.value = state.value === 0 ? parseInt(key) : parseInt(state.value.toString() + key);
+                        
+                        // Trigger timestamp update for sort-filter
+                        if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
+                            window.GT50Lib.SortFilter.onComponentChanged(container);
+                        }
+                    }
+                    onChange();
+                };
+            });
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and COUNT leaves the footer and
+    // Card Info; saved COUNT cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'accumulation',
+            label: 'COUNT',
+            color: 'var(--color-2)',
+            lib: window.GT50Lib.Accumulation,
+            about: { desc: 'Keep a running total that goes up or down', color: 'var(--color-2)' },
+            info: function(state) {
+                return { title: state.title || '', done: false, text: [state.title, state.dropdownText].join(' ') };
+            }
+        });
+    }
 })();

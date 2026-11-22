@@ -431,4 +431,20 @@
             }
         }
     }, 100);
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and IMPORT leaves the footer and
+    // Card Info; saved IMPORT cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'import',
+            label: 'IMPORT',
+            color: 'var(--color-5-3)',
+            lib: window.GT50Lib.Import,
+            about: { desc: 'Load saved templates and backups', color: 'var(--color-5-3)' },
+            info: function(state) {
+                return { title: state.name || '', done: false, text: state.name || '' };
+            }
+        });
+    }
 })();

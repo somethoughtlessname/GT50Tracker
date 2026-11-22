@@ -8,7 +8,9 @@
     //     type:  'list',              // saved in data, must be unique
     //     label: 'LIST',              // footer button text
     //     color: 'var(--color-1)',    // footer button color
-    //     lib:   GT50Lib.List         // needs defaultState, renderBuild, renderView
+    //     lib:   GT50Lib.List,        // needs defaultState, renderBuild, renderView
+    //     about: { desc, color },     // optional: its entry in the Card Info window
+    //     info:  function(state) {}   // optional: { title, done, text } for sort/filter/search
     // });
 
     window.GT50 = window.GT50 || {};
@@ -23,10 +25,9 @@
             return;
         }
         const lib = def.lib;
-        if (typeof lib.defaultState !== 'function' ||
-            typeof lib.renderBuild !== 'function' ||
-            typeof lib.renderView !== 'function') {
-            console.warn('[GT50] register: ' + def.type + ' is missing defaultState/renderBuild/renderView');
+        // renderView is optional: some types (Import) only exist in edit mode
+        if (typeof lib.defaultState !== 'function' || typeof lib.renderBuild !== 'function') {
+            console.warn('[GT50] register: ' + def.type + ' is missing defaultState/renderBuild');
             return;
         }
         if (!types[def.type]) order.push(def.type);
@@ -36,7 +37,9 @@
             color: def.color || 'var(--color-9)',
             lib: lib,
             // optional: info(state) -> { title, done, text } for sort, filter and search
-            info: typeof def.info === 'function' ? def.info : defaultInfo
+            info: typeof def.info === 'function' ? def.info : defaultInfo,
+            // optional: { desc, color } shown in the Card Info window while this file is installed
+            about: def.about || null
         };
     };
 
@@ -44,6 +47,13 @@
         const title = (state && state.title) || '';
         return { title: title, done: !!(state && state.completed), text: title };
     }
+
+    // small shared helper for shell files that build HTML strings
+    window.GT50.escapeHTML = function(str) {
+        return String(str == null ? '' : str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    };
 
     window.GT50.getType = function(type) {
         return types[type] || null;

@@ -176,7 +176,7 @@ padding-right: 135px;
                         padding: 0 12px;
                         font-size: 12px;
                         font-weight: 700;
-                        color: var(--font-color-3);
+                        color: var(--bg-2);   /* ink: the label sits on the light page */
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
                         position: relative;
@@ -186,4 +186,20 @@ padding-right: 135px;
             `;
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and DIVIDER leaves the footer and
+    // Card Info; saved DIVIDER cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'divider',
+            label: 'DIVIDER',
+            color: 'var(--color-6)',
+            lib: window.GT50Lib.Divider,
+            about: { desc: 'Add labeled sections to organize cards', color: 'var(--color-6)' },
+            info: function(state) {
+                return { title: state.title || '', done: false, text: state.title || '' };
+            }
+        });
+    }
 })();

@@ -1,12 +1,21 @@
 (function() {
-    // ===== CHECKLIST COMPONENT =====
+    // ===== RADIO COMPONENT =====
     
     window.GT50Lib = window.GT50Lib || {};
     
-    window.GT50Lib.Checklist = {
+    window.GT50Lib.Radio = {
         // ===== STATE FACTORY =====
         defaultState: function() {
-            return { open: false, title: '', items: [], dropdownText: '' };
+            return { 
+                open: false, 
+                title: '', 
+                items: [
+                    { text: '' },
+                    { text: '' }
+                ],
+                selectedIndex: null,
+                dropdownText: ''
+            };
         },
         
         // ===== BUILD MODE RENDERER =====
@@ -14,7 +23,7 @@
             const count = state.items.length;
 
 // Define card color once - all dropdowns reference this
-const cardColor = 'var(--color-1-2)';
+const cardColor = 'var(--color-1-3)';
 const itemDropdownColor = cardColor;
             
             // ===== ITEMS HTML =====
@@ -33,7 +42,7 @@ const itemDropdownColor = cardColor;
         <input type="text" 
             data-idx="${idx}"
             value="${item.text || ''}" 
-            placeholder="Item"
+            placeholder="Option ${idx + 1}"
             style="
                 flex: 1;
                 background: ${itemDropdownColor};
@@ -99,19 +108,20 @@ const itemDropdownColor = cardColor;
                     z-index: -1;
                 "></div>▼
             </button>
-            <button data-action="delete" data-idx="${idx}" style="
+            <button data-action="delete" data-idx="${idx}" ${state.items.length <= 2 ? 'disabled' : ''} style="
                 width: 32px;
                 height: 32px;
                 background: transparent;
                 border: none;
                 color: var(--color-10);
-                cursor: pointer;
+                cursor: ${state.items.length <= 2 ? 'not-allowed' : 'pointer'};
                 font-weight: 700;
                 font-size: 16px;
                 font-family: inherit;
+                opacity: ${state.items.length <= 2 ? '0.5' : '1'};
                 position: relative;
             ">
-                <div style="
+                ${state.items.length > 2 ? `<div style="
                     position: absolute;
                     top: 0;
                     left: 0;
@@ -120,7 +130,7 @@ const itemDropdownColor = cardColor;
                     background: ${itemDropdownColor};
                     filter: brightness(0.75);
                     z-index: -1;
-                "></div>×
+                "></div>` : ''}×
             </button>
         </div>
     </div>
@@ -128,9 +138,9 @@ const itemDropdownColor = cardColor;
             
             // ===== MAIN CARD =====
             container.innerHTML = `
-    <div style="
-        background: ${cardColor};
-        border: var(--border-width) solid var(--border-color);
+                <div style="
+                    background: var(--color-1-3);
+                    border: var(--border-width) solid var(--border-color);
                     border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
                     height: var(--card-height);
                     display: flex;
@@ -139,111 +149,109 @@ const itemDropdownColor = cardColor;
                     margin-bottom: ${state.open ? '0' : 'var(--margin)'};
                     position: relative;
                 ">
-                   <div data-action="toggle" style="
-    width: var(--square-section);
-    min-width: var(--square-section);
-    max-width: var(--square-section);
-    flex-shrink: 0;
-    height: 100%;
-    background: var(--color-10);
-    border-right: var(--border-width) solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: ${state.open ? '20px' : '16px'};
-    font-weight: 700;
-    color: ${state.open ? 'var(--color-9)' : (count > 0 ? cardColor : 'var(--color-9)')};
-    cursor: pointer;
-">${state.open ? '−' : (count > 0 ? count : '+')}</div>
-                    <div style="
-                        flex: 1;
-                        background: var(--color-1-2);
+                    <div data-action="toggle" style="
+                        width: var(--square-section);
+                        min-width: var(--square-section);
+                        max-width: var(--square-section);
+                        flex-shrink: 0;
                         height: 100%;
-                    ">
-                        <input type="text" 
-                            data-field="title"
-                            value="${state.title || ''}"
-                            placeholder="Checklist" 
-                            style="
-                                width: 100%;
-                                background: transparent;
-                                border: none;
-                                color: var(--font-color-3);
-                                padding: 0 0 0 var(--text-padding-left);
-                                font-size: 16px;
-                                font-weight: 600;
-                                height: var(--card-height);
-                                outline: none;
-                                font-family: inherit;
-                            ">
-                    </div>
+                        background: var(--color-10);
+                        border-right: var(--border-width) solid var(--border-color);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: ${state.open ? '20px' : '16px'};
+                        font-weight: 700;
+                        color: ${count > 0 ? 'var(--color-1-3)' : 'var(--color-9)'};
+                        cursor: pointer;
+                    ">${state.open ? '−' : (count > 0 ? count : '+')}</div>
+                    <input type="text" 
+                        data-field="title"
+                        value="${state.title || ''}"
+                        placeholder="Radio" 
+                        style="
+                            flex: 1;
+                            background: var(--color-1-3);
+                            border: none;
+                            color: var(--font-color-3);
+                            padding: 0 var(--text-padding-right) 0 var(--text-padding-left);
+                            padding-right: 145px;
+                            font-size: 16px;
+                            font-weight: 600;
+                            height: var(--card-height);
+                            outline: none;
+                            font-family: inherit;
+                        ">
                     <div style="
+                        position: absolute;
+                        top: 0;
+                        right: 0;
                         display: flex;
                         height: var(--card-height);
                         border-left: var(--border-width) solid var(--border-color);
                     ">
                         <button data-action="move-up-card" style="
-    width: var(--square-section);
-    height: 100%;
-    background: transparent;
-    border: none;
-    border-right: var(--border-width) solid var(--border-color);
-    color: var(--color-10);
-    cursor: pointer;
-    font-family: inherit;
-    position: relative;
-    font-size: var(--up-sub-size);
-    font-weight: var(--up-sub-weight);
-">
-    <div style="
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: ${cardColor};
-        filter: brightness(0.75);
-        z-index: -1;
-    "></div>▲
-</button>
-<button data-action="move-down-card" style="
-    width: var(--square-section);
-    height: 100%;
-    background: transparent;
-    border: none;
-    border-right: var(--border-width) solid var(--border-color);
-    color: var(--color-10);
-    cursor: pointer;
-    font-family: inherit;
-    position: relative;
-    font-size: var(--down-sub-size);
-    font-weight: var(--down-sub-weight);
-">
-    <div style="
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: ${cardColor};
-        filter: brightness(0.75);
-        z-index: -1;
-    "></div>▼
-</button>
-<button data-action="delete-card" style="
-    width: var(--square-section);
-    height: 100%;
-    background: ${isDeletePending ? 'var(--color-10)' : 'transparent'};
-    border: none;
-    color: ${isDeletePending ? cardColor : 'var(--color-10)'};
-    cursor: pointer;
-    font-family: inherit;
-    position: relative;
-    font-size: var(--delete-sub-size);
-    font-weight: var(--delete-sub-weight);
-">
-    ${isDeletePending ? '' : `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: ${cardColor}; filter: brightness(0.75); z-index: -1;"></div>`}×
-</button>
+                            width: var(--square-section);
+                            height: 100%;
+                            background: transparent;
+                            border: none;
+                            border-right: var(--border-width) solid var(--border-color);
+                            color: var(--color-10);
+                            cursor: pointer;
+                            font-family: inherit;
+                            position: relative;
+                            font-size: var(--up-sub-size);
+                            font-weight: var(--up-sub-weight);
+                        ">
+                            <div style="
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                width: 100%;
+                                height: 100%;
+                                background: var(--color-1-3);
+                                filter: brightness(0.75);
+                                z-index: -1;
+                            "></div>▲
+                        </button>
+                        <button data-action="move-down-card" style="
+                            width: var(--square-section);
+                            height: 100%;
+                            background: transparent;
+                            border: none;
+                            border-right: var(--border-width) solid var(--border-color);
+                            color: var(--color-10);
+                            cursor: pointer;
+                            font-family: inherit;
+                            position: relative;
+                            font-size: var(--down-sub-size);
+                            font-weight: var(--down-sub-weight);
+                        ">
+                            <div style="
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                width: 100%;
+                                height: 100%;
+                                background: var(--color-1-3);
+                                filter: brightness(0.75);
+                                z-index: -1;
+                            "></div>▼
+                        </button>
+                        <button data-action="delete-card" style="
+                            width: var(--square-section);
+                            height: 100%;
+                            background: ${isDeletePending ? 'var(--color-10)' : 'transparent'};
+                            border: none;
+                            color: ${isDeletePending ? 'var(--color-1)' : 'var(--color-10)'};
+                            cursor: pointer;
+                            font-family: inherit;
+                            position: relative;
+                            font-size: var(--delete-sub-size);
+                            font-weight: var(--delete-sub-weight);
+                        ">
+                            ${isDeletePending ? '' : '<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-1-3); filter: brightness(0.75); z-index: -1;"></div>'}×
+                        </button>
                     </div>
                 </div>
                 ${state.open ? `<div style="
@@ -256,7 +264,7 @@ const itemDropdownColor = cardColor;
                     margin-bottom: var(--margin);
                 ">
                     <div style="
-                        background: var(--color-1-2);
+                        background: var(--color-1-3);
                         border: var(--border-width) solid var(--border-color);
                         border-radius: 8px;
                         height: 32px;
@@ -293,7 +301,7 @@ const itemDropdownColor = cardColor;
                         font-size: 12px;
                         cursor: pointer;
                         font-family: inherit;
-                    ">+ Add Item</button>
+                    ">+ Add Option</button>
                 </div>` : ''}
             `;
             
@@ -305,7 +313,7 @@ const itemDropdownColor = cardColor;
             if (titleInput) titleInput.oninput = (e) => { state.title = e.target.value; };
             
             const addBtn = container.querySelector('[data-action="add"]');
-            if (addBtn) addBtn.onclick = () => { state.items.push({ text: '', completed: false }); onChange(); };
+            if (addBtn) addBtn.onclick = () => { state.items.push({ text: '' }); onChange(); };
             
             const dropdownTextInput = container.querySelector('[data-field="dropdownText"]');
             if (dropdownTextInput) {
@@ -326,6 +334,11 @@ const itemDropdownColor = cardColor;
                 btn.onclick = () => {
                     if (idx > 0) {
                         [state.items[idx], state.items[idx - 1]] = [state.items[idx - 1], state.items[idx]];
+                        if (state.selectedIndex === idx) {
+                            state.selectedIndex = idx - 1;
+                        } else if (state.selectedIndex === idx - 1) {
+                            state.selectedIndex = idx;
+                        }
                         onChange();
                     }
                 };
@@ -336,6 +349,11 @@ const itemDropdownColor = cardColor;
                 btn.onclick = () => {
                     if (idx < state.items.length - 1) {
                         [state.items[idx], state.items[idx + 1]] = [state.items[idx + 1], state.items[idx]];
+                        if (state.selectedIndex === idx) {
+                            state.selectedIndex = idx + 1;
+                        } else if (state.selectedIndex === idx + 1) {
+                            state.selectedIndex = idx;
+                        }
                         onChange();
                     }
                 };
@@ -344,12 +362,15 @@ const itemDropdownColor = cardColor;
             container.querySelectorAll('[data-action="delete"]').forEach(btn => {
                 const idx = parseInt(btn.dataset.idx);
                 btn.onclick = () => {
-                    if (state.items.length > 1) {
+                    if (state.items.length > 2) {
                         state.items.splice(idx, 1);
-                    } else {
-                        state.items = [];
+                        if (state.selectedIndex === idx) {
+                            state.selectedIndex = null;
+                        } else if (state.selectedIndex > idx) {
+                            state.selectedIndex--;
+                        }
+                        onChange();
                     }
-                    onChange();
                 };
             });
             
@@ -375,50 +396,56 @@ const itemDropdownColor = cardColor;
             const hasItems = state.items.length > 0;
             const hasDropdownText = state.dropdownText && state.dropdownText.trim() !== '';
             const showDropdown = hasItems || hasDropdownText;
+            const hasSelection = state.selectedIndex !== null;
             
-            const completed = state.items.filter(i => i.completed).length;
-            const total = state.items.length;
-            const percentage = total > 0 ? (completed / total * 100) : 0;
-            const allCompleted = completed === total && total > 0;
+            // ===== CHECKBOX CALCULATION =====
+            const checkboxBg = hasSelection ? (tabColor || 'var(--color-4)') : 'var(--color-10)';
+            const checkboxSymbol = hasSelection ? '✓' : '';
+            const checkboxColor = 'var(--color-10)';
             
             // ===== ITEMS HTML =====
-            let itemsHTML = state.items.map((item, idx) => `
-                <div data-action="toggle-item" data-idx="${idx}" style="
-                    background: var(--bg-3);
-                    border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: var(--margin);
-                    overflow: hidden;
-                    cursor: pointer;
-                ">
-                    <div style="
-                        width: 32px;
-                        height: 100%;
-                        background: ${item.completed ? (tabColor || 'var(--color-5)') : 'var(--color-10)'};
-                        border-right: var(--border-width) solid var(--border-color);
+            let itemsHTML = state.items.map((item, idx) => {
+                const isSelected = state.selectedIndex === idx;
+                const isUnselected = hasSelection && !isSelected;
+                return `
+                    <div data-action="select-item" data-idx="${idx}" style="
+                        background: ${isUnselected ? 'var(--bg-5)' : 'var(--bg-3)'};
+                        border: var(--border-width) solid var(--border-color);
+                        border-radius: 8px;
+                        height: 32px;
                         display: flex;
                         align-items: center;
-                        justify-content: center;
-                        font-size: 14px;
-                        font-weight: 700;
-                        color: var(--color-10);
-                    ">${item.completed ? '✓' : ''}</div>
-                    <div style="
-                        flex: 1;
-                        background: var(--bg-4);
-                        height: 100%;
-                        display: flex;
-                        align-items: center;
-                        padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
-                        font-size: var(--dropdown-text-size);
-                        font-weight: var(--dropdown-text-weight);
-                        color: var(--color-10);
-                    ">${item.text || 'Item'}</div>
-                </div>
-            `).join('');
+                        margin-bottom: var(--margin);
+                        overflow: hidden;
+                        cursor: pointer;
+                        opacity: ${isUnselected ? '0.6' : '1'};
+                    ">
+                        <div style="
+                            width: 32px;
+                            height: 100%;
+                            background: ${isSelected ? (tabColor || 'var(--color-4)') : (isUnselected ? '#4a4a4a' : 'var(--color-10)')};
+                            border-right: var(--border-width) solid var(--border-color);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: ${isUnselected ? '16px' : '20px'};
+                            font-weight: 900;
+                            color: ${isUnselected ? '#7a7a7a' : 'var(--color-10)'};
+                        ">${isSelected ? '●' : (isUnselected ? '×' : '○')}</div>
+                        <div style="
+                            flex: 1;
+                            background: var(--bg-4);
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
+                            font-size: var(--dropdown-text-size);
+                            font-weight: var(--dropdown-text-weight);
+                            color: ${isUnselected ? '#9a9a9a' : 'var(--color-10)'};
+                        ">${item.text || 'Option ' + (idx + 1)}</div>
+                    </div>
+                `;
+            }).join('');
             
             // ===== MAIN CARD =====
             container.innerHTML = `
@@ -432,67 +459,44 @@ const itemDropdownColor = cardColor;
                     overflow: hidden;
                     margin-bottom: ${state.open && showDropdown ? '0' : 'var(--margin)'};
                 ">
-                    <div data-action="toggle-all" style="
+                    <div data-action="clear-selection" style="
                         width: var(--square-section);
                         height: 100%;
-                        background: ${allCompleted ? (tabColor || 'var(--color-5)') : 'var(--color-10)'};
+                        background: ${checkboxBg};
                         border-right: var(--border-width) solid var(--border-color);
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-size: var(--check-size);
-font-weight: var(--check-weight);
-                        color: var(--color-10);
+                        font-weight: var(--check-weight);
+                        color: ${checkboxColor};
                         cursor: pointer;
-            line-height: 1;
-padding-top: var(--check-position);
-                    ">${allCompleted ? '✓' : ''}</div>
+                        padding-top: var(--check-position);
+                    ">${checkboxSymbol}</div>
                     <div ${showDropdown ? 'data-action="toggle-dropdown"' : ''} style="
                         flex: 1;
                         background: var(--bg-4);
-                        position: relative;
                         height: 100%;
-                        overflow: hidden;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
                         cursor: ${showDropdown ? 'pointer' : 'default'};
+                        padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
                     ">
-                       <div style="
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: ${allCompleted ? 0 : percentage}%;
-    background: ${tabColor || 'var(--color-5)'};
-"></div>
                         <div style="
-                            position: relative;
-                            z-index: 2;
-                            height: 100%;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            justify-content: center;
-                        ">
+                            font-size: 14px;
+font-weight: 600;
+color: var(--color-10);
+                        ">${state.title || 'Radio'}</div>
+                        ${hasSelection ? `
                             <div style="
-                                flex: 1;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 12px;
-                                font-weight: 600;
+                                font-size: 9px;
+                                font-weight: 500;
                                 color: var(--color-10);
-                                line-height: 1;
-                            ">${state.title || 'Checklist'}</div>
-                            <div style="
-                                flex: 1;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 12px;
-                                font-weight: 700;
-                                color: var(--color-10);
-                                line-height: 1;
-                            ">${completed} / ${total}</div>
-                        </div>
+                                opacity: 0.8;
+                                margin-top: 2px;
+                            ">${state.items[state.selectedIndex].text || 'Option ' + (state.selectedIndex + 1)}</div>
+                        ` : ''}
                     </div>
                     ${showDropdown ? `<div data-action="toggle-dropdown" style="
                         width: var(--square-section);
@@ -564,20 +568,24 @@ padding-top: var(--check-position);
             `;
             
             // ===== EVENT LISTENERS =====
-            const toggleAll = container.querySelector('[data-action="toggle-all"]');
-            if (toggleAll) {
-                toggleAll.onclick = () => {
-                    const allCompleted = state.items.every(i => i.completed);
-                    state.items.forEach(i => i.completed = !allCompleted);
-                    
-                    // Trigger timestamp update for sort-filter
-                    if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onListCheckboxToggled) {
-                        window.GT50Lib.SortFilter.onListCheckboxToggled(container);
-                    }
-                    
-                    onChange();
-                };
+            const clearSelection = container.querySelector('[data-action="clear-selection"]');
+if (clearSelection) {
+    clearSelection.onclick = () => {
+        if (hasSelection) {
+            // If there's a selection, clear it
+            state.selectedIndex = null;
+            
+            // Trigger timestamp update for sort-filter
+            if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
+                window.GT50Lib.SortFilter.onComponentChanged(container);
             }
+        } else {
+            // If no selection, toggle dropdown
+            state.open = !state.open;
+        }
+        onChange();
+    };
+}
             
             if (showDropdown) {
                 container.querySelectorAll('[data-action="toggle-dropdown"]').forEach(el => {
@@ -587,14 +595,14 @@ padding-top: var(--check-position);
                     };
                 });
                 
-                container.querySelectorAll('[data-action="toggle-item"]').forEach(item => {
+                container.querySelectorAll('[data-action="select-item"]').forEach(item => {
                     const idx = parseInt(item.dataset.idx);
                     item.onclick = () => {
-                        state.items[idx].completed = !state.items[idx].completed;
+                        state.selectedIndex = idx;
                         
                         // Trigger timestamp update for sort-filter
-                        if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onListCheckboxToggled) {
-                            window.GT50Lib.SortFilter.onListCheckboxToggled(container);
+                        if (window.GT50Lib && window.GT50Lib.SortFilter && window.GT50Lib.SortFilter.onComponentChanged) {
+                            window.GT50Lib.SortFilter.onComponentChanged(container);
                         }
                         
                         onChange();
@@ -603,4 +611,21 @@ padding-top: var(--check-position);
             }
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    // Remove this file (and its script line) and RADIO leaves the footer and
+    // Card Info; saved RADIO cards show as not installed.
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'radio',
+            label: 'RADIO',
+            color: 'var(--color-1-3)',
+            lib: window.GT50Lib.Radio,
+            about: { desc: 'Pick one option from your list', color: 'var(--color-1-3)' },
+            info: function(state) {
+                const items = state.items || []; return { title: state.title || '', done: state.selectedIndex !== null && state.selectedIndex !== undefined, text: [state.title, state.dropdownText].concat(items.map(i => i.text)).join(' ') };
+            }
+        });
+    }
 })();
+

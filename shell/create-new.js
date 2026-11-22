@@ -447,6 +447,9 @@ createEntry: function(state, nextId, currentComponents) {
             `;
             
             // ===== TYPE TOGGLE SECTION (FIRST IN ALL TABS) =====
+            // Cycle only shows when its comp file is installed
+            const cycleInstalled = !(window.GT50 && window.GT50.getType) || !!window.GT50.getType('cycle');
+            if (!cycleInstalled) state.cycleMode = false;
             const typeToggleSection = `
                 <!-- Card Type Toggle -->
                 <div style="
@@ -468,7 +471,7 @@ createEntry: function(state, nextId, currentComponents) {
                         align-items: center;
                         justify-content: center;
                         cursor: pointer;
-                        border-right: var(--border-width) solid var(--border-color);
+                        ${cycleInstalled ? 'border-right: var(--border-width) solid var(--border-color);' : ''}
                         transition: filter 0.2s;
                         padding: 4px;
                     ">
@@ -488,7 +491,7 @@ createEntry: function(state, nextId, currentComponents) {
                             line-height: 1.2;
                         ">Container for organizing cards</div>
                     </div>
-                    <div data-action="toggle-cycle" style="
+                    ${cycleInstalled ? `                    <div data-action="toggle-cycle" style="
                         flex: 1;
                         height: 100%;
                         background: ${state.cycleMode ? 'var(--color-5-2)' : 'var(--color-10)'};
@@ -515,7 +518,7 @@ createEntry: function(state, nextId, currentComponents) {
                             text-align: center;
                             line-height: 1.2;
                         ">Scheduled reset container</div>
-                    </div>
+                    </div>` : ''}
                 </div>
             `;
             

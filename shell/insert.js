@@ -71,6 +71,13 @@
                 </div>
             `;
             
+            // ===== LINE UP WITH THE CARDS =====
+            // The fixed heights above assume every card is closed. Once the cards
+            // beside the selector are on screen, each section is resized so its
+            // edges sit at the middle of the cards next to it: open dropdowns,
+            // taller cards and newly added cards all stay lined up.
+            requestAnimationFrame(() => this.sync(container));
+
             // ===== EVENT LISTENERS =====
             container.querySelectorAll('[data-selector-index]').forEach(section => {
                 const index = parseInt(section.dataset.selectorIndex);
@@ -91,6 +98,47 @@
                     }
                 };
             });
+        },
+
+        // ===== SYNC SECTION HEIGHTS TO THE CARD COLUMN =====
+        sync: function(container) {
+            const bar = container.firstElementChild;
+            const cards = container.nextElementSibling;
+            if (!bar || !cards || !container.isConnected) return;
+            const sections = [...bar.querySelectorAll('[data-selector-index]')];
+            const items = [...cards.children].filter(el => el.getBoundingClientRect().height > 0);
+            if (sections.length < 2 || items.length !== sections.length - 1) return;
+
+            const top = cards.getBoundingClientRect().top;
+            const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--margin')) || 4;
+            const border = parseFloat(getComputedStyle(bar).borderTopWidth) || 0;
+            // middle of each card (its wrapper's own bottom margin left out)
+            const mids = items.map(el => {
+                const r = el.getBoundingClientRect();
+                return (r.top + r.bottom - gap) / 2 - top;
+            });
+            const last = items[items.length - 1].getBoundingClientRect().bottom - gap - top;
+
+            const heights = sections.map((_, i) => {
+                const from = i === 0 ? 0 : mids[i - 1];
+                const to = i === sections.length - 1 ? last : mids[i];
+                return to - from;
+            });
+            heights[0] -= border;
+            heights[heights.length - 1] -= border;
+
+            bar.style.height = last + 'px';
+            sections.forEach((sec, i) => {
+                const h = Math.max(6, heights[i]);
+                sec.style.height = h + 'px';
+                sec.style.minHeight = h + 'px';
+            });
+
+            // keep lined up while card sizes settle (fonts, text fitting, etc.)
+            if (!container._gtObserver && window.ResizeObserver) {
+                container._gtObserver = new ResizeObserver(() => this.sync(container));
+                container._gtObserver.observe(cards);
+            }
         }
     };
 })();

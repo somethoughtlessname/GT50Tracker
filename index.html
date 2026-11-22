@@ -3020,8 +3020,8 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // Determine the correct scope based on whether we're on GitHub Pages or local
     const isGitHubPages = window.location.hostname.includes('github.io');
-    const swPath = isGitHubPages ? '/GT50Tracker/sw.js' : './sw.js';
-    const swScope = isGitHubPages ? '/GT50Tracker/' : './';
+    const swPath = './sw.js';
+    const swScope = './';
     
     navigator.serviceWorker.register(swPath, { scope: swScope })
       .then(registration => {

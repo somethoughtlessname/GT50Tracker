@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#243342">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="GT50">
     <meta name="description" content="Modular card-based productivity and tracking dashboard">
     
@@ -3020,8 +3020,8 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // Determine the correct scope based on whether we're on GitHub Pages or local
     const isGitHubPages = window.location.hostname.includes('github.io');
-    const swPath = isGitHubPages ? '/Gt50/sw.js' : './sw.js';
-    const swScope = isGitHubPages ? '/Gt50/' : './';
+    const swPath = isGitHubPages ? '/GT50Tracker/sw.js' : './sw.js';
+    const swScope = isGitHubPages ? '/GT50Tracker/' : './';
     
     navigator.serviceWorker.register(swPath, { scope: swScope })
       .then(registration => {

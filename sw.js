@@ -1,10 +1,10 @@
 // GT50 Service Worker v2.0.0 - COLOR VARIATION UPDATE
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 const CACHE_NAME = 'gt50-cache-' + VERSION;
 
 // Detect if we're on GitHub Pages
 const isGitHubPages = self.location.hostname.includes('github.io');
-const BASE_PATH = isGitHubPages ? '/Gt50/' : './';
+const BASE_PATH = isGitHubPages ? '/GT50Tracker/' : './';
 
 console.log('========================================');
 console.log('[SW] Service Worker v' + VERSION + ' STARTING');

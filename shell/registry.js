@@ -34,9 +34,16 @@
             type: def.type,
             label: def.label || def.type.toUpperCase(),
             color: def.color || 'var(--color-9)',
-            lib: lib
+            lib: lib,
+            // optional: info(state) -> { title, done, text } for sort, filter and search
+            info: typeof def.info === 'function' ? def.info : defaultInfo
         };
     };
+
+    function defaultInfo(state) {
+        const title = (state && state.title) || '';
+        return { title: title, done: !!(state && state.completed), text: title };
+    }
 
     window.GT50.getType = function(type) {
         return types[type] || null;

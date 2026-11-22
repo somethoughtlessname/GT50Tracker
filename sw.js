@@ -1,5 +1,5 @@
 // GT50 Service Worker - bare-bones shell
-const VERSION = '3.0.1';
+const VERSION = '3.1.0';
 const CACHE_NAME = 'gt50-cache-' + VERSION;
 
 // Detect if we're on GitHub Pages
@@ -21,6 +21,7 @@ const STATIC_CACHE_URLS = [
   BASE_PATH + 'shell/registry.js',
   BASE_PATH + 'shell/utils.js',
   BASE_PATH + 'shell/header.js',
+  BASE_PATH + 'shell/sort.js',
   BASE_PATH + 'shell/footer.js',
   BASE_PATH + 'comp/comp-list.js',
   BASE_PATH + 'pwa/manifest.json'

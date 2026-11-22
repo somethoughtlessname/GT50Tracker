@@ -32,15 +32,14 @@
             color: #e4e4e7;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            padding: calc(var(--card-height, 45px) + 4px) 4px 4px;
+            /* top/bottom set from the header and footer heights */
+            padding: 96px 4px 64px;
         }
-        body.build { padding-bottom: calc(45px + 8px); }
         #header { position: fixed; top: 0; left: 0; right: 0; z-index: 1001; }
         #footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; }
         /* Flex column like the original .card-container: each card keeps its own margins */
         #cards { width: 100%; display: flex; flex-direction: column; }
         .empty {
-            margin-top: 8px;
             padding: 24px 12px;
             background: var(--bg-3);
             border: var(--border-width) solid var(--border-color);
@@ -63,6 +62,7 @@
     <script src="shell/registry.js"></script>
     <script src="shell/utils.js"></script>
     <script src="shell/header.js"></script>
+    <script src="shell/sort.js"></script>
     <script src="shell/footer.js"></script>
 
     <!-- ===== CARD TYPES (remove any line or file; the app keeps working) ===== -->
@@ -76,53 +76,111 @@
         // ===== STATE =====
         const saved = U.load(STORAGE_KEY) || {};
         const state = {
-            title: saved.title || 'GT50 TRACKER',
-            mode: 'view',   // always open on the main (view) window
             nextId: saved.nextId || 1,
-            cards: Array.isArray(saved.cards) ? saved.cards : []
+            tabs: Array.isArray(saved.tabs) && saved.tabs.length ? saved.tabs : null,
+            activeTab: saved.activeTab,
+            sort: Object.assign(GT50.Sort.defaultState(), saved.sort || {})
         };
+        if (!state.tabs) {
+            // first run, or data from the single-list version: it becomes the first tab
+            state.tabs = [{ id: state.nextId++, name: 'HOME', cards: Array.isArray(saved.cards) ? saved.cards : [] }];
+        }
+        if (!state.tabs.some(t => t.id === state.activeTab)) state.activeTab = state.tabs[0].id;
 
-        let pendingDeleteId = null;
+        // not saved: the app always opens on the main (view) window
+        let mode = 'view';
+        let query = '';
+        let searching = false;
+        let pendingDeleteId = null;   // card awaiting its second delete tap
+        let tabDeleteArmed = false;   // tab awaiting its second delete tap
         let deleteTimer = null;
 
-        function save() {
-            U.save(STORAGE_KEY, state);
-        }
+        function save() { U.save(STORAGE_KEY, state); }
         const saveSoon = U.debounce(save, 400);
 
-        // ===== CARD ACTIONS =====
+        const activeTab = () => state.tabs.find(t => t.id === state.activeTab) || state.tabs[0];
+        const cardInfo = (card) => {
+            const def = GT50.getType(card.type);
+            if (!def) return { title: card.type, done: false, text: card.type };
+            try { return def.info(card.state) || {}; } catch (e) { return {}; }
+        };
+        const touch = (card) => { card.updated = Date.now(); };
+
+        function disarm() {
+            clearTimeout(deleteTimer);
+            pendingDeleteId = null;
+            tabDeleteArmed = false;
+        }
+        function armTimeout() {
+            clearTimeout(deleteTimer);
+            deleteTimer = setTimeout(() => { pendingDeleteId = null; tabDeleteArmed = false; render(); }, 3000);
+        }
+
+        // ===== TABS =====
+        function selectTab(id) {
+            if (id === state.activeTab) return;
+            state.activeTab = id;
+            disarm();
+            update();
+            window.scrollTo(0, 0);
+        }
+        function addTab() {
+            const tab = { id: state.nextId++, name: 'TAB ' + (state.tabs.length + 1), cards: [] };
+            state.tabs.push(tab);
+            state.activeTab = tab.id;
+            disarm();
+            update();
+        }
+        function deleteTab() {
+            if (state.tabs.length < 2) return;
+            if (!tabDeleteArmed) {
+                disarm();
+                tabDeleteArmed = true;
+                armTimeout();
+                renderHeader();
+                return;
+            }
+            const i = state.tabs.findIndex(t => t.id === state.activeTab);
+            state.tabs.splice(i, 1);
+            state.activeTab = state.tabs[Math.max(0, i - 1)].id;
+            disarm();
+            update();
+        }
+
+        // ===== CARDS =====
         function addCard(type) {
             const def = GT50.getType(type);
             if (!def) return;
-            state.cards.push({ id: state.nextId++, type: type, state: def.lib.defaultState() });
+            const now = Date.now();
+            activeTab().cards.push({ id: state.nextId++, type: type, state: def.lib.defaultState(), added: now, updated: now });
+            mode = 'build';   // a new card opens in edit so it can be set up
+            disarm();
             update();
             window.scrollTo(0, document.body.scrollHeight);
         }
-
         function moveCard(id, dir) {
-            const i = state.cards.findIndex(c => c.id === id);
+            const cards = activeTab().cards;
+            const i = cards.findIndex(c => c.id === id);
             const j = i + dir;
-            if (i < 0 || j < 0 || j >= state.cards.length) return;
-            [state.cards[i], state.cards[j]] = [state.cards[j], state.cards[i]];
+            if (i < 0 || j < 0 || j >= cards.length) return;
+            [cards[i], cards[j]] = [cards[j], cards[i]];
             update();
         }
-
         // First tap arms delete, second tap within 3s deletes
         function deleteCard(id) {
-            clearTimeout(deleteTimer);
             if (pendingDeleteId === id) {
-                state.cards = state.cards.filter(c => c.id !== id);
-                pendingDeleteId = null;
+                activeTab().cards = activeTab().cards.filter(c => c.id !== id);
+                disarm();
             } else {
+                disarm();
                 pendingDeleteId = id;
-                deleteTimer = setTimeout(() => { pendingDeleteId = null; render(); }, 3000);
+                armTimeout();
             }
             update();
         }
 
         // ===== RENDER =====
         function missingCard(wrapper, card, isBuild) {
-            const esc = U.escapeHTML;
             const armed = pendingDeleteId === card.id;
             wrapper.innerHTML = `
                 <div style="
@@ -137,7 +195,7 @@
                     color: var(--color-10);
                 ">
                     <div style="flex:1; padding: 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 1px;">
-                        ${esc(card.type.toUpperCase())} CARD — NOT INSTALLED
+                        ${U.escapeHTML(String(card.type).toUpperCase())} CARD — NOT INSTALLED
                     </div>
                     ${isBuild ? `<button data-action="delete" style="
                         width: 45px; height: 100%;
@@ -160,59 +218,99 @@
             });
         }
 
-        function render() {
-            const isBuild = state.mode === 'build';
-            const scrollY = window.scrollY;
-            document.body.classList.toggle('build', isBuild);
+        function fitBody() {
+            document.body.style.paddingTop = (document.getElementById('header').offsetHeight + 4) + 'px';
+            document.body.style.paddingBottom = (document.getElementById('footer').offsetHeight + 4) + 'px';
+        }
 
-            GT50.Header.render(document.getElementById('header'), {
-                title: state.title,
-                mode: state.mode,
+        function renderHeader(focusSearch) {
+            const isBuild = mode === 'build';
+            const tab = activeTab();
+            const slot = GT50.Header.render(document.getElementById('header'), {
+                tabs: state.tabs,
+                activeId: tab.id,
+                mode: mode,
+                onTab: selectTab,
+                onAddTab: addTab,
                 onToggleMode: () => {
-                    state.mode = isBuild ? 'view' : 'build';
-                    pendingDeleteId = null;
+                    mode = isBuild ? 'view' : 'build';
+                    disarm();
                     update();
                 }
             });
 
-            const footer = document.getElementById('footer');
             if (isBuild) {
-                footer.style.display = 'block';
-                GT50.Footer.render(footer, { types: GT50.listTypes(), onAdd: addCard });
+                GT50.Header.renderTabEditor(slot, {
+                    name: tab.name,
+                    canDelete: state.tabs.length > 1,
+                    armed: tabDeleteArmed,
+                    onRename: (name) => {
+                        tab.name = name.toUpperCase();
+                        const el = document.querySelector('.gt-tab.active');
+                        if (el) el.textContent = tab.name || 'TAB';
+                        saveSoon();
+                    },
+                    onDelete: deleteTab
+                });
             } else {
-                footer.style.display = 'none';
-                footer.innerHTML = '';
+                GT50.Sort.renderBar(slot, {
+                    sort: state.sort,
+                    query: query,
+                    searching: searching,
+                    focus: focusSearch,
+                    onOpenPage: () => GT50.Sort.openPage({
+                        sort: state.sort,
+                        onChange: (sort) => { state.sort = sort; save(); renderHeader(); renderCards(); },
+                        onClose: () => window.scrollTo(0, 0)
+                    }),
+                    onSearchOpen: () => { searching = true; window.scrollTo(0, 0); },
+                    onSearch: (q) => { query = q; renderCards(); },
+                    onSearchClose: () => { searching = false; query = ''; renderCards(); window.scrollTo(0, 0); }
+                });
             }
+        }
 
+        function renderFooter() {
+            GT50.Footer.render(document.getElementById('footer'), { types: GT50.listTypes(), onAdd: addCard });
+        }
+
+        function renderCards() {
+            const isBuild = mode === 'build';
+            const tab = activeTab();
             const list = document.getElementById('cards');
+            const scrollY = window.scrollY;
             list.innerHTML = '';
 
-            if (state.cards.length === 0) {
-                list.innerHTML = `<div class="empty">${isBuild
-                    ? 'NO CARDS YET — ADD ONE BELOW'
-                    : 'NO CARDS YET — SWITCH TO BUILD TO ADD ONE'}</div>`;
+            // Edit mode always shows the built order; view mode applies sort, filter and search
+            const cards = isBuild ? tab.cards : GT50.Sort.apply(tab.cards, state.sort, query, cardInfo);
+
+            if (cards.length === 0) {
+                const msg = tab.cards.length === 0
+                    ? 'NO CARDS ON THIS TAB YET'
+                    : (query ? 'NO CARDS MATCH YOUR SEARCH' : 'NO CARDS MATCH THIS FILTER');
+                list.innerHTML = `<div class="empty">${msg}</div>`;
             }
 
-            state.cards.forEach(card => {
+            cards.forEach(card => {
                 const wrapper = document.createElement('div');
                 list.appendChild(wrapper);
                 const def = GT50.getType(card.type);
+                if (!def) { missingCard(wrapper, card, isBuild); return; }
 
-                if (!def) {
-                    missingCard(wrapper, card, isBuild);
-                    return;
-                }
+                const onChange = () => { touch(card); update(); };
+                // typing edits state directly: mark the card updated and save shortly after
+                wrapper.addEventListener('input', () => { touch(card); saveSoon(); });
 
                 try {
                     if (isBuild) {
                         def.lib.renderBuild(
-                            wrapper, card.state, update,
+                            wrapper, card.state, onChange,
                             (dir) => moveCard(card.id, dir),
                             () => deleteCard(card.id),
                             pendingDeleteId === card.id
                         );
                     } else {
-                        def.lib.renderView(wrapper, card.state, update, null);
+                        def.lib.renderView(wrapper, card.state, onChange, null);
                         padDropdowns(wrapper);
                     }
                 } catch (e) {
@@ -225,14 +323,20 @@
             window.scrollTo(0, scrollY);
         }
 
+        function render() {
+            renderHeader();
+            renderFooter();
+            renderCards();
+            fitBody();
+        }
+
         function update() {
             save();
             render();
         }
 
-        // Typing in a card edits state directly; save shortly after
-        document.addEventListener('input', saveSoon);
         window.addEventListener('pagehide', save);
+        window.addEventListener('resize', fitBody);
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') save();
         });

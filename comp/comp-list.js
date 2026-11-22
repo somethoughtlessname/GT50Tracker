@@ -615,7 +615,15 @@
             type: 'list',
             label: 'LIST',
             color: 'var(--color-1)',
-            lib: window.GT50Lib.List
+            lib: window.GT50Lib.List,
+            info: function(state) {
+                const items = state.items || [];
+                return {
+                    title: state.title || '',
+                    done: items.length ? items.every(i => i.completed) : !!state.completed,
+                    text: [state.title, state.dropdownText].concat(items.map(i => i.text)).join(' ')
+                };
+            }
         });
     }
 })();

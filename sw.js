@@ -1,5 +1,5 @@
-// GT50 Service Worker v2.0.0 - COLOR VARIATION UPDATE
-const VERSION = '2.0.3';
+// GT50 Service Worker - bare-bones shell
+const VERSION = '3.0.0';
 const CACHE_NAME = 'gt50-cache-' + VERSION;
 
 // Detect if we're on GitHub Pages
@@ -17,42 +17,13 @@ console.log('========================================');
 const STATIC_CACHE_URLS = [
   BASE_PATH,
   BASE_PATH + 'index.html',
-  BASE_PATH + 'search.js',
-  BASE_PATH + 'styles.js',
-  BASE_PATH + 'template.js',
-  BASE_PATH + 'comp-header.js',
-  BASE_PATH + 'comp-insert.js',
-  BASE_PATH + 'comp-impex.js',
-  BASE_PATH + 'comp-settings.js',
-  BASE_PATH + 'import-registry.js',
-  BASE_PATH + 'imports-list.js',
-  BASE_PATH + 'import-loader.js',
-  BASE_PATH + 'create-new.js',
-  BASE_PATH + 'comp-utility.js',
-  BASE_PATH + 'comp-footer.js',
-  BASE_PATH + 'format-gt50.js',
-  BASE_PATH + 'format-encrypted.js',
-  BASE_PATH + 'format-import.js',
-  BASE_PATH + 'comp-list.js',
-  BASE_PATH + 'comp-accumulation.js',
-  BASE_PATH + 'comp-history.js',
-  BASE_PATH + 'comp-progress.js',
-  BASE_PATH + 'comp-tier.js',
-  BASE_PATH + 'comp-checklist.js',
-  BASE_PATH + 'comp-divider.js',
-  BASE_PATH + 'comp-nest.js',
-  BASE_PATH + 'comp-cycle.js',
-  BASE_PATH + 'comp-tab.js',
-  BASE_PATH + 'comp-radio.js',
-  BASE_PATH + 'comp-threshold.js',
-  BASE_PATH + 'comp-text.js',
-  BASE_PATH + 'comp-import.js',
-  BASE_PATH + 'info.js',
-  BASE_PATH + 'comp-scale.js',
-  BASE_PATH + 'sort-filter.js',
-  BASE_PATH + 'comp-summary.js',
-  BASE_PATH + 'comp-cloudsync.js',
-  BASE_PATH + 'manifest.json'
+  BASE_PATH + 'shell/styles.js',
+  BASE_PATH + 'shell/registry.js',
+  BASE_PATH + 'shell/utils.js',
+  BASE_PATH + 'shell/header.js',
+  BASE_PATH + 'shell/footer.js',
+  BASE_PATH + 'comp/comp-list.js',
+  BASE_PATH + 'pwa/manifest.json'
 ];
 
 // Install - cache files individually to see failures

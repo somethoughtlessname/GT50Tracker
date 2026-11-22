@@ -608,4 +608,14 @@
             }
         }
     };
+
+    // ===== REGISTER WITH THE APP SHELL =====
+    if (window.GT50 && window.GT50.register) {
+        window.GT50.register({
+            type: 'list',
+            label: 'LIST',
+            color: 'var(--color-1)',
+            lib: window.GT50Lib.List
+        });
+    }
 })();

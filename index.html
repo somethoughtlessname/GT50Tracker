@@ -37,6 +37,8 @@
         body.build { padding-bottom: calc(45px + 8px); }
         #header { position: fixed; top: 0; left: 0; right: 0; z-index: 1001; }
         #footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; }
+        /* Flex column like the original .card-container: each card keeps its own margins */
+        #cards { width: 100%; display: flex; flex-direction: column; }
         .empty {
             margin-top: 8px;
             padding: 24px 12px;
@@ -75,7 +77,7 @@
         const saved = U.load(STORAGE_KEY) || {};
         const state = {
             title: saved.title || 'GT50 TRACKER',
-            mode: saved.mode === 'view' ? 'view' : 'build',
+            mode: 'view',   // always open on the main (view) window
             nextId: saved.nextId || 1,
             cards: Array.isArray(saved.cards) ? saved.cards : []
         };
@@ -149,6 +151,15 @@
             if (del) del.onclick = () => deleteCard(card.id);
         }
 
+        // View-mode dropdowns get even inner spacing (same rule as the original shell)
+        function padDropdowns(wrapper) {
+            wrapper.querySelectorAll('div[style*="border-radius: 0 0 8px 8px"]').forEach(section => {
+                section.style.padding = 'var(--margin) var(--margin) 0 var(--margin)';
+                const last = section.lastElementChild;
+                if (last && !last.style.marginBottom) last.style.marginBottom = 'var(--margin)';
+            });
+        }
+
         function render() {
             const isBuild = state.mode === 'build';
             const scrollY = window.scrollY;
@@ -202,6 +213,7 @@
                         );
                     } else {
                         def.lib.renderView(wrapper, card.state, update, null);
+                        padDropdowns(wrapper);
                     }
                 } catch (e) {
                     // One broken card must never take down the app

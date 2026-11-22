@@ -1,5 +1,5 @@
 // GT50 Service Worker - bare-bones shell
-const VERSION = '3.0.0';
+const VERSION = '3.0.1';
 const CACHE_NAME = 'gt50-cache-' + VERSION;
 
 // Detect if we're on GitHub Pages

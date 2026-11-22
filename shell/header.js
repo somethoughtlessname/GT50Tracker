@@ -21,28 +21,35 @@
                         height: 100%;
                         display: flex;
                         align-items: center;
-                        padding: 0 12px;
-                        color: var(--color-10);
-                        font-size: 16px;
-                        font-weight: 700;
-                        letter-spacing: 1px;
+                        justify-content: center;
+                        padding: 0 var(--margin);
+                        background: var(--bg-3);
                         overflow: hidden;
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                    ">${esc(opts.title)}</div>
+                    ">
+                        <div style="
+                            width: 100%;
+                            color: var(--color-10);
+                            font-size: 14px;
+                            font-weight: 600;
+                            font-family: inherit;
+                            text-align: center;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        ">${esc(opts.title)}</div>
+                    </div>
                     <button data-action="mode" style="
                         width: 90px;
                         height: 100%;
-                        background: ${isBuild ? 'var(--color-2)' : 'var(--color-5)'};
+                        background: var(--bg-4);
                         border: none;
                         border-left: var(--border-width) solid var(--border-color);
-                        color: var(--color-10);
+                        color: var(--font-color-3);
                         font-family: inherit;
-                        font-size: 13px;
-                        font-weight: 700;
-                        letter-spacing: 1px;
+                        font-size: 14px;
+                        font-weight: 600;
                         cursor: pointer;
-                    ">${isBuild ? 'BUILD' : 'VIEW'}</button>
+                    ">${isBuild ? 'VIEW' : 'EDIT'}</button>
                 </div>
             `;
 

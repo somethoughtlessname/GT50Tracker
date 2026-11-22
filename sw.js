@@ -1,5 +1,5 @@
 // GT50 Service Worker v2.0.0 - COLOR VARIATION UPDATE
-const VERSION = '2.0.2';
+const VERSION = '2.0.3';
 const CACHE_NAME = 'gt50-cache-' + VERSION;
 
 // Detect if we're on GitHub Pages

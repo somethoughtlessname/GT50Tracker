@@ -567,6 +567,7 @@
             const checkbox = container.querySelector('[data-action="toggle-checkbox"]');
             if (checkbox) {
                 checkbox.onclick = () => {
+                    const keepOpen = state.open;
                     if (hasItems) {
                         // Toggle all items
                         const allCompleted = state.items.every(i => i.completed);
@@ -581,6 +582,7 @@
                         window.GT50Lib.SortFilter.onListCheckboxToggled(container);
                     }
                     
+                    state.open = keepOpen;   // checking never opens or closes the dropdown
                     onChange();
                 };
             }
@@ -597,6 +599,7 @@
                 container.querySelectorAll('[data-action="toggle-item"]').forEach(item => {
                     const idx = parseInt(item.dataset.idx);
                     item.onclick = () => {
+                        const keepOpen = state.open;
                         state.items[idx].completed = !state.items[idx].completed;
                         
                         // Trigger timestamp update for sort-filter
@@ -604,7 +607,8 @@
                             window.GT50Lib.SortFilter.onListCheckboxToggled(container);
                         }
                         
-                        onChange();
+                        state.open = keepOpen;   // checking never opens or closes the dropdown
+                    onChange();
                     };
                 });
             }

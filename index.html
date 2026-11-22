@@ -2217,6 +2217,10 @@ function renderNestEditWindow() {
         function render(skipScrollRestore = false) {
             enforceOneDropdown();
             const currentScroll = window.scrollY;
+            // Hold the card list at its current height while it's rebuilt, so the
+            // page never gets shorter for a moment and the phone doesn't jump to the top
+            const cardsMain = document.getElementById('cards-main');
+            if (cardsMain && !skipScrollRestore) cardsMain.style.minHeight = cardsMain.offsetHeight + 'px';
             
             // Toggle import-mode class on body for global styling
             if (pendingImportComponent) {
@@ -2247,10 +2251,12 @@ function renderNestEditWindow() {
             
             saveState();
             
+            if (cardsMain) cardsMain.style.minHeight = '';
             if (!skipScrollRestore) {
-                setTimeout(() => {
-                    window.scrollTo(0, currentScroll);
-                }, 10);
+                // put the page back where it was straight away (before the phone
+                // draws), then once more after layout settles
+                window.scrollTo(0, currentScroll);
+                requestAnimationFrame(() => window.scrollTo(0, currentScroll));
             }
         }
 

@@ -567,6 +567,7 @@ padding-top: var(--check-position);
             const toggleAll = container.querySelector('[data-action="toggle-all"]');
             if (toggleAll) {
                 toggleAll.onclick = () => {
+                    const keepOpen = state.open;
                     const allCompleted = state.items.every(i => i.completed);
                     state.items.forEach(i => i.completed = !allCompleted);
                     
@@ -575,6 +576,7 @@ padding-top: var(--check-position);
                         window.GT50Lib.SortFilter.onListCheckboxToggled(container);
                     }
                     
+                    state.open = keepOpen;   // checking never opens or closes the dropdown
                     onChange();
                 };
             }
@@ -590,6 +592,7 @@ padding-top: var(--check-position);
                 container.querySelectorAll('[data-action="toggle-item"]').forEach(item => {
                     const idx = parseInt(item.dataset.idx);
                     item.onclick = () => {
+                        const keepOpen = state.open;
                         state.items[idx].completed = !state.items[idx].completed;
                         
                         // Trigger timestamp update for sort-filter
@@ -597,7 +600,8 @@ padding-top: var(--check-position);
                             window.GT50Lib.SortFilter.onListCheckboxToggled(container);
                         }
                         
-                        onChange();
+                        state.open = keepOpen;   // checking never opens or closes the dropdown
+                    onChange();
                     };
                 });
             }

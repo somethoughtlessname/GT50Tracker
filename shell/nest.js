@@ -1456,7 +1456,7 @@
                     </div>
                 </div>
                 ${state.autoSortByLastUpdated && state.autoSortDropdownOpen ? `
-                    <div style="
+                    <div class="gt-dd" style="
                         background: var(--bg-2);
                         border-radius: 0 0 var(--card-radius) var(--card-radius);
                         padding: var(--margin);
@@ -1603,7 +1603,7 @@
                         </div>
                     </div>
                     ${state.showSummary && state.summaryDropdownOpen ? `
-                        <div style="
+                        <div class="gt-dd" style="
                             background: var(--bg-2);
                             border-radius: 0 0 var(--card-radius) var(--card-radius);
                             padding: var(--margin);
@@ -1807,7 +1807,7 @@
                         </div>
                     </div>
                     ${state.summaryShowChildNestProgress && state.summaryShowChildNestProgressDropdownOpen ? `
-                        <div style="
+                        <div class="gt-dd" style="
                             background: var(--bg-2);
                             border-radius: 0 0 var(--card-radius) var(--card-radius);
                             padding: var(--margin);

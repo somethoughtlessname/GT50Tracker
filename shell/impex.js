@@ -20,11 +20,11 @@
                 return JSON.stringify(jsonData, null, 2);
             },
             deserialize: function(formatData) {
-                return JSON.parse(formatData);
+                return window.GT50Lib.ImpEx.parseJSON(formatData);
             },
             validate: function(formatData) {
                 try {
-                    const parsed = JSON.parse(formatData);
+                    const parsed = window.GT50Lib.ImpEx.parseJSON(formatData);
                     if (!parsed.version || !parsed.data || !parsed.data.tabs || !parsed.data.tabComponents) {
                         return { valid: false, error: 'Invalid JSON structure' };
                     }
@@ -35,6 +35,55 @@
             }
         },
         
+
+        // ===== TOLERANT JSON =====
+        // Some older exports carry a stray backslash before a normal character
+        // (e.g. "Live\\, Live"), which strict JSON rejects. Drop just those.
+        parseJSON: function(text) {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                const repaired = String(text).replace(/\\\\|\\(["\/bfnrtu])|\\/g, (m, ok) => m === '\\\\' ? m : (ok ? m : ''));
+                return JSON.parse(repaired);
+            }
+        },
+
+        // ===== WHAT AN IMPORT HOLDS =====
+        // Turns any import result into one tracker (a nest) when it is one:
+        //  - a nest export (type "nest", any format)
+        //  - a GT50 text file whose only content is one NEST block
+        // Returns null for a full app export.
+        asSingleNest: function(result) {
+            if (!result || !result.success || !result.data) return null;
+            const d = result.data;
+            if (result.type === 'nest') {
+                return { name: result.name || 'Imported', state: d };
+            }
+            const rootTabs = (d.tabs && d.tabs.tabs) || [];
+            const root = d.tabComponents || [];
+            if (rootTabs.length === 0 && root.length <= 1 && root[0] && root[0].length === 1 &&
+                (root[0][0].type === 'nest' || root[0][0].type === 'cycle')) {
+                const card = root[0][0];
+                return { name: card.state.name || card.state.title || 'Imported', state: card.state, type: card.type };
+            }
+            return null;
+        },
+
+        // Builds a ready nest card from asSingleNest() output
+        buildNestCard: function(single) {
+            const base = (window.GT50Lib.Nest && window.GT50Lib.Nest.defaultState) ? window.GT50Lib.Nest.defaultState() : {};
+            const st = Object.assign(base, single.state);
+            st.name = single.name;
+            st.title = single.name;
+            st.tabs = st.tabs || { tabs: [], activeViewTab: 0, selectedBuildTab: 0 };
+            st.tabComponents = (st.tabComponents && st.tabComponents.length) ? st.tabComponents : [[]];
+            st.color = st.color || 'GRAY';
+            if (st.summaryChildNestProgressMode === '0') st.summaryChildNestProgressMode = null;
+            const card = { id: Date.now() + Math.random(), type: single.type || 'nest', state: st, lastUpdated: Date.now() };
+            if (card.type === 'cycle') st.isCycle = true;
+            return card;
+        },
+
         // ===== REGISTER FORMAT ADAPTER =====
         registerFormat: function(adapter) {
             // Validate adapter has required methods
@@ -234,7 +283,7 @@
                     autoSortByLastUpdated: cleanedNest.autoSortByLastUpdated !== undefined ? cleanedNest.autoSortByLastUpdated : false,
                     showSummary: showSummary,
                     summaryShowChildNestProgress: cleanedNest.summaryShowChildNestProgress !== undefined ? cleanedNest.summaryShowChildNestProgress : false,
-                    summaryChildNestProgressMode: showSummary ? (summaryMode || 'first-tab') : '0'
+                    summaryChildNestProgressMode: cleanedNest.summaryShowChildNestProgress ? (summaryMode || 'first-tab') : '0'
                 }
             };
             
@@ -320,6 +369,8 @@
                 return {
                     success: true,
                     data: parsed.data,
+                    type: parsed.type || null,   // "nest" when this is one tracker
+                    name: parsed.name || null,
                     detectedFormat: detectedFormatName // Include detected format in result
                 };
                 
@@ -740,7 +791,7 @@
                         font-weight: 700;
                         color: var(--color-1);
                         text-align: center;
-                    ">WARNING: IMPORTING WILL REPLACE ALL CURRENT DATA!</div>
+                    ">ONE TRACKER IS ADDED TO YOUR LIST. A FULL APP EXPORT REPLACES EVERYTHING.</div>
                 </div>
                 
                 <textarea 
@@ -797,59 +848,59 @@
             const textarea = document.getElementById('import-textarea');
             
             // Import button
+            // One tracker (a nest export, or a game file) is ADDED to the main
+            // list. A full app export replaces everything, and only after a
+            // second tap, since it wipes what's there.
+            let armedReplace = false;
             importBtn.onclick = () => {
                 const text = textarea.value;
-                if (!text.trim()) {
+                if (!text.trim() || !appState) return;
+                
+                const result = this.importData(text);
+                if (!result.success) {
+                    importBtn.textContent = 'COULD NOT READ THAT. CHECK IT AND TRY AGAIN';
+                    importBtn.style.background = 'var(--color-1)';
+                    setTimeout(() => { importBtn.textContent = 'IMPORT DATA'; importBtn.style.background = 'var(--color-4)'; }, 2500);
                     return;
                 }
                 
-                const result = this.importData(text);
-                
-                if (result.success) {
-                    if (!appState) {
+                const single = this.asSingleNest(result);
+                if (single) {
+                    const card = this.buildNestCard(single);
+                    if (!appState.tabComponents || !appState.tabComponents.length) appState.tabComponents = [[]];
+                    appState.tabComponents[0].unshift(card);
+                } else {
+                    if (!armedReplace) {
+                        armedReplace = true;
+                        importBtn.textContent = 'THIS REPLACES EVERYTHING. TAP AGAIN';
+                        importBtn.style.background = 'var(--color-1)';
+                        setTimeout(() => { armedReplace = false; importBtn.textContent = 'IMPORT DATA'; importBtn.style.background = 'var(--color-4)'; }, 4000);
                         return;
                     }
-                    
-                    // Update app state
                     appState.tabs = result.data.tabs;
                     appState.tabComponents = result.data.tabComponents;
-                    
-                    // If importing nest data with nest-level properties, restore them with defaults
                     appState.color = result.data.color !== undefined ? result.data.color : 'GRAY';
-                    appState.autoSortByLastUpdated = result.data.autoSortByLastUpdated !== undefined ? result.data.autoSortByLastUpdated : false;
-                    const showSummary = result.data.showSummary !== undefined ? result.data.showSummary : false;
-                    appState.showSummary = showSummary;
-                    appState.summaryShowChildNestProgress = result.data.summaryShowChildNestProgress !== undefined ? result.data.summaryShowChildNestProgress : false;
-                    // If summaryChildNestProgressMode is '0' or null, treat as null
+                    appState.autoSortByLastUpdated = !!result.data.autoSortByLastUpdated;
+                    appState.showSummary = !!result.data.showSummary;
+                    appState.summaryShowChildNestProgress = !!result.data.summaryShowChildNestProgress;
                     const summaryMode = result.data.summaryChildNestProgressMode;
                     appState.summaryChildNestProgressMode = (summaryMode === '0' || summaryMode === null) ? null : (summaryMode || 'first-tab');
-                    
-                    // Update global state
-                    if (typeof window !== 'undefined') {
-                        window.nextId = Date.now();
-                        window.navigationStack = [];
-                        window.scrollStack = [];
-                    }
-                    
-                    // Reset header
-                    if (!appState.header) {
-                        appState.header = GT50Lib.Header.defaultState();
-                    }
-                    appState.header.isMain = true;
-                    appState.header.title = 'GT50 TESTER';
-                    
-                    // Close window
-                    appState.impex.isOpen = false;
-                    
-                    // Render and save
-                    if (typeof window !== 'undefined' && window.render) {
-                        window.render(true);
-                    }
-                    if (typeof window !== 'undefined' && window.saveState) {
-                        window.saveState();
-                    }
                 }
+                
+                if (typeof window !== 'undefined') {
+                    window.nextId = Date.now();
+                    window.navigationStack = [];
+                    window.scrollStack = [];
+                }
+                if (!appState.header) appState.header = GT50Lib.Header.defaultState();
+                appState.header.isMain = true;
+                appState.header.title = 'The Joystick Journal';
+                appState.impex.isOpen = false;
+                if (typeof window.selectMainTab === 'function') window.selectMainTab('main');
+                if (window.render) window.render(true);
+                if (window.saveState) window.saveState();
             };
+            
             importBtn.onmouseover = () => importBtn.style.filter = 'brightness(1.2)';
             importBtn.onmouseout = () => importBtn.style.filter = 'brightness(1)';
         }

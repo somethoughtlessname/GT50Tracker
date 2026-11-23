@@ -33,7 +33,8 @@
                         border-bottom: var(--border-width) solid var(--border-color);
                         box-shadow: 0 -2px 0 var(--border-color); }
                     .jj-tabrow::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: calc(14px + var(--border-width));
-                        pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.32), rgba(0,0,0,.12) 40%, rgba(0,0,0,0)); }
+                        pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.32), rgba(0,0,0,.12) 40%, rgba(0,0,0,0));
+                        opacity: var(--jj-edge-shadow, 1); }
                     .jj-tabcard { height: 100%; display: flex; overflow: hidden; background: var(--bg-4); }
                     .jj-tabcard > div { height: 100% !important; }
                 `;

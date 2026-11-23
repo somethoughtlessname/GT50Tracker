@@ -197,11 +197,11 @@
             return;
         }
         
-        console.log('Loading LZ-String from CDN...');
+        console.log('Loading LZ-String...');
         
-        // Load from CDN
+        // Bundled with the app (shell/lz-string.min.js) so it works offline
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js';
+        script.src = 'shell/lz-string.min.js';
         script.onload = () => {
             console.log('✓ LZ-String library loaded from CDN');
             registerFormat();

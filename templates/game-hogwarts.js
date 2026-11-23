@@ -999,7 +999,7 @@
           "state": {
             "title": "Defeat Dark Wizards",
             "current": 0,
-            "total": 240,
+            "total": 100,
             "tiers": [
               {
                 "name": "Defeat 10 Dark Wizards",
@@ -1007,19 +1007,19 @@
               },
               {
                 "name": "Defeat 20 Dark Wizards",
-                "amount": 20
+                "amount": 10
               },
               {
                 "name": "Defeat 40 Dark Wizards",
-                "amount": 40
+                "amount": 20
               },
               {
                 "name": "Defeat 70 Dark Wizards",
-                "amount": 70
+                "amount": 30
               },
               {
                 "name": "Defeat 100 Dark Wizards",
-                "amount": 100
+                "amount": 30
               }
             ],
             "dropdownText": ""
@@ -1032,7 +1032,7 @@
           "state": {
             "title": "Defeat Dugbogs",
             "current": 0,
-            "total": 35,
+            "total": 20,
             "tiers": [
               {
                 "name": "Defeat 5 Dugbogs",
@@ -1040,11 +1040,11 @@
               },
               {
                 "name": "Defeat 10 Dugbogs",
-                "amount": 10
+                "amount": 5
               },
               {
                 "name": "Defeat 20 Dugbogs",
-                "amount": 20
+                "amount": 10
               }
             ],
             "dropdownText": ""
@@ -1057,7 +1057,7 @@
           "state": {
             "title": "Defeat Goblins",
             "current": 0,
-            "total": 190,
+            "total": 100,
             "tiers": [
               {
                 "name": "Defeat 30 Goblins",
@@ -1065,11 +1065,11 @@
               },
               {
                 "name": "Defeat 60 Goblins",
-                "amount": 60
+                "amount": 30
               },
               {
                 "name": "Defeat 100 Goblins",
-                "amount": 100
+                "amount": 40
               }
             ],
             "dropdownText": ""
@@ -1082,7 +1082,7 @@
           "state": {
             "title": "Defeat Inferi",
             "current": 0,
-            "total": 66,
+            "total": 36,
             "tiers": [
               {
                 "name": "Defeat 10 Inferi",
@@ -1090,11 +1090,11 @@
               },
               {
                 "name": "Defeat 20 Inferi",
-                "amount": 20
+                "amount": 10
               },
               {
                 "name": "Defeat 36 Inferi",
-                "amount": 36
+                "amount": 16
               }
             ],
             "dropdownText": ""
@@ -1107,7 +1107,7 @@
           "state": {
             "title": "Defeat Infamous Foes",
             "current": 0,
-            "total": 21,
+            "total": 12,
             "tiers": [
               {
                 "name": "Defeat 3 Infamous Foes",
@@ -1115,11 +1115,11 @@
               },
               {
                 "name": "Defeat 6 Infamous Foes",
-                "amount": 6
+                "amount": 3
               },
               {
                 "name": "Defeat 12 Infamous Foes",
-                "amount": 12
+                "amount": 6
               }
             ],
             "dropdownText": ""
@@ -1132,7 +1132,7 @@
           "state": {
             "title": "Defeat Spiders",
             "current": 0,
-            "total": 240,
+            "total": 100,
             "tiers": [
               {
                 "name": "Defeat 10 Spiders",
@@ -1140,19 +1140,19 @@
               },
               {
                 "name": "Defeat 20 Spiders",
-                "amount": 20
+                "amount": 10
               },
               {
                 "name": "Defeat 40 Spiders",
-                "amount": 40
+                "amount": 20
               },
               {
                 "name": "Defeat 70 Spiders",
-                "amount": 70
+                "amount": 30
               },
               {
                 "name": "Defeat 100 Spiders",
-                "amount": 100
+                "amount": 30
               }
             ],
             "dropdownText": ""
@@ -1165,7 +1165,7 @@
           "state": {
             "title": "Defeat Trolls",
             "current": 0,
-            "total": 30,
+            "total": 15,
             "tiers": [
               {
                 "name": "Defeat 5 Trolls",
@@ -1173,11 +1173,11 @@
               },
               {
                 "name": "Defeat 10 Trolls",
-                "amount": 10
+                "amount": 5
               },
               {
                 "name": "Defeat 15 Trolls",
-                "amount": 15
+                "amount": 5
               }
             ],
             "dropdownText": ""
@@ -1190,7 +1190,7 @@
           "state": {
             "title": "Defeat Mongrels",
             "current": 0,
-            "total": 60,
+            "total": 30,
             "tiers": [
               {
                 "name": "Defeat 10 Mongrels",
@@ -1198,11 +1198,11 @@
               },
               {
                 "name": "Defeat 20 Mongrels",
-                "amount": 20
+                "amount": 10
               },
               {
                 "name": "Defeat 30 Mongrels",
-                "amount": 30
+                "amount": 10
               }
             ],
             "dropdownText": ""
@@ -1223,7 +1223,7 @@
           "state": {
             "title": "Complete Duelling Feats",
             "current": 0,
-            "total": 112,
+            "total": 45,
             "tiers": [
               {
                 "name": "Complete 5 Duelling Feats",
@@ -1231,19 +1231,19 @@
               },
               {
                 "name": "Complete 10 Duelling Feats",
-                "amount": 10
+                "amount": 5
               },
               {
                 "name": "Complete 20 Duelling Feats",
-                "amount": 20
+                "amount": 10
               },
               {
                 "name": "Complete 32 Duelling Feats",
-                "amount": 32
+                "amount": 12
               },
               {
                 "name": "Complete 45 Duelling Feats",
-                "amount": 45
+                "amount": 13
               }
             ],
             "dropdownText": ""
@@ -1256,7 +1256,7 @@
           "state": {
             "title": "Complete Assignments",
             "current": 0,
-            "total": 12,
+            "total": 6,
             "tiers": [
               {
                 "name": "Complete 2 Assignments",
@@ -1264,11 +1264,11 @@
               },
               {
                 "name": "Complete 4 Assignments",
-                "amount": 4
+                "amount": 2
               },
               {
                 "name": "Complete 6 Assignments",
-                "amount": 6
+                "amount": 2
               }
             ],
             "dropdownText": ""
@@ -1281,7 +1281,7 @@
           "state": {
             "title": "Complete Main Quests",
             "current": 0,
-            "total": 34,
+            "total": 14,
             "tiers": [
               {
                 "name": "Complete 2 Main Quests",
@@ -1289,19 +1289,19 @@
               },
               {
                 "name": "Complete 4 Main Quests",
-                "amount": 4
+                "amount": 2
               },
               {
                 "name": "Complete 6 Main Quests",
-                "amount": 6
+                "amount": 2
               },
               {
                 "name": "Complete 8 Main Quests",
-                "amount": 8
+                "amount": 2
               },
               {
                 "name": "Complete 14 Main Quests",
-                "amount": 14
+                "amount": 6
               }
             ],
             "dropdownText": ""
@@ -1314,7 +1314,7 @@
           "state": {
             "title": "Complete Side Quests",
             "current": 0,
-            "total": 69,
+            "total": 32,
             "tiers": [
               {
                 "name": "Complete 3 Side Quests",
@@ -1322,19 +1322,19 @@
               },
               {
                 "name": "Complete 6 Side Quests",
-                "amount": 6
+                "amount": 3
               },
               {
                 "name": "Complete 10 Side Quests",
-                "amount": 10
+                "amount": 4
               },
               {
                 "name": "Complete 18 Side Quests",
-                "amount": 18
+                "amount": 8
               },
               {
                 "name": "Complete 32 Side Quests",
-                "amount": 32
+                "amount": 14
               }
             ],
             "dropdownText": ""
@@ -1355,7 +1355,7 @@
           "state": {
             "title": "Ancient Magic Traces",
             "current": 0,
-            "total": 20,
+            "total": 12,
             "tiers": [
               {
                 "name": "Collect 2 Ancient Magic Traces",
@@ -1363,11 +1363,11 @@
               },
               {
                 "name": "Collect 6 Ancient Magic Traces",
-                "amount": 6
+                "amount": 4
               },
               {
                 "name": "Collect 12 Ancient Magic Traces",
-                "amount": 12
+                "amount": 6
               }
             ],
             "dropdownText": ""
@@ -1380,7 +1380,7 @@
           "state": {
             "title": "Sets of Balloons",
             "current": 0,
-            "total": 32,
+            "total": 15,
             "tiers": [
               {
                 "name": "Pop 2 Sets of Balloons",
@@ -1388,15 +1388,15 @@
               },
               {
                 "name": "Pop 5 Sets of Balloons",
-                "amount": 5
+                "amount": 3
               },
               {
                 "name": "Pop 10 Sets of Balloons",
-                "amount": 10
+                "amount": 5
               },
               {
                 "name": "Pop 15 Sets of Balloons",
-                "amount": 15
+                "amount": 5
               }
             ],
             "dropdownText": ""
@@ -1409,7 +1409,7 @@
           "state": {
             "title": "Landing Platforms",
             "current": 0,
-            "total": 20,
+            "total": 8,
             "tiers": [
               {
                 "name": "Find 2 Landing Platforms",
@@ -1417,15 +1417,15 @@
               },
               {
                 "name": "Find 4 Landing Platforms",
-                "amount": 4
+                "amount": 2
               },
               {
                 "name": "Find 6 Landing Platforms",
-                "amount": 6
+                "amount": 2
               },
               {
                 "name": "Find 8 Landing Platforms",
-                "amount": 8
+                "amount": 2
               }
             ],
             "dropdownText": ""
@@ -1438,7 +1438,7 @@
           "state": {
             "title": "Merlin Trials",
             "current": 0,
-            "total": 52,
+            "total": 20,
             "tiers": [
               {
                 "name": "Solve 2 Merlin Trials",
@@ -1446,19 +1446,19 @@
               },
               {
                 "name": "Solve 6 Merlin Trials",
-                "amount": 6
+                "amount": 4
               },
               {
                 "name": "Solve 10 Merlin Trials",
-                "amount": 10
+                "amount": 4
               },
               {
                 "name": "Solve 14 Merlin Trials",
-                "amount": 14
+                "amount": 4
               },
               {
                 "name": "Solve 20 Merlin Trials",
-                "amount": 20
+                "amount": 6
               }
             ],
             "dropdownText": ""

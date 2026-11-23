@@ -179,7 +179,7 @@
           "type": "list",
           "state": {
             "completed": false,
-            "title": "Hunt to Live\\, Live to Hunt",
+            "title": "Hunt to Live, Live to Hunt",
             "items": [],
             "dropdownText": ""
           }

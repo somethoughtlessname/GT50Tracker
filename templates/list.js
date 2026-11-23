@@ -21,10 +21,11 @@ window.GT50ImportsList = [
     'game-infamous2.js',
     'game-gta5.js',
     'game-splitfiction.js',
-    'game-uncharted1.js',
-    'game-spiderman2.js'
+    'game-uncharted2.js',
+    'game-spiderman2.js',
+    'game-tonyhawksproskater12.js',
+    'game-tonyhawksproskater34.js'
 
     // Not listed:
     //   import-example-rpg.js - a sample to copy from
-    //   game-infamous1.js     - holds a raw Uncharted 2 text export, not a plug-in file
 ];

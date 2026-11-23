@@ -299,7 +299,7 @@
                 </div>
                 
                 ${state.open ? `
-                <div style="
+                <div class="gt-dd" style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
                     border-top: none;

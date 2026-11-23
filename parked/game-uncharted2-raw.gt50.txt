@@ -72,7 +72,7 @@ tab-color|6
 CHECKLIST|Treasures
 checklist-item|0|Ch1: Wrathful Deity Statue - In snow behind tree at start
 checklist-item|0|Ch1: Saraswati Statue - Behind dead guy with first gun
-checklist-item|0|Ch1: Tibetan Snuff Bottle - Hanging corpse pocket\\, shoot it down
+checklist-item|0|Ch1: Tibetan Snuff Bottle - Hanging corpse pocket, shoot it down
 checklist-item|0|Ch1: Bhutanese Lime Box - Drop onto large box from train car
 checklist-item|0|Ch1: Ghau Amulet Thogchag - Back of train after flashback
 checklist-item|0|Ch2: Byzantine Gold Coin - Corner on box after manhole
@@ -94,7 +94,7 @@ checklist-item|0|Ch4: Jade Belt Slide - Statue hand in ruins, shoot down
 checklist-item|0|Ch4: Yuan Dynasty Helmet - Hole in ceiling after dagger cutscene
 checklist-item|0|Ch5: Strange Relic - Sewer manhole in alley (Jak & Daxter Orb)
 checklist-item|0|Ch6: Brass Bird Lamp - Top of power line pole
-checklist-item|0|Ch6: Silver Dress Clasp - Temple door icon\\, shoot it down
+checklist-item|0|Ch6: Silver Dress Clasp - Temple door icon, shoot it down
 checklist-item|0|Ch6: Copper Rice Measure - Other side of roof near hotel
 checklist-item|0|Ch6: Yuan Dynasty Urn - Top of broken stairs through cage gap
 checklist-item|0|Ch6: Enameled Snuff Bottle - Open suitcase on overhanging roof
@@ -135,7 +135,7 @@ checklist-item|0|Ch18: Dipa Oil Lamp - Broken wall right of landing platform
 checklist-item|0|Ch18: Tibetan Flint Lighter - Ride cog all way around after rope
 checklist-item|0|Ch18: Bronze Dorje - Beams to right after first of 3 cogs
 checklist-item|0|Ch18: Tibetan Ceremonial Axe - Stone face to right after 3 cogs
-checklist-item|0|Ch18: Trigram Thogchag - Giant statue forehead\\, shoot down
+checklist-item|0|Ch18: Trigram Thogchag - Giant statue forehead, shoot down
 checklist-item|0|Ch19: Amber Skull Bead - Roof right of hay pile
 checklist-item|0|Ch19: Antique Ghau - Left corner past stone monument
 checklist-item|0|Ch19: Bell Thogchag - Blue-roofed hut with red walls
@@ -160,7 +160,7 @@ checklist-item|0|Ch23: Tibetan Ritual Ghau - Hang down over statue in wall
 checklist-item|0|Ch23: Carved Bone Ornament - Light fixture after tower puzzle
 checklist-item|0|Ch23: Tibetan Hair Ornament - Behind headless statue
 checklist-item|0|Ch23: Tibetan Mala Beads - Bottom corner opposite ladder
-checklist-item|0|Ch24: Bronze Garuda - Face forehead upper right\\, shoot down
+checklist-item|0|Ch24: Bronze Garuda - Face forehead upper right, shoot down
 checklist-item|0|Ch24: Toad Censar - Left of landing after first jump
 checklist-item|0|Ch24: Eight Emblems Pendant - Far left past stairs
 checklist-item|0|Ch25: Phurba Thogchag - Snake-tongued elephant statue eye

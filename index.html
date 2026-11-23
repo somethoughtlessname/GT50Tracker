@@ -1521,14 +1521,23 @@ html {
                                 // Start with proper nest default state
                                 const nestState = GT50Lib.Nest.defaultState();
                                 
-                                // Override with import name and data
+                                // Override with import name and data. A file whose only
+                                // content is one NEST block (GT50 text) is that nest itself,
+                                // not a nest holding a nest.
+                                const single = GT50Lib.ImpEx.asSingleNest({ success: true, data: parseResult.data });
+                                const src = single ? single.state : parseResult.data;
                                 nestState.name = pendingImportComponent.state.name;
-                                nestState.tabs = parseResult.data.tabs;
-                                nestState.tabComponents = parseResult.data.tabComponents;
+                                nestState.tabs = src.tabs || { tabs: [], activeViewTab: 0, selectedBuildTab: 0 };
+                                nestState.tabComponents = (src.tabComponents && src.tabComponents.length) ? src.tabComponents : [[]];
                                 nestState.color = 'GRAY';
-                                nestState.autoSortByLastUpdated = false;
-                                nestState.showSummary = false;
-                                
+                                nestState.autoSortByLastUpdated = !!src.autoSortByLastUpdated;
+                                nestState.showSummary = !!src.showSummary;
+                                // Keep the file's child nest progress setting (bars on child nest cards)
+                                nestState.summaryShowChildNestProgress = !!src.summaryShowChildNestProgress;
+                                if (src.summaryChildNestProgressMode) {
+                                    nestState.summaryChildNestProgressMode = src.summaryChildNestProgressMode;
+                                }
+
                                 // Replace the entire state
                                 pendingImportComponent.state = nestState;
                                 console.log('Transform complete! Type:', pendingImportComponent.type);

@@ -150,7 +150,7 @@
                         </button>
                     </div>
                 </div>
-                ${state.open ? `<div style="
+                ${state.open ? `<div class="gt-dd" style="
                     background: var(--bg-2);
                     border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;

@@ -45,6 +45,7 @@
                 id: importData.id,
                 name: importData.name,
                 description: importData.description || '',
+                testing: importData.testing === true, // temporary: shows in Create New > Testing only
                 data: importData.data // Keep original format
             });
             

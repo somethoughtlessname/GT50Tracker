@@ -310,7 +310,25 @@
             
             let ticking = false;
             
+            // Edge shadow under the bar: it eases in as the bar nears the header
+            // and takes over from the header's own edge shadow
+            const edgeShadow = document.createElement('div');
+            edgeShadow.className = 'gt-sum-shadow';
+            summaryBar.appendChild(edgeShadow);
+            
+            const setHeaderShadow = (v) => {
+                const ft = document.getElementById('frozenTabs');
+                if (ft) ft.style.setProperty('--jj-edge-shadow', v);
+            };
+            
             const checkTransform = () => {
+                ticking = false;
+                // This bar was replaced by a new render: stop, and give the
+                // header its shadow back
+                if (!summaryBar.isConnected) {
+                    window.removeEventListener('scroll', onScroll);
+                    return;
+                }
                 const rect = summaryBar.getBoundingClientRect();
                 const barTop = rect.top;
                 
@@ -318,9 +336,19 @@
                 const frozenTabs = document.getElementById('frozenTabs');
                 const hasTabs = frozenTabs && frozenTabs.offsetHeight > 0;
                 
-                // Header + border = 48px, Tabs + border = 48px
-                const headerBottom = hasTabs ? 96 : 48;
-                
+                // Where the header (and tab rows, if any) actually end
+                const headerBottom = hasTabs ? frozenTabs.getBoundingClientRect().bottom : 48;
+
+                // Stick so the bar's top border tucks under the header's bottom
+                // border (one shared line, not a double one)
+                const bw = parseFloat(getComputedStyle(summaryOverlay).borderTopWidth) || 0;
+                const overlayOffset = summaryOverlay.getBoundingClientRect().top - barTop;
+                const fitTop = Math.round(headerBottom - bw - overlayOffset);
+                if (fitTop !== stickyTop) {
+                    stickyTop = fitTop;
+                    summaryBar.style.top = `${stickyTop}px`;
+                }
+
                 const TRANSFORM_START = headerBottom + 5;
                 const TRANSFORM_END = stickyTop;
                 const TRANSFORM_RANGE = TRANSFORM_START - TRANSFORM_END;
@@ -336,7 +364,7 @@
                     progress = (TRANSFORM_START - barTop) / TRANSFORM_RANGE;
                 }
                 
-                // Element is set to full width in HTML: calc(100% + 14px)
+                // Width is set above to reach the screen edges
                 // At progress 0: scale to match normal width
                 // At progress 1: scale to 1 (full expanded width)
                 
@@ -344,8 +372,17 @@
                 // Full width = containerWidth + 14px
                 // Normal width = containerWidth
                 // Scale at 0% = containerWidth / (containerWidth + 14)
-                const container = summaryBar.getBoundingClientRect().width;
-                const normalScale = container / (container + 14);
+                // Stretch just past the screen edges so the side borders end up
+                // off screen (full width the whole way, never thinning). The page
+                // clips sideways overflow, so this never adds side scroll.
+                const barRect = summaryBar.getBoundingClientRect();
+                const container = barRect.width;
+                const sideBw = parseFloat(getComputedStyle(summaryOverlay).borderLeftWidth) || 0;
+                const ext = Math.max(0, Math.min(barRect.left, document.documentElement.clientWidth - barRect.right)) + sideBw;
+                summaryOverlay.style.left = `${-ext}px`;
+                summaryOverlay.style.right = `${-ext}px`;
+                summaryOverlay.style.width = `${container + ext * 2}px`;
+                const normalScale = container / (container + ext * 2);
                 
                 // Interpolate scale from normalScale to 1
                 const scale = normalScale + (1 - normalScale) * progress;
@@ -357,7 +394,18 @@
                 summaryOverlay.style.borderRadius = `${borderRadius}px`;
                 summaryOverlay.style.transform = `translateY(-50%) scaleX(${scale})`;
                 
-                ticking = false;
+                // Edge shadow: fades in over the last 16px before the bar meets
+                // the header (it rests just below that), while the header's
+                // shadow fades out
+                const ov = summaryOverlay.getBoundingClientRect();
+                const gap = Math.max(0, ov.top - (headerBottom - bw) - 0.5);
+                const t = Math.min(1, Math.max(0, 1 - gap / 16));
+                const eased = t * t * (3 - 2 * t);
+                edgeShadow.style.top = `${ov.bottom - barTop}px`;
+                edgeShadow.style.left = `${-ext}px`;
+                edgeShadow.style.width = `${container + ext * 2}px`;
+                edgeShadow.style.opacity = eased;
+                setHeaderShadow(1 - eased);
             };
             
             const onScroll = () => {
@@ -368,6 +416,7 @@
             };
             
             window.addEventListener('scroll', onScroll, { passive: true });
+            setHeaderShadow(1);
             checkTransform(); // Initial check
         },
         

@@ -246,6 +246,16 @@ createEntry: function(state, nextId, currentComponents) {
                 state.tabs.tabs.push({ name: 'Import', label: 'Import', color: 'var(--color-5-2)' });
             }
             
+            // Temporary Testing tab: shown only while a file registered with testing: true is loaded
+            const hasTestingImports = !!(window.GT50 && window.GT50.Imports &&
+                window.GT50.Imports.getAll().some(imp => imp.testing));
+            if (hasTestingImports && state.tabs.tabs.length === 3) {
+                state.tabs.tabs.push({ name: 'Testing', label: 'Testing', color: 'var(--color-5-2)' });
+            } else if (!hasTestingImports && state.tabs.tabs.length > 3) {
+                state.tabs.tabs.length = 3;
+                if (state.tabs.activeViewTab > 2) state.tabs.activeViewTab = 0;
+            }
+            
             // Ensure tab colors are set to nest color
             state.tabs.tabs.forEach(tab => {
                 tab.color = 'var(--color-5-2)';
@@ -279,7 +289,8 @@ createEntry: function(state, nextId, currentComponents) {
             
             // Determine active tab
             const activeTab = state.tabs.activeViewTab === 0 ? 'templates' : 
-                            state.tabs.activeViewTab === 1 ? 'settings' : 'import';
+                            state.tabs.activeViewTab === 1 ? 'settings' :
+                            state.tabs.activeViewTab === 3 ? 'testing' : 'import';
             
             // Check if we should animate color selection
             const shouldAnimateColor = state._animateColorIndex !== undefined;
@@ -1167,7 +1178,9 @@ createEntry: function(state, nextId, currentComponents) {
             `);
             
             // ===== IMPORT TAB CONTENT =====
-            const imports = (window.GT50 && window.GT50.Imports) ? window.GT50.Imports.getAll() : [];
+            // Files registered with testing: true show in the temporary Testing tab only
+            const allImports = (window.GT50 && window.GT50.Imports) ? window.GT50.Imports.getAll() : [];
+            const imports = allImports.filter(imp => activeTab === 'testing' ? imp.testing : !imp.testing);
             const hasImports = imports && imports.length > 0;
             const importsLoading = window.GT50ImportsLoading === true;
             
@@ -1204,7 +1217,7 @@ createEntry: function(state, nextId, currentComponents) {
                         letter-spacing: 0.5px;
                         position: relative;
                         z-index: 2;
-                    ">SELECT IMPORT</div>
+                    ">${activeTab === 'testing' ? 'TESTING' : 'SELECT IMPORT'}</div>
                 </div>
                 
                 ${imports.map(imp => `
@@ -1608,7 +1621,7 @@ createEntry: function(state, nextId, currentComponents) {
             }
             
             // Import tab listeners
-            if (activeTab === 'import') {
+            if (activeTab === 'import' || activeTab === 'testing') {
                 const importCards = contentContainer.querySelectorAll('[data-import]');
                 importCards.forEach(card => {
                     const importId = card.getAttribute('data-import');

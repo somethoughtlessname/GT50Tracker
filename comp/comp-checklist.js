@@ -171,7 +171,7 @@ const itemDropdownColor = cardColor;
 </button>
                     </div>
                 </div>
-                ${state.open ? `<div style="
+                ${state.open ? `<div class="gt-dd" style="
                     background: var(--bg-2);
                     border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
@@ -432,7 +432,7 @@ padding-top: var(--check-position);
                         <span style="display: contents; color: var(--color-10);">${state.open ? '▲' : '▼'}</span>
                     </div>` : ''}
                 </div>
-                ${state.open && showDropdown ? `<div style="
+                ${state.open && showDropdown ? `<div class="gt-dd" style="
                     background: var(--bg-2);
                     border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;

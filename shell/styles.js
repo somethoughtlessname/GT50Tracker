@@ -367,6 +367,15 @@
         .gt-ictl button + button { border-left: var(--border-width) solid var(--border-color); }
         .gt-ictl button::before { content: ''; position: absolute; inset: 0; z-index: -1;
             background: var(--ictl); filter: brightness(var(--control-button-brightness)); }
+        /* Card dropdown body: the padding is the gap on every side, so the last
+           row adds no margin of its own at the bottom */
+        .gt-dd > :last-child { margin-bottom: 0 !important; }
+        /* Nothing may widen the page sideways (the stuck summary bar reaches
+           past the screen edges on purpose). clip, not hidden: sticky still works */
+        html, body { overflow-x: clip; }
+        /* Summary bar edge shadow (same as the header's), see shell/summary.js */
+        .gt-sum-shadow { position: absolute; height: 14px; pointer-events: none; opacity: 0; z-index: 9;
+            background: linear-gradient(180deg, rgba(0,0,0,.32), rgba(0,0,0,.12) 40%, rgba(0,0,0,0)); }
     `;
     
     // Inject CSS into document head

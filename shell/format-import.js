@@ -4,7 +4,7 @@
     
     // ===== IMPORT.JS FORMAT ADAPTER =====
     // Generates ready-to-use JavaScript import files
-    // Export → Save as .js → Add to Imports-list.js → Done!
+    // Export → save as templates/game-<name>.js → add it to templates/list.js → done
     
     const ImportJSFormat = {
         // ===== FORMAT INFO =====
@@ -41,19 +41,25 @@
                 }
             }
             
-            // Serialize the export data as JSON string (readable format)
-            const exportDataString = JSON.stringify(jsonData, null, 2);
+            // Serialize the export data as JSON string (readable format).
+            // It sits inside a JS template literal, so backslashes, backticks
+            // and "${" are escaped; the browser undoes this when it runs the file.
+            const exportDataString = JSON.stringify(jsonData, null, 2)
+                .replace(/\\/g, '\\\\')
+                .replace(/`/g, '\\`')
+                .replace(/\$\{/g, '\\${');
             
             // Generate the complete import file
             const output = [];
             output.push('// ===== GT50 IMPORT FILE =====');
+            output.push('// escaped: template-literal');
             output.push(`// Generated: ${new Date().toISOString()}`);
-            output.push(`// Name: ${nestName}`);
+            output.push(`// Name: ${String(nestName).replace(/\s+/g, " ")}`);
             output.push('//');
             output.push('// INSTALLATION:');
-            output.push('// 1. Save this file as: import/[filename].js');
-            output.push('// 2. Add the filename to Imports-list.js');
-            output.push('// 3. Reload GT50');
+            output.push(`// 1. Save this file as: templates/game-${safeId}.js`);
+            output.push('// 2. Add that file name to templates/list.js');
+            output.push('// 3. Reload The Joystick Journal');
             output.push('// 4. Find it in Create New → Import tab');
             output.push('');
             output.push('(function() {');
@@ -68,13 +74,14 @@
             output.push('    ');
             output.push('    // Register the import');
             output.push('    window.GT50.Imports.register({');
+            const q = (t) => String(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r');
             output.push(`        id: '${safeId}',`);
-            output.push(`        name: '${nestName}',`);
-            output.push(`        description: '${description}',`);
+            output.push(`        name: '${q(nestName)}',`);
+            output.push(`        description: '${q(description)}',`);
             output.push('        data: exportedData');
             output.push('    });');
             output.push('    ');
-            output.push(`    console.log('✓ Import registered: ${nestName}');`);
+            output.push(`    console.log('✓ Import registered: ${q(nestName)}');`);
             output.push('})();');
             output.push('');
             
@@ -84,15 +91,28 @@
         // ===== DESERIALIZE (Import.js → JSON format) =====
         deserialize: function(formatData) {
             // Extract the JSON data from between backticks
-            const match = formatData.match(/const exportedData = `([\s\S]*?)`;/);
+            const match = (formatData.match(/const exportedData = `([\s\S]*?)`;\s*\/\/ Register the import/) || formatData.match(/const exportedData = `([\s\S]*?)`;/));
             if (!match || !match[1]) {
                 throw new Error('Could not extract export data from import file');
             }
             
-            const jsonString = match[1];
-            return JSON.parse(jsonString);
+            return JSON.parse(this.readData(formatData, match[1]));
         },
         
+        // The JSON as the browser would see it after running the file
+        readData: function(fileText, raw) {
+            let text = raw;
+            if (fileText.indexOf('// escaped: template-literal') !== -1) {
+                text = raw.replace(/\\([\\`$])/g, '$1');
+            }
+            // older files: fall back to the tolerant reader for stray escapes
+            try { JSON.parse(text); return text; }
+            catch (e) {
+                const fixed = text.replace(/\\\\|\\(["\/bfnrtu])|\\/g, (m, ok) => m === '\\\\' ? m : (ok ? m : ''));
+                return fixed;
+            }
+        },
+
         // ===== VALIDATE =====
         validate: function(formatData) {
             try {
@@ -102,12 +122,12 @@
                 }
                 
                 // Try to extract and parse the data
-                const match = formatData.match(/const exportedData = `([\s\S]*?)`;/);
+                const match = (formatData.match(/const exportedData = `([\s\S]*?)`;\s*\/\/ Register the import/) || formatData.match(/const exportedData = `([\s\S]*?)`;/));
                 if (!match || !match[1]) {
                     return { valid: false, error: 'Could not extract export data' };
                 }
                 
-                const parsed = JSON.parse(match[1]);
+                const parsed = JSON.parse(this.readData(formatData, match[1]));
                 
                 // Validate structure
                 if (!parsed.version || !parsed.data || !parsed.data.tabs || !parsed.data.tabComponents) {

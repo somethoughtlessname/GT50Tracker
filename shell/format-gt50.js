@@ -46,7 +46,7 @@
                     const componentArray = tabComponents[index] || [];
                     const tabNum = `${index + 1}`;
                     
-                    output.push(`--- TAB ${tabNum} START: ${tabLabel} ---`);
+                    output.push(`--- TAB ${tabNum} START: ${this.escape(tabLabel)} ---`);
                     
                     // Tab color if present
                     if (tab.color) {
@@ -109,7 +109,7 @@
                     const componentArray = nestData.tabComponents[index] || [];
                     const tabNum = `${nestNum}.${index + 1}`;
                     
-                    output.push(`--- TAB ${tabNum} START: ${tabLabel} ---`);
+                    output.push(`--- TAB ${tabNum} START: ${this.escape(tabLabel)} ---`);
                     
                     // Tab color if present
                     if (tab.color) {
@@ -201,7 +201,7 @@
                         const nestedArray = state.tabComponents[tabIdx] || [];
                         const tabNum = `${nestNumber}.${tabIdx + 1}`;
                         
-                        output.push(`--- TAB ${tabNum} START: ${tabLabel} ---`);
+                        output.push(`--- TAB ${tabNum} START: ${this.escape(tabLabel)} ---`);
                         
                         // Tab color if present
                         if (tab.color) {
@@ -384,7 +384,16 @@
                             output.push(`scale-item|${this.escape(item.number)}|${this.escape(item.unit)}|${this.escape(item.title)}`);
                         });
                     }
+                    if (state.multiplier && state.multiplier !== 1) output.push(`scale-multiplier|${state.multiplier}`);
                     break;
+            }
+            
+            // Settings kept in a round trip
+            if (type === 'tier' && state.autofillEnabled) {
+                output.push(`tier-autofill|${this.escape(state.autofillCollect || '')}|${this.escape(state.autofillObjects || '')}|${this.escape(state.autofillObjectsSingular || '')}`);
+            }
+            if (type === 'history' && (state.displayMode || state.locked)) {
+                output.push(`history-settings|${state.displayMode || 'timeSince'}|${state.locked ? 'true' : 'false'}`);
             }
             
             output.push('');
@@ -417,7 +426,7 @@
                 
                 if (line.startsWith('=====')) continue;
                 
-                const parts = line.split('|');
+                const parts = this.splitLine(line);
                 const type = parts[0];
                 
                 // Parse header
@@ -483,7 +492,7 @@
                 // Main window tabs or nested tabs
                 if (line.match(/^--- TAB [\d.]+ START:/)) {
                     const match = line.match(/^--- TAB [\d.]+ START: (.+) ---$/);
-                    const tabLabel = match[1];
+                    const tabLabel = this.unescape(match[1]);
                     
                     if (currentContainer) {
                         // Tab inside a nest/cycle
@@ -524,7 +533,7 @@
                 if (line.match(/^--- (NEST|CYCLE) [\d.]+ START:/)) {
                     const match = line.match(/^--- (NEST|CYCLE) [\d.]+ START: (.+) ---$/);
                     const isNest = match[1] === 'NEST';
-                    const nestName = match[2];
+                    const nestName = this.unescape(match[2]);
                     
                     const nestCard = {
                         id: Date.now() + Math.random(),
@@ -543,6 +552,7 @@
                     };
                     
                     if (!isNest) {
+                        nestCard.state.isCycle = true;
                         nestCard.state.resetInterval = 'daily';
                         nestCard.state.lastReset = 0;
                         nestCard.state.resetTime = '00:00';
@@ -628,7 +638,10 @@
                         continue;
                     }
                     if (type === 'cycle-reset-hour') {
-                        currentContainer.card.state.resetHour = parseInt(parts[1]);
+                        const h = parseInt(parts[1]) || 0;
+                        currentContainer.card.state.resetHour = h;
+                        currentContainer.card.state.resetHourDisplay = (h % 12) || 12;
+                        currentContainer.card.state.resetPeriod = h < 12 ? 'AM' : 'PM';
                         continue;
                     }
                     if (type === 'show-countdown') {
@@ -671,12 +684,13 @@
                         const nextLine = lines[j].trim();
                         if (!nextLine) continue;
                         
-                        const nextParts = nextLine.split('|');
+                        const nextParts = this.splitLine(nextLine);
                         const nextType = nextParts[0];
                         
                         const subItemTypes = ['dropdown', 'list-item', 'checklist-item', 'tier-level', 
                                             'radio-option', 'threshold-item', 'text-content', 'text-alignment',
-                                            'text-weight', 'text-font', 'history-entry', 'scale-item', 'tier-progress'];
+                                            'text-weight', 'text-font', 'history-entry', 'scale-item', 'tier-progress',
+                                            'scale-multiplier', 'tier-autofill', 'history-settings'];
                         
                         if (subItemTypes.includes(nextType)) {
                             this.parseCardContent(nextType, nextParts, currentCard.state);
@@ -778,8 +792,8 @@
                     card.state.title = this.unescape(parts[1]);
                     card.state.text = '';
                     card.state.alignment = 'left';
-                    card.state.fontWeight = 'normal';
-                    card.state.fontStyle = 'normal';
+                    card.state.fontWeight = '600';
+                    card.state.fontStyle = 'system';
                     card.state.open = false;
                     card.state.dropdownText = '';
                     break;
@@ -882,6 +896,22 @@
                     });
                     break;
                 
+                case 'scale-multiplier':
+                    state.multiplier = parseInt(parts[1]) || 1;
+                    break;
+                
+                case 'tier-autofill':
+                    state.autofillEnabled = true;
+                    state.autofillCollect = this.unescape(parts[1] || '');
+                    state.autofillObjects = this.unescape(parts[2] || '');
+                    state.autofillObjectsSingular = this.unescape(parts[3] || '');
+                    break;
+                
+                case 'history-settings':
+                    state.displayMode = parts[1] || 'timeSince';
+                    state.locked = parts[2] === 'true';
+                    break;
+                
                 case 'scale-item':
                     if (!state.items) state.items = [];
                     state.items.push({
@@ -919,6 +949,22 @@
             }
         },
         
+        // ===== SPLIT A LINE ON ITS FIELD PIPES =====
+        // A "|" written as "\|" inside a title stays part of the text.
+        // The backslashes are kept so unescape() turns them back afterwards.
+        splitLine: function(line) {
+            const parts = [];
+            let cur = '';
+            for (let k = 0; k < line.length; k++) {
+                const ch = line[k];
+                if (ch === '\\' && k + 1 < line.length) { cur += ch + line[k + 1]; k++; continue; }
+                if (ch === '|') { parts.push(cur); cur = ''; continue; }
+                cur += ch;
+            }
+            parts.push(cur);
+            return parts;
+        },
+
         // ===== ESCAPE/UNESCAPE =====
         escape: function(str) {
             if (typeof str !== 'string') return str;

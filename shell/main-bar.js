@@ -59,7 +59,7 @@
         .gt-add, .gt-edit {
             position: relative; height: 45px; padding: 0 16px;
             display: flex; align-items: center; justify-content: center;
-            border: var(--border-width) solid var(--border-color); border-radius: 8px;
+            border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius);
             color: var(--color-10); cursor: pointer; user-select: none; -webkit-user-select: none;
             font: 700 min(1rem, 4vw)/1 Georgia, 'Times New Roman', serif; letter-spacing: .14em; text-transform: uppercase;
         }

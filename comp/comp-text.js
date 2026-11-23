@@ -41,7 +41,7 @@
                 <div style="
                     background: var(--color-6);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -152,7 +152,7 @@
                 </div>
                 ${state.open ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -162,7 +162,7 @@
                     <div style="
                         background: var(--color-6);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         margin-bottom: var(--margin);
@@ -176,7 +176,7 @@
                     <div style="
                         background: var(--color-6);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         margin-bottom: var(--margin);
@@ -190,7 +190,7 @@
                     <div style="
                         background: var(--color-6);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         margin-bottom: var(--margin);
@@ -209,7 +209,7 @@
                             width: 100%;
                             background: var(--bg-3);
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             color: var(--color-10);
                             padding: 8px;
                             font-size: 14px;
@@ -330,7 +330,7 @@ renderView: function(container, state, onChange) {
         <div style="
             background: var(--bg-2);
             border: var(--border-width) solid var(--border-color);
-            border-radius: 8px;
+            border-radius: var(--card-radius);
             margin-bottom: var(--margin);
             overflow: hidden;
             min-height: var(--card-height);

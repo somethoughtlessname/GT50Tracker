@@ -17,7 +17,7 @@
         <div style="
             background: ${cardColor};
             border: var(--border-width) solid var(--border-color);
-            border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+            border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
             height: var(--card-height);
             display: flex;
             align-items: center;
@@ -134,7 +134,7 @@
                 </div>
                 ${state.open ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -144,7 +144,7 @@
                     <div style="
                         background: var(--color-2);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -221,7 +221,7 @@
                     <div style="
                         background: var(--primary);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         overflow: hidden;
@@ -239,7 +239,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open && showDropdown ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open && showDropdown ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -301,7 +301,7 @@
                 </div>
                 ${state.open && showDropdown ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -311,7 +311,7 @@
                     <div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -347,7 +347,7 @@
                     <div style="
                         background: var(--primary);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         overflow: hidden;
@@ -359,7 +359,7 @@
                         <button data-action="adjust" data-amount="-10" style="flex: 1; background: #7a6cb8; border: none; color: var(--color-10); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;">-10</button>
                     </div>
                     ${numpadCard}
-                    <button data-action="toggle-numpad" style="background: var(--color-10); border: var(--border-width) solid var(--border-color); border-radius: 8px; height: 32px; width: 100%; font-weight: 600; color: var(--color-9); font-size: 12px; cursor: pointer; font-family: inherit;">${state.numpadOpen ? '×' : 'Input Exact Number'}</button>
+                    <button data-action="toggle-numpad" style="background: var(--color-10); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); height: 32px; width: 100%; font-weight: 600; color: var(--color-9); font-size: 12px; cursor: pointer; font-family: inherit;">${state.numpadOpen ? '×' : 'Input Exact Number'}</button>
                 </div>` : ''}
             `;
             

@@ -38,7 +38,7 @@
                     width: 20px;
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: ${totalHeight}px;
                     display: flex;
                     flex-direction: column;

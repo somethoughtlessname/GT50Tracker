@@ -22,7 +22,7 @@
         <div style="
             background: ${cardColor};
             border: var(--border-width) solid var(--border-color);
-            border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+            border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
             height: var(--card-height);
             display: flex;
             align-items: center;
@@ -164,7 +164,7 @@
                 </div>
                 ${state.open ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -174,7 +174,7 @@
                     <div style="
                         background: var(--color-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -262,7 +262,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.viewOpen && hasDropdownText ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.viewOpen && hasDropdownText ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -296,7 +296,7 @@
                             left: 0;
                             height: 100%;
                             width: ${percent}%;
-                            background: ${isCompleted ? '#9a6b09' : (tabColor || 'var(--color-5)')};
+                            background: ${isCompleted ? 'var(--gold)' : (tabColor || 'var(--accent)')};
                             transition: width 0.3s ease;
                         "></div>
                         <div style="
@@ -346,7 +346,7 @@
                 </div>
                 ${state.viewOpen && hasDropdownText ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -356,7 +356,7 @@
                     <div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;

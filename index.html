@@ -159,6 +159,7 @@ html {
 <script src="shell/fit-text.js"></script>
 <script src="shell/search.js"></script>
 <script src="shell/styles.js"></script>
+<script src="shell/parts.js"></script>
 <script src="shell/header.js"></script>
 <script src="shell/insert.js"></script>
 <script src="shell/impex.js"></script>
@@ -361,7 +362,7 @@ html {
             const wrapper = document.createElement('div');
             wrapper.innerHTML = `
                 <div style="height: var(--card-height); margin-bottom: var(--margin); background: var(--bg-5);
-                    border: var(--border-width) solid var(--border-color); border-radius: 8px;
+                    border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius);
                     display: flex; align-items: center; overflow: hidden; color: var(--color-10);">
                     <div style="flex: 1; padding: 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 1px;">
                         ${GT50.escapeHTML(String(component.type).toUpperCase())} — NOT INSTALLED</div>
@@ -2299,7 +2300,7 @@ function renderNestEditWindow() {
                             <div style="
                                 background: var(--color-5-3);
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: var(--card-height);
                                 display: flex;
                                 align-items: center;
@@ -2405,7 +2406,7 @@ function renderNestEditWindow() {
                             <div style="
                                 background: var(--bg-3);
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: var(--card-height);
                                 display: flex;
                                 align-items: center;
@@ -2846,7 +2847,7 @@ if (isMainView()) {
         const msg = all.length === 0 ? 'NOTHING HERE YET — TAP ADD NEW'
             : (mainQuery ? 'NOTHING MATCHES YOUR SEARCH' : 'NOTHING MATCHES THIS FILTER');
         const empty = document.createElement('div');
-        empty.style.cssText = 'padding: 24px 12px; background: var(--bg-3); border: var(--border-width) solid var(--border-color); border-radius: 8px; text-align: center; color: var(--color-9); font-size: 13px; font-weight: 700; letter-spacing: 1px;';
+        empty.style.cssText = 'padding: 24px 12px; background: var(--bg-3); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); text-align: center; color: var(--color-9); font-size: 13px; font-weight: 700; letter-spacing: 1px;';
         empty.textContent = msg;
         container.appendChild(empty);
     }

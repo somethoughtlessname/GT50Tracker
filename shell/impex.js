@@ -349,7 +349,7 @@
                     height: var(--card-height);
                     background: var(--bg-4);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     cursor: ${canCycle ? 'pointer' : 'default'};
                     transition: filter 0.2s;
@@ -638,7 +638,7 @@
                 <div style="
                     background: var(--color-1);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     padding: 12px;
                     margin-bottom: var(--margin);
                     color: var(--color-10);
@@ -654,7 +654,7 @@
                         flex: 1;
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         color: var(--color-10);
                         padding: 12px;
                         font-family: 'Courier New', monospace;
@@ -728,7 +728,7 @@
                     height: var(--card-height);
                     background: var(--color-10);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -751,7 +751,7 @@
                         flex: 1;
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         color: var(--color-10);
                         padding: 12px;
                         font-family: 'Courier New', monospace;

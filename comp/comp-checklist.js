@@ -22,7 +22,7 @@ const itemDropdownColor = cardColor;
     <div style="
         background: ${itemDropdownColor};
         border: var(--border-width) solid var(--border-color);
-        border-radius: 8px;
+        border-radius: var(--card-radius);
         height: 32px;
         display: flex;
         align-items: center;
@@ -41,88 +41,13 @@ const itemDropdownColor = cardColor;
                 color: var(--color-10);
                 padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
                 padding-right: 102px;
-                font-size: 12px;
+                font-size: var(--item-text-size);
                 font-weight: 600;
                 height: 32px;
                 outline: none;
                 font-family: inherit;
             ">
-        <div style="
-            position: absolute;
-            top: 0;
-            right: 0;
-            display: flex;
-            height: 32px;
-            border-left: var(--border-width) solid var(--border-color);
-        ">
-            <button data-action="move-up" data-idx="${idx}" style="
-                width: 32px;
-                height: 32px;
-                background: transparent;
-                border: none;
-                border-right: var(--border-width) solid var(--border-color);
-                color: var(--color-10);
-                cursor: pointer;
-                font-family: inherit;
-                position: relative;
-            ">
-                <div style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: ${itemDropdownColor};
-                    filter: brightness(0.75);
-                    z-index: -1;
-                "></div>▲
-            </button>
-            <button data-action="move-down" data-idx="${idx}" style="
-                width: 32px;
-                height: 32px;
-                background: transparent;
-                border: none;
-                border-right: var(--border-width) solid var(--border-color);
-                color: var(--color-10);
-                cursor: pointer;
-                font-family: inherit;
-                position: relative;
-            ">
-                <div style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: ${itemDropdownColor};
-                    filter: brightness(0.75);
-                    z-index: -1;
-                "></div>▼
-            </button>
-            <button data-action="delete" data-idx="${idx}" style="
-                width: 32px;
-                height: 32px;
-                background: transparent;
-                border: none;
-                color: var(--color-10);
-                cursor: pointer;
-                font-weight: 700;
-                font-size: 16px;
-                font-family: inherit;
-                position: relative;
-            ">
-                <div style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: ${itemDropdownColor};
-                    filter: brightness(0.75);
-                    z-index: -1;
-                "></div>×
-            </button>
-        </div>
+        ${GT50.parts.itemControls(idx, itemDropdownColor)}
     </div>
 `).join('');
             
@@ -131,7 +56,7 @@ const itemDropdownColor = cardColor;
     <div style="
         background: ${cardColor};
         border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -248,7 +173,7 @@ const itemDropdownColor = cardColor;
                 </div>
                 ${state.open ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -258,7 +183,7 @@ const itemDropdownColor = cardColor;
                     <div style="
                         background: var(--color-1-2);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -285,7 +210,7 @@ const itemDropdownColor = cardColor;
                     <button data-action="add" style="
                         background: var(--color-10);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         width: 100%;
                         font-weight: 600;
@@ -386,7 +311,7 @@ const itemDropdownColor = cardColor;
                 <div data-action="toggle-item" data-idx="${idx}" style="
                     background: var(--bg-3);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -397,7 +322,7 @@ const itemDropdownColor = cardColor;
                     <div style="
                         width: 32px;
                         height: 100%;
-                        background: ${item.completed ? (tabColor || 'var(--color-5)') : 'var(--color-10)'};
+                        background: ${item.completed ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         border-right: var(--border-width) solid var(--border-color);
                         display: flex;
                         align-items: center;
@@ -425,7 +350,7 @@ const itemDropdownColor = cardColor;
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open && showDropdown ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open && showDropdown ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -435,7 +360,7 @@ const itemDropdownColor = cardColor;
                     <div data-action="toggle-all" style="
                         width: var(--square-section);
                         height: 100%;
-                        background: ${allCompleted ? (tabColor || 'var(--color-5)') : 'var(--color-10)'};
+                        background: ${allCompleted ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         border-right: var(--border-width) solid var(--border-color);
                         display: flex;
                         align-items: center;
@@ -461,7 +386,7 @@ padding-top: var(--check-position);
     left: 0;
     height: 100%;
     width: ${allCompleted ? 0 : percentage}%;
-    background: ${tabColor || 'var(--color-5)'};
+    background: ${tabColor || 'var(--accent)'};
 "></div>
                         <div style="
                             position: relative;
@@ -504,19 +429,12 @@ padding-top: var(--check-position);
                         justify-content: center;
                         cursor: pointer;
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.open ? '180deg' : '0deg'});
-                        "></div>
+                        <span style="display: contents; color: var(--color-10);">${state.open ? '▲' : '▼'}</span>
                     </div>` : ''}
                 </div>
                 ${state.open && showDropdown ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -526,7 +444,7 @@ padding-top: var(--check-position);
                     ${hasDropdownText ? `<div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;

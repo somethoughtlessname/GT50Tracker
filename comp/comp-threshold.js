@@ -41,7 +41,7 @@ const itemDropdownColor = cardColor;
                 <div style="
                     background: var(--color-1-4);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -60,24 +60,13 @@ const itemDropdownColor = cardColor;
                             color: var(--color-10);
                             padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
                             padding-right: 102px;
-                            font-size: 12px;
+                            font-size: var(--item-text-size);
                             font-weight: 600;
                             height: 32px;
                             outline: none;
                             font-family: inherit;
                         ">
-                    <div style="
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        display: flex;
-                        height: 32px;
-                        border-left: var(--border-width) solid var(--border-color);
-                    ">
-                        <button data-action="move-up" data-idx="${idx}" style="width: 32px; height: 32px; background: var(--color-1-4); border: none; border-right: var(--border-width) solid var(--border-color); color: var(--color-10); cursor: pointer; font-family: inherit;">▲</button>
-                        <button data-action="move-down" data-idx="${idx}" style="width: 32px; height: 32px; background: var(--color-1-4); border: none; border-right: var(--border-width) solid var(--border-color); color: var(--color-10); cursor: pointer; font-family: inherit;">▼</button>
-                        <button data-action="delete" data-idx="${idx}" style="width: 32px; height: 32px; background: var(--color-1-4); border: none; color: var(--color-10); cursor: pointer; font-weight: 700; font-size: 16px; font-family: inherit;">×</button>
-                    </div>
+                    ${GT50.parts.itemControls(idx, 'var(--color-1-4)')}
                 </div>
             `).join('');
             
@@ -86,7 +75,7 @@ const itemDropdownColor = cardColor;
                 <div style="
                     background: var(--color-1-4);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -276,7 +265,7 @@ const itemDropdownColor = cardColor;
                 </div>
                 ${state.open ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -286,7 +275,7 @@ const itemDropdownColor = cardColor;
                     <div style="
                         background: var(--color-1-4);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -313,7 +302,7 @@ const itemDropdownColor = cardColor;
                     <button data-action="add" style="
                         background: var(--color-10);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         width: 100%;
                         font-weight: 600;
@@ -498,14 +487,14 @@ const itemDropdownColor = cardColor;
             let checkboxBg, checkboxSymbol, checkboxFontSize, checkboxPadding, checkboxColor;
             
             if (allCompleted) {
-                checkboxBg = '#9a6b09';
+                checkboxBg = 'var(--gold)';
                 checkboxSymbol = '✓';
                 checkboxFontSize = 'var(--check-size)';
                 checkboxPadding = 'var(--check-position)';
                 checkboxColor = 'var(--color-10)';
                 state.manuallyChecked = false;
             } else if (thresholdMet) {
-    checkboxBg = tabColor || 'var(--color-5)';
+    checkboxBg = tabColor || 'var(--accent)';
                 checkboxSymbol = '✓';
                 checkboxFontSize = 'var(--check-size)';
                 checkboxPadding = 'var(--check-position)';
@@ -516,13 +505,13 @@ const itemDropdownColor = cardColor;
                 checkboxSymbol = '✓';
                 checkboxFontSize = 'var(--check-size)';
                 checkboxPadding = 'var(--check-position)';
-                checkboxColor = tabColor || 'var(--color-5)';
+                checkboxColor = tabColor || 'var(--accent)';
             } else if (completed > 0) {
                 checkboxBg = 'var(--color-10)';
                 checkboxSymbol = '*';
                 checkboxFontSize = '30px';
                 checkboxPadding = '15px';
-                checkboxColor = tabColor || 'var(--color-5)';
+                checkboxColor = tabColor || 'var(--accent)';
             } else {
                 checkboxBg = 'var(--color-10)';
                 checkboxSymbol = '';
@@ -544,11 +533,11 @@ const itemDropdownColor = cardColor;
                         ${Array.from({ length: totalBarSegments }, (_, idx) => {
     let segmentColor;
     if (allCompleted) {
-        segmentColor = '#9a6b09';  // ← ALL segments gold when everything complete
+        segmentColor = 'var(--gold)';  // ← ALL segments gold when everything complete
     } else if (idx < requiredComplete) {
-        segmentColor = idx < completed ? (tabColor || 'var(--color-5)') : 'var(--bg-1)';
+        segmentColor = idx < completed ? (tabColor || 'var(--accent)') : 'var(--bg-1)';
     } else {
-        segmentColor = idx < completed ? '#9a6b09' : 'var(--bg-1)';  // ← GOLD for bonus completions beyond threshold
+        segmentColor = idx < completed ? 'var(--gold)' : 'var(--bg-1)';  // ← GOLD for bonus completions beyond threshold
     }
     return `<div style="flex: 1; background: ${segmentColor}; border-radius: 2px;"></div>`;
 }).join('')}
@@ -560,7 +549,7 @@ const itemDropdownColor = cardColor;
                 <div data-action="toggle-item" data-idx="${idx}" style="
                     background: var(--bg-3);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -571,14 +560,14 @@ const itemDropdownColor = cardColor;
                     <div style="
                         width: 32px;
                         height: 100%;
-                        background: ${item.completed ? (tabColor || 'var(--color-5)') : 'var(--color-10)'};
+                        background: ${item.completed ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         border-right: var(--border-width) solid var(--border-color);
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-size: ${item.completed ? '14px' : '30px'};
                         font-weight: var(--asterisk-weight);
-                        color: ${item.completed ? 'var(--color-10)' : (tabColor || 'var(--color-5)')};
+                        color: ${item.completed ? 'var(--color-10)' : (tabColor || 'var(--accent)')};
                         padding-top: ${item.completed ? '0px' : '15px'};
                     ">${item.completed ? '✓' : '*'}</div>
                     <div style="
@@ -599,7 +588,7 @@ const itemDropdownColor = cardColor;
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open && showDropdown ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open && showDropdown ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -650,19 +639,12 @@ const itemDropdownColor = cardColor;
                         justify-content: center;
                         cursor: pointer;
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.open ? '180deg' : '0deg'});
-                        "></div>
+                        <span style="display: contents; color: var(--color-10);">${state.open ? '▲' : '▼'}</span>
                     </div>` : ''}
                 </div>
                 ${state.open && showDropdown ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -672,7 +654,7 @@ const itemDropdownColor = cardColor;
                     ${hasDropdownText ? `<div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;

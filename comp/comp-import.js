@@ -36,7 +36,7 @@
                 <div style="
                     background: ${bgColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -245,7 +245,7 @@
                             flex: 1;
                             background: var(--bg-3);
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             color: var(--color-10);
                             padding: 12px;
                             font-family: 'Courier New', monospace;
@@ -260,7 +260,7 @@
                         height: var(--card-height);
                         background: var(--accent);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         color: var(--color-10);
                         font-size: 14px;
                         font-weight: 700;
@@ -281,7 +281,7 @@
                     <div style="
                         background: var(--bg-4);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         padding: 12px;
                         font-size: 11px;
                         color: var(--color-7);

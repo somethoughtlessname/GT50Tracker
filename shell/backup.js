@@ -154,12 +154,12 @@
             font: 700 12px Arial, sans-serif; text-transform: uppercase; letter-spacing: .5px; }
         .jj-div::before, .jj-div::after { content: ''; flex: 1; height: var(--border-width); background: var(--border-color); }
         .jj-card { display: flex; min-height: var(--card-height); background: var(--bg-2); color: var(--color-10);
-            border: var(--border-width) solid var(--border-color); border-radius: 8px; overflow: hidden; }
+            border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; }
         .jj-half { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 6px; }
         .jj-half + .jj-half { border-left: var(--border-width) solid var(--border-color); }
         .jj-half small { font: 700 10px Arial, sans-serif; text-transform: uppercase; opacity: .7; letter-spacing: .5px; }
         .jj-half b { font-size: 16px; }
-        .jj-seg { display: flex; height: var(--card-height); border: var(--border-width) solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        .jj-seg { display: flex; height: var(--card-height); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; }
         .jj-seg button { flex: 1 1 0; min-width: 0; border: 0; background: var(--bg-4); color: var(--color-10);
             font: 700 13px Arial, sans-serif; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column;
             align-items: center; justify-content: center; gap: 3px; }
@@ -168,7 +168,7 @@
         .jj-days { display: flex; gap: 2px; }
         .jj-days i { font: 700 10px Arial, sans-serif; font-style: normal; width: 14px; height: 14px; line-height: 14px; border-radius: 3px; text-align: center; opacity: .55; }
         .jj-days i.on { background: var(--color-10); color: var(--color-4); opacity: 1; }
-        .jj-loc { display: flex; height: var(--card-height); border: var(--border-width) solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        .jj-loc { display: flex; height: var(--card-height); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; }
         .jj-loc button { border: 0; cursor: pointer; color: var(--color-10); font-family: inherit; }
         .jj-loc .pick { flex: 1; min-width: 0; background: var(--bg-2); text-align: left; padding: 0 12px; display: flex; flex-direction: column; justify-content: center; }
         .jj-loc .pick small { font: 700 10px Arial, sans-serif; text-transform: uppercase; opacity: .7; }
@@ -176,7 +176,7 @@
         .jj-loc .clear { width: 45px; background: var(--color-1); border-left: var(--border-width) solid var(--border-color); font-size: 18px; font-weight: 700; }
         .jj-how { text-align: center; color: var(--bg-2); font-size: 12px; line-height: 1.4; padding: 2px 8px; }
         .jj-rs { display: flex; width: 100%; min-height: var(--card-height); padding: 0; background: var(--bg-2); color: var(--color-10); text-align: left;
-            border: var(--border-width) solid var(--border-color); border-radius: 8px; overflow: hidden; cursor: pointer; font-family: inherit; }
+            border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; cursor: pointer; font-family: inherit; }
         .jj-rs.on { background: var(--color-5); }
         .jj-rs span { flex: 1 1 0; min-width: 0; padding: 6px 8px; display: flex; flex-direction: column; justify-content: center; font-size: 12px; }
         .jj-rs span + span { border-left: var(--border-width) solid var(--border-color); }
@@ -188,7 +188,7 @@
 
         #jj-remind { position: fixed; inset: 0; z-index: 5000; display: flex; align-items: center; justify-content: center;
             background: rgba(43,38,32,.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 16px; }
-        #jj-remind .box { width: 100%; max-width: 360px; background: var(--bg-1); border: var(--border-width) solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        #jj-remind .box { width: 100%; max-width: 360px; background: var(--bg-1); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; }
         #jj-remind h3 { background: var(--bg-3); color: var(--color-10); text-align: center; font-size: 15px; padding: 12px; border-bottom: var(--border-width) solid var(--border-color); }
         #jj-remind p { color: var(--bg-2); padding: 16px 14px; text-align: center; font-size: 14px; line-height: 1.4; }
         #jj-remind .row { display: flex; border-top: var(--border-width) solid var(--border-color); height: var(--card-height); }

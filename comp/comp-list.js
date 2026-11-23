@@ -22,7 +22,7 @@
                 <div style="
                     background: ${cardColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -41,88 +41,13 @@
                             color: var(--color-10);
                             padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
                             padding-right: 102px;
-                            font-size: var(--dropdown-text-size);
-                            font-weight: var(--dropdown-text-weight);
+                            font-size: var(--item-text-size);
+                            font-weight: 600;
                             height: 32px;
                             outline: none;
                             font-family: inherit;
                         ">
-                    <div style="
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        display: flex;
-                        height: 32px;
-                        border-left: var(--border-width) solid var(--border-color);
-                    ">
-                        <button data-action="move-up" data-idx="${idx}" style="
-                            width: 32px;
-                            height: 32px;
-                            background: transparent;
-                            border: none;
-                            border-right: var(--border-width) solid var(--border-color);
-                            color: var(--color-10);
-                            cursor: pointer;
-                            font-family: inherit;
-                            position: relative;
-                        ">
-                            <div style="
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                background: ${itemDropdownColor};
-                                filter: brightness(0.75);
-                                z-index: -1;
-                            "></div>▲
-                        </button>
-                        <button data-action="move-down" data-idx="${idx}" style="
-                            width: 32px;
-                            height: 32px;
-                            background: transparent;
-                            border: none;
-                            border-right: var(--border-width) solid var(--border-color);
-                            color: var(--color-10);
-                            cursor: pointer;
-                            font-family: inherit;
-                            position: relative;
-                        ">
-                            <div style="
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                background: ${itemDropdownColor};
-                                filter: brightness(0.75);
-                                z-index: -1;
-                            "></div>▼
-                        </button>
-                        <button data-action="delete" data-idx="${idx}" style="
-                            width: 32px;
-                            height: 32px;
-                            background: transparent;
-                            border: none;
-                            color: var(--color-10);
-                            cursor: pointer;
-                            font-weight: 700;
-                            font-size: 16px;
-                            font-family: inherit;
-                            position: relative;
-                        ">
-                            <div style="
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                background: ${itemDropdownColor};
-                                filter: brightness(0.75);
-                                z-index: -1;
-                            "></div>×
-                        </button>
-                    </div>
+                    ${GT50.parts.itemControls(idx, itemDropdownColor)}
                 </div>
             `).join('');
             
@@ -131,7 +56,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -251,7 +176,7 @@
                 </div>
                 ${state.open ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -261,7 +186,7 @@
                     <div style="
                         background: ${cardColor};
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -288,7 +213,7 @@
                     <button data-action="add" style="
                         background: var(--color-10);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         width: 100%;
                         font-weight: 600;
@@ -403,12 +328,12 @@
                 const isPartial = uncompleted > 0 && completed > 0;
                 
                 checkboxContent = allCompleted ? '✓' : (isPartial ? '*' : '');
-                checkboxBg = allCompleted ? (tabColor || 'var(--color-4)') : (isPartial ? 'var(--color-10)' : 'var(--color-10)');
-                checkboxColor = allCompleted ? 'var(--color-10)' : (isPartial ? (tabColor || 'var(--color-4)') : (tabColor || 'var(--color-4)'));
+                checkboxBg = allCompleted ? (tabColor || 'var(--accent)') : (isPartial ? 'var(--color-10)' : 'var(--color-10)');
+                checkboxColor = allCompleted ? 'var(--color-10)' : (isPartial ? (tabColor || 'var(--accent)') : (tabColor || 'var(--accent)'));
             } else {
                 // Single item mode - use state.completed
                 checkboxContent = state.completed ? '✓' : '';
-                checkboxBg = state.completed ? (tabColor || 'var(--color-4)') : 'var(--color-10)';
+                checkboxBg = state.completed ? (tabColor || 'var(--accent)') : 'var(--color-10)';
                 checkboxColor = 'var(--color-10)';
             }
             
@@ -417,7 +342,7 @@
                 <div data-action="toggle-item" data-idx="${idx}" style="
                     background: var(--bg-3);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -428,7 +353,7 @@
                     <div style="
                         width: 32px;
                         height: 100%;
-                        background: ${item.completed ? (tabColor || 'var(--color-4)') : 'var(--color-10)'};
+                        background: ${item.completed ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         border-right: var(--border-width) solid var(--border-color);
                         display: flex;
                         align-items: center;
@@ -458,7 +383,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open && showDropdown ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open && showDropdown ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -504,19 +429,12 @@
                         justify-content: center;
                         cursor: pointer;
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.open ? '180deg' : '0deg'});
-                        "></div>
+                        <span style="display: contents; color: var(--color-10);">${state.open ? '▲' : '▼'}</span>
                     </div>` : ''}
                 </div>
                 ${state.open && showDropdown ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -526,7 +444,7 @@
                     ${hasDropdownText ? `<div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;

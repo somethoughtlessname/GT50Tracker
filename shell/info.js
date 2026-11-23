@@ -29,7 +29,7 @@
                 margin: var(--margin);
                 background: var(--bg-2);
                 border: var(--border-width) solid var(--border-color);
-                border-radius: 8px;
+                border-radius: var(--card-radius);
                 height: var(--card-height);
                 display: flex;
                 align-items: center;
@@ -140,7 +140,7 @@
                     width: 100%;
                     height: var(--card-height);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     margin-bottom: ${last ? '0' : 'var(--margin)'};
                     display: flex;
                     flex-direction: column;

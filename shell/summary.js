@@ -192,7 +192,7 @@
             const difference = Math.abs(summary.completedValue - summary.totalCards);
             const isComplete = difference < 0.001;
             
-            const fillColor = isComplete ? '#9a6b09' : tabColor;
+            const fillColor = isComplete ? 'var(--gold)' : tabColor;
             
             // Determine display text based on summaryDisplayMode
             let displayText = '';
@@ -226,7 +226,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     overflow: hidden;
                     opacity: 0;
@@ -258,7 +258,7 @@
                     z-index: 10;
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 22.5px;
                     overflow: hidden;
                     transform-origin: center center;
@@ -393,7 +393,7 @@
                 // Determine color: gold if 100% complete
                 const difference = Math.abs(tabSummary.completedValue - tabSummary.totalCards);
                 const isComplete = difference < 0.001;
-                const barColor = isComplete ? '#9a6b09' : tabColor;
+                const barColor = isComplete ? 'var(--gold)' : tabColor;
                 
                 tabProgressData.push({
                     name: tabName,
@@ -458,7 +458,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     overflow: hidden;
                     opacity: 0;
@@ -475,7 +475,7 @@
                     z-index: 10;
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 22.5px;
                     overflow: hidden;
                     transform-origin: center center;

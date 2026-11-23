@@ -238,15 +238,7 @@
          */
         createDropdownArrow: function(isOpen) {
             return `
-                <div style="
-                    width: 0;
-                    height: 0;
-                    border-left: var(--dropdown-arrow-size) solid transparent;
-                    border-right: var(--dropdown-arrow-size) solid transparent;
-                    border-top: var(--dropdown-arrow-height) solid var(--color-10);
-                    transform: rotate(${isOpen ? '180deg' : '0deg'});
-                    transition: transform var(--transition-speed);
-                "></div>
+                <span style="display: contents; color: var(--color-10);">${isOpen ? '▲' : '▼'}</span>
             `;
         },
         

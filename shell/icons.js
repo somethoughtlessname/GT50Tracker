@@ -1,7 +1,7 @@
 (function() {
     // ===== ROUNDED ICONS (app shell) =====
     // Card files draw their move, delete and open/close buttons with the text
-    // glyphs ▲ ▼ × + −. Only a glyph standing alone is swapped, so labels like
+    // glyphs ▲ ▼ ◀ ▶ × + − * ✓ ● ○. Only a glyph standing alone is swapped, so labels like
     // "+ Add Objective" keep their text.
     // This swaps every such glyph, in any card or window, for a drawn icon with
     // rounded ends. Up, down and × come out the same size within a button, sized
@@ -20,7 +20,11 @@
         '−': '<path d="M4.75 12 H19.25" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>',
         // the checkbox marks: * (partly done) and ✓ (done), same width, weight and round ends
         '*': '<path d="M4.75 12 H19.25 M8.4 5.7 L15.6 18.3 M15.6 5.7 L8.4 18.3" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>',
-        '✓': '<path d="M4.75 12.5 L9.75 17.5 L19.25 6.5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>'
+        '✓': '<path d="M4.75 12.5 L9.75 17.5 L19.25 6.5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>',
+        '◀': '<path d="M5.5 12 L18.5 4.25 V19.75 Z" fill="currentColor" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>',
+        '▶': '<path d="M18.5 12 L5.5 4.25 V19.75 Z" fill="currentColor" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>',
+        '●': '<circle cx="12" cy="12" r="6.5" fill="currentColor"/>',
+        '○': '<circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="3.5"/>'
     };
     const GLYPHS = Object.keys(ICONS);
 

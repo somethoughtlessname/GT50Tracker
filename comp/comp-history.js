@@ -137,7 +137,7 @@
                     <div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: stretch;
@@ -392,7 +392,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -531,7 +531,7 @@
                 </div>
                 ${state.open ? `<div style="
                     background: var(--bg-2);
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -541,7 +541,7 @@
                     <div style="
                         background: var(--color-2-2);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -568,7 +568,7 @@
                     <div data-action="add-entry" style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -801,7 +801,7 @@
                 <div style="
                     background: var(--bg-3);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -845,7 +845,7 @@
                 <div style="
                     background: var(--bg-3);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -878,7 +878,7 @@
                     <div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;
@@ -921,7 +921,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open && showDropdown ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open && showDropdown ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -932,7 +932,7 @@
                     ${!state.locked ? `<div data-action="log-entry" style="
                         width: var(--square-section);
                         height: 100%;
-                        background: ${currentTabColor || 'var(--accent)'};
+                        background: var(--bg-4);   /* action squares (+ −) are tan on every card */
                         border-right: var(--border-width) solid var(--border-color);
                         display: flex;
                         align-items: center;
@@ -981,19 +981,12 @@
                         z-index: 2;
                         position: relative;
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.open ? '180deg' : '0deg'});
-                        "></div>
+                        <span style="display: contents; color: var(--color-10);">${state.open ? '▲' : '▼'}</span>
                     </div>` : ''}
                 </div>
                 ${state.open && showDropdown ? `<div style="
                     background: ${currentTabColor || 'var(--accent)'};
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     display: block;
                     padding: var(--margin);
                     border: var(--border-width) solid var(--border-color);
@@ -1004,7 +997,7 @@
                     ${!state.locked && hasDropdownText ? `<div style="
                         background: var(--bg-3);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         display: flex;
                         align-items: center;

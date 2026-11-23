@@ -12,7 +12,7 @@
                 autoSortByLastUpdated: false,
                 autoSortDropdownOpen: false,
                 tabs: {
-                    tabs: [{ name: 'Main', label: 'Main', color: '' }],
+                    tabs: [],   // new nests start with no tabs
                     activeViewTab: 0,
                     selectedBuildTab: 0
                 },
@@ -39,7 +39,7 @@
                 <div style="
                     background: ${bgColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -284,7 +284,7 @@
                             const difference = Math.abs(tabSummary.completedValue - tabSummary.totalCards);
                             const isComplete = difference < 0.001;
                             if (isComplete) {
-                                barColor = '#9a6b09';
+                                barColor = 'var(--gold)';
                             }
                         }
                         
@@ -305,7 +305,7 @@
                                 const difference = Math.abs(tabSummary.completedValue - tabSummary.totalCards);
                                 const isComplete = difference < 0.001;
                                 if (isComplete) {
-                                    barColor = '#9a6b09';
+                                    barColor = 'var(--gold)';
                                 }
                             }
                             
@@ -326,7 +326,7 @@
                         // Check if 100% complete
                         const difference = Math.abs(summary.completedValue - summary.totalCards);
                         const isComplete = difference < 0.001;
-                        progressColor = isComplete ? '#9a6b09' : 'var(--color-4)';
+                        progressColor = isComplete ? 'var(--gold)' : 'var(--color-4)';
                     }
                 }
             }
@@ -364,7 +364,7 @@
                 <div class="nest-view-card" style="
                     background: ${nestColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${showTabBars || isMoreDropdownOpen ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${showTabBars || isMoreDropdownOpen ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -509,7 +509,7 @@
                         background: var(--bg-2);
                         border: var(--border-width) solid var(--border-color);
                         border-top: none;
-                        border-radius: 0 0 8px 8px;
+                        border-radius: 0 0 var(--card-radius) var(--card-radius);
                         margin-top: calc(var(--border-width) * -1);
                         margin-bottom: var(--margin);
                         height: calc(var(--card-height) + 7px);
@@ -524,7 +524,7 @@
                                 flex: 1;
                                 background: white;
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: 32px;
                                 display: flex;
                                 align-items: center;
@@ -585,7 +585,7 @@
                                 height: 22.5px;
                                 background: var(--bg-4);
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 position: relative;
                                 overflow: hidden;
                                 cursor: pointer;
@@ -1124,7 +1124,7 @@
                 <div style="
                     background: var(--color-10);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -1195,7 +1195,7 @@
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1234,7 +1234,7 @@
                         width: 100%;
                         background: var(--bg-4);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: var(--card-height);
                         padding: 0 var(--text-padding-left);
                         font-size: 16px;
@@ -1250,7 +1250,7 @@
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1284,7 +1284,7 @@
                 <div style="
                     background: var(--color-10);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -1324,7 +1324,7 @@
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1361,7 +1361,7 @@
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1395,7 +1395,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.autoSortByLastUpdated && state.autoSortDropdownOpen ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.autoSortByLastUpdated && state.autoSortDropdownOpen ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -1452,21 +1452,13 @@
                         cursor: ${state.autoSortByLastUpdated ? 'pointer' : 'default'};
                         pointer-events: ${state.autoSortByLastUpdated ? 'auto' : 'none'};
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.autoSortDropdownOpen ? '180deg' : '0deg'});
-                            opacity: ${state.autoSortByLastUpdated ? '1' : '0.3'};
-                        "></div>
+                        <span style="display: contents; color: ${state.autoSortByLastUpdated ? 'var(--color-10)' : 'rgba(255,255,255,.3)'};"><span style="display: contents;">${state.autoSortDropdownOpen ? '▲' : '▼'}</span></span>
                     </div>
                 </div>
                 ${state.autoSortByLastUpdated && state.autoSortDropdownOpen ? `
                     <div style="
                         background: var(--bg-2);
-                        border-radius: 0 0 8px 8px;
+                        border-radius: 0 0 var(--card-radius) var(--card-radius);
                         padding: var(--margin);
                         border: var(--border-width) solid var(--border-color);
                         border-top: none;
@@ -1476,7 +1468,7 @@
                         <div style="
                             background: var(--bg-3);
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: 32px;
                             display: flex;
                             align-items: center;
@@ -1550,7 +1542,7 @@
                     <div style="
                         background: var(--bg-2);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: ${state.showSummary && state.summaryDropdownOpen ? '8px 8px 0 0' : '8px'};
+                        border-radius: ${state.showSummary && state.summaryDropdownOpen ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                         height: var(--card-height);
                         display: flex;
                         align-items: center;
@@ -1607,21 +1599,13 @@
                             cursor: ${state.showSummary ? 'pointer' : 'default'};
                             pointer-events: ${state.showSummary ? 'auto' : 'none'};
                         ">
-                            <div style="
-                                width: 0;
-                                height: 0;
-                                border-left: 6px solid transparent;
-                                border-right: 6px solid transparent;
-                                border-top: 8px solid var(--color-10);
-                                transform: rotate(${state.summaryDropdownOpen ? '180deg' : '0deg'});
-                                opacity: ${state.showSummary ? '1' : '0.3'};
-                            "></div>
+                            <span style="display: contents; color: ${state.showSummary ? 'var(--color-10)' : 'rgba(255,255,255,.3)'};"><span style="display: contents;">${state.summaryDropdownOpen ? '▲' : '▼'}</span></span>
                         </div>
                     </div>
                     ${state.showSummary && state.summaryDropdownOpen ? `
                         <div style="
                             background: var(--bg-2);
-                            border-radius: 0 0 8px 8px;
+                            border-radius: 0 0 var(--card-radius) var(--card-radius);
                             padding: var(--margin);
                             border: var(--border-width) solid var(--border-color);
                             border-top: none;
@@ -1631,7 +1615,7 @@
                             <div data-action="toggle-children" style="
                                 background: ${state.summaryIncludeChildren ? summaryColor : 'var(--color-10)'};
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: var(--card-height);
                                 display: flex;
                                 flex-direction: column;
@@ -1663,7 +1647,7 @@
                             <div style="
                                 background: var(--color-10);
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: var(--card-height);
                                 display: flex;
                                 align-items: center;
@@ -1762,7 +1746,7 @@
                     <div style="
                         background: var(--bg-2);
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: ${state.summaryShowChildNestProgress && state.summaryShowChildNestProgressDropdownOpen ? '8px 8px 0 0' : '8px'};
+                        border-radius: ${state.summaryShowChildNestProgress && state.summaryShowChildNestProgressDropdownOpen ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                         height: var(--card-height);
                         display: flex;
                         align-items: center;
@@ -1819,21 +1803,13 @@
                             cursor: ${state.summaryShowChildNestProgress ? 'pointer' : 'default'};
                             pointer-events: ${state.summaryShowChildNestProgress ? 'auto' : 'none'};
                         ">
-                            <div style="
-                                width: 0;
-                                height: 0;
-                                border-left: 6px solid transparent;
-                                border-right: 6px solid transparent;
-                                border-top: 8px solid var(--color-10);
-                                transform: rotate(${state.summaryShowChildNestProgressDropdownOpen ? '180deg' : '0deg'});
-                                opacity: ${state.summaryShowChildNestProgress ? '1' : '0.3'};
-                            "></div>
+                            <span style="display: contents; color: ${state.summaryShowChildNestProgress ? 'var(--color-10)' : 'rgba(255,255,255,.3)'};"><span style="display: contents;">${state.summaryShowChildNestProgressDropdownOpen ? '▲' : '▼'}</span></span>
                         </div>
                     </div>
                     ${state.summaryShowChildNestProgress && state.summaryShowChildNestProgressDropdownOpen ? `
                         <div style="
                             background: var(--bg-2);
-                            border-radius: 0 0 8px 8px;
+                            border-radius: 0 0 var(--card-radius) var(--card-radius);
                             padding: var(--margin);
                             border: var(--border-width) solid var(--border-color);
                             border-top: none;
@@ -1844,7 +1820,7 @@
                             <div data-action="set-first-tab-mode" style="
                                 background: ${(!state.summaryChildNestProgressMode || state.summaryChildNestProgressMode === 'first-tab') ? summaryColor : 'var(--color-10)'};
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: var(--card-height);
                                 display: flex;
                                 flex-direction: column;
@@ -1876,7 +1852,7 @@
                             <div data-action="set-all-tabs-mode" style="
                                 background: ${state.summaryChildNestProgressMode === 'all-tabs' ? summaryColor : 'var(--color-10)'};
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: var(--card-height);
                                 display: flex;
                                 flex-direction: column;
@@ -1908,7 +1884,7 @@
                             <div data-action="set-tab-bars-mode" style="
                                 background: ${state.summaryChildNestProgressMode === 'tab-bars' ? summaryColor : 'var(--color-10)'};
                                 border: var(--border-width) solid var(--border-color);
-                                border-radius: 8px;
+                                border-radius: var(--card-radius);
                                 height: var(--card-height);
                                 display: flex;
                                 flex-direction: column;

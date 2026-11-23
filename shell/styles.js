@@ -14,6 +14,17 @@
             --half-square: 14px;
             --border-width: 3px;
             --border-color: #000000;
+
+            /* ========================================= */
+            /* CARD ANATOMY - every card type uses these */
+            /* ========================================= */
+            --card-radius: 8px;          /* corners of every card and dropdown */
+            --item-height: 32px;         /* a row inside a card's dropdown */
+            --item-section: 32px;        /* the square buttons on such a row */
+            --item-text-size: 12px;      /* text typed on such a row */
+            --accent: var(--color-4);    /* fill for checked/done when a tab has no color */
+            --gold: #9a6b09;             /* complete */
+            --check-off: var(--color-10);/* an unchecked square */
             
             /* ========================================= */
             /* PRIMARY COLORS */
@@ -345,6 +356,17 @@
             -webkit-user-select: text;
             user-select: text;
         }
+        /* ========================================= */
+        /* CARD PARTS (shell/parts.js)               */
+        /* ========================================= */
+        .gt-ictl { position: absolute; top: 0; right: 0; display: flex; height: var(--item-height);
+            border-left: var(--border-width) solid var(--border-color); }
+        .gt-ictl button { position: relative; isolation: isolate; width: var(--item-section); height: 100%;
+            padding: 0; border: none; background: transparent; color: var(--color-10);
+            font: inherit; font-weight: 700; cursor: pointer; }
+        .gt-ictl button + button { border-left: var(--border-width) solid var(--border-color); }
+        .gt-ictl button::before { content: ''; position: absolute; inset: 0; z-index: -1;
+            background: var(--ictl); filter: brightness(var(--control-button-brightness)); }
     `;
     
     // Inject CSS into document head

@@ -19,7 +19,7 @@
                 <div style="
                     background: var(--color-9-3);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;

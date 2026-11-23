@@ -291,7 +291,7 @@ createEntry: function(state, nextId, currentComponents) {
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -325,7 +325,7 @@ createEntry: function(state, nextId, currentComponents) {
                 <div style="
                     background: var(--bg-3);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -376,7 +376,7 @@ createEntry: function(state, nextId, currentComponents) {
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -410,7 +410,7 @@ createEntry: function(state, nextId, currentComponents) {
                 <div style="
                     background: var(--color-10);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -455,7 +455,7 @@ createEntry: function(state, nextId, currentComponents) {
                 <div style="
                     background: var(--color-10);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -529,7 +529,7 @@ createEntry: function(state, nextId, currentComponents) {
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -620,15 +620,7 @@ createEntry: function(state, nextId, currentComponents) {
                         cursor: ${state.summaryState.showSummary ? 'pointer' : 'default'};
                         pointer-events: ${state.summaryState.showSummary ? 'auto' : 'none'};
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.summaryState.summaryDropdownOpen ? '180deg' : '0deg'});
-                            opacity: ${state.summaryState.showSummary ? '1' : '0.3'};
-                        "></div>
+                        <span style="display: contents; color: ${state.summaryState.showSummary ? 'var(--color-10)' : 'rgba(255,255,255,.3)'};"><span style="display: contents;">${state.summaryState.summaryDropdownOpen ? '▲' : '▼'}</span></span>
                     </div>
                 </div>
                 ${state.summaryState.showSummary && state.summaryState.summaryDropdownOpen ? `
@@ -644,7 +636,7 @@ createEntry: function(state, nextId, currentComponents) {
                         <div data-action="toggle-children" style="
                             background: ${state.summaryState.summaryIncludeChildren ? summaryColor : 'var(--color-10)'};
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: var(--card-height);
                             display: flex;
                             flex-direction: column;
@@ -677,7 +669,7 @@ createEntry: function(state, nextId, currentComponents) {
                         <div style="
                             background: var(--color-10);
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: var(--card-height);
                             display: flex;
                             align-items: center;
@@ -834,15 +826,7 @@ createEntry: function(state, nextId, currentComponents) {
                         cursor: ${state.summaryState.summaryShowChildNestProgress ? 'pointer' : 'default'};
                         pointer-events: ${state.summaryState.summaryShowChildNestProgress ? 'auto' : 'none'};
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.summaryState.summaryShowChildNestProgressDropdownOpen ? '180deg' : '0deg'});
-                            opacity: ${state.summaryState.summaryShowChildNestProgress ? '1' : '0.3'};
-                        "></div>
+                        <span style="display: contents; color: ${state.summaryState.summaryShowChildNestProgress ? 'var(--color-10)' : 'rgba(255,255,255,.3)'};"><span style="display: contents;">${state.summaryState.summaryShowChildNestProgressDropdownOpen ? '▲' : '▼'}</span></span>
                     </div>
                 </div>
                 ${state.summaryState.summaryShowChildNestProgress && state.summaryState.summaryShowChildNestProgressDropdownOpen ? `
@@ -858,7 +842,7 @@ createEntry: function(state, nextId, currentComponents) {
                         <div data-action="set-first-tab-mode" style="
                             background: ${state.summaryState.summaryChildNestProgressMode === 'first-tab' ? summaryColor : 'var(--color-10)'};
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: var(--card-height);
                             display: flex;
                             flex-direction: column;
@@ -890,7 +874,7 @@ createEntry: function(state, nextId, currentComponents) {
                         <div data-action="set-all-tabs-mode" style="
                             background: ${state.summaryState.summaryChildNestProgressMode === 'all-tabs' ? summaryColor : 'var(--color-10)'};
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: var(--card-height);
                             display: flex;
                             flex-direction: column;
@@ -922,7 +906,7 @@ createEntry: function(state, nextId, currentComponents) {
                         <div data-action="set-tab-bars-mode" style="
                             background: ${state.summaryState.summaryChildNestProgressMode === 'tab-bars' ? summaryColor : 'var(--color-10)'};
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: var(--card-height);
                             display: flex;
                             flex-direction: column;
@@ -957,7 +941,7 @@ createEntry: function(state, nextId, currentComponents) {
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1048,15 +1032,7 @@ createEntry: function(state, nextId, currentComponents) {
                         cursor: ${state.autoSortByLastUpdated ? 'pointer' : 'default'};
                         pointer-events: ${state.autoSortByLastUpdated ? 'auto' : 'none'};
                     ">
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: 6px solid transparent;
-                            border-right: 6px solid transparent;
-                            border-top: 8px solid var(--color-10);
-                            transform: rotate(${state.autoSortDropdownOpen ? '180deg' : '0deg'});
-                            opacity: ${state.autoSortByLastUpdated ? '1' : '0.3'};
-                        "></div>
+                        <span style="display: contents; color: ${state.autoSortByLastUpdated ? 'var(--color-10)' : 'rgba(255,255,255,.3)'};"><span style="display: contents;">${state.autoSortDropdownOpen ? '▲' : '▼'}</span></span>
                     </div>
                 </div>
                 ${state.autoSortByLastUpdated && state.autoSortDropdownOpen ? `
@@ -1072,7 +1048,7 @@ createEntry: function(state, nextId, currentComponents) {
                         <div style="
                             background: var(--bg-3);
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: 32px;
                             display: flex;
                             align-items: center;
@@ -1093,7 +1069,7 @@ createEntry: function(state, nextId, currentComponents) {
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1127,7 +1103,7 @@ createEntry: function(state, nextId, currentComponents) {
                 <div data-template="custom" style="
                     background: ${state.selectedTemplate === 'custom' ? 'var(--color-4-2)' : 'var(--bg-3)'};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     margin-bottom: var(--margin);
                     cursor: pointer;
@@ -1156,7 +1132,7 @@ createEntry: function(state, nextId, currentComponents) {
                     <div data-template="${template.id}" style="
                         background: ${state.selectedTemplate === template.id ? 'var(--color-4-2)' : 'var(--bg-3)'};
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: var(--card-height);
                         margin-bottom: var(--margin);
                         cursor: pointer;
@@ -1201,7 +1177,7 @@ createEntry: function(state, nextId, currentComponents) {
                     height: var(--card-height);
                     background: transparent;
                     border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1235,7 +1211,7 @@ createEntry: function(state, nextId, currentComponents) {
                     <div data-import="${imp.id}" style="
                         background: ${state.selectedImport === imp.id ? 'var(--color-4-2)' : 'var(--bg-3)'};
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: var(--card-height);
                         margin-bottom: var(--margin);
                         cursor: pointer;

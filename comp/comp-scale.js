@@ -25,7 +25,7 @@
                 <div style="
                     background: ${itemDropdownColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -190,7 +190,7 @@
                 <div style="
                     background: ${cardColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: ${state.open ? '8px 8px 0 0' : '8px'};
+                    border-radius: ${state.open ? 'var(--card-radius) var(--card-radius) 0 0' : 'var(--card-radius)'};
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -303,7 +303,7 @@
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
                     border-top: none;
-                    border-radius: 0 0 8px 8px;
+                    border-radius: 0 0 var(--card-radius) var(--card-radius);
                     padding: var(--margin);
                     margin-bottom: var(--margin);
                 ">
@@ -315,7 +315,7 @@
                             width: 100%;
                             background: ${cardColor};
                             border: var(--border-width) solid var(--border-color);
-                            border-radius: 8px;
+                            border-radius: var(--card-radius);
                             height: 32px;
                             color: var(--font-color-3);
                             padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
@@ -330,7 +330,7 @@
                         width: 100%;
                         background: ${cardColor};
                         border: var(--border-width) solid var(--border-color);
-                        border-radius: 8px;
+                        border-radius: var(--card-radius);
                         height: 32px;
                         color: var(--font-color-3);
                         font-size: 12px;
@@ -432,7 +432,7 @@
         renderView: function(container, state, onChange, tabColor) {
             const hasItems = state.items.length > 0;
             const hasDropdownText = state.dropdownText && state.dropdownText.trim() !== '';
-            const cardColor = tabColor || 'var(--color-6-3)';
+            const cardColor = tabColor || 'var(--accent)';
             
             if (!hasItems) {
                 container.innerHTML = '';
@@ -529,7 +529,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -542,7 +542,7 @@
                         padding: 0 var(--text-padding-small) 0 var(--text-padding-left);
                         font-weight: 700;
                         font-size: 16px;
-                        color: ${tabColor || 'var(--color-6-3)'};
+                        color: ${tabColor || 'var(--accent)'};
                         background: var(--color-10);
                         border-right: var(--border-width) solid var(--border-color);
                         height: 100%;
@@ -568,7 +568,7 @@
                 <div style="
                     background: ${cardColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -583,7 +583,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: stretch;
@@ -599,7 +599,7 @@
                         cursor: pointer;
                         font-weight: 700;
                         font-size: 16px;
-                        background: ${state.multiplier === 1 ? (tabColor || 'var(--color-6-3)') : 'var(--color-10)'};
+                        background: ${state.multiplier === 1 ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         color: ${state.multiplier === 1 ? 'var(--color-10)' : 'var(--color-9)'};
                     ">x1</div>
                     <div data-multiplier="2" style="
@@ -611,7 +611,7 @@
                         cursor: pointer;
                         font-weight: 700;
                         font-size: 16px;
-                        background: ${state.multiplier === 2 ? (tabColor || 'var(--color-6-3)') : 'var(--color-10)'};
+                        background: ${state.multiplier === 2 ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         color: ${state.multiplier === 2 ? 'var(--color-10)' : 'var(--color-9)'};
                     ">x2</div>
                     <div data-multiplier="3" style="
@@ -623,7 +623,7 @@
                         cursor: pointer;
                         font-weight: 700;
                         font-size: 16px;
-                        background: ${state.multiplier === 3 ? (tabColor || 'var(--color-6-3)') : 'var(--color-10)'};
+                        background: ${state.multiplier === 3 ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         color: ${state.multiplier === 3 ? 'var(--color-10)' : 'var(--color-9)'};
                     ">x3</div>
                     <div data-multiplier="4" style="
@@ -634,7 +634,7 @@
                         cursor: pointer;
                         font-weight: 700;
                         font-size: 16px;
-                        background: ${state.multiplier === 4 ? (tabColor || 'var(--color-6-3)') : 'var(--color-10)'};
+                        background: ${state.multiplier === 4 ? (tabColor || 'var(--accent)') : 'var(--color-10)'};
                         color: ${state.multiplier === 4 ? 'var(--color-10)' : 'var(--color-9)'};
                     ">x4</div>
                 </div>

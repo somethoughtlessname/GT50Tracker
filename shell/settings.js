@@ -89,7 +89,7 @@ renderContent: function(container, settingsState, onChange, cardInfoState) {
         cardInfoCard.style.cssText = `
             background: var(--bg-2);
             border: var(--border-width) solid var(--border-color);
-            border-radius: 8px;
+            border-radius: var(--card-radius);
             height: var(--card-height);
             display: flex;
             align-items: center;
@@ -120,7 +120,7 @@ renderContent: function(container, settingsState, onChange, cardInfoState) {
         height: var(--card-height);
         background: transparent;
         border: var(--border-width) solid rgba(0, 0, 0, 0.0);
-        border-radius: 8px;
+        border-radius: var(--card-radius);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -157,7 +157,7 @@ renderContent: function(container, settingsState, onChange, cardInfoState) {
     tierToggleCard.style.cssText = `
         background: var(--bg-2);
         border: var(--border-width) solid var(--border-color);
-        border-radius: 8px;
+        border-radius: var(--card-radius);
         height: var(--card-height);
         display: flex;
         align-items: center;

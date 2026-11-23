@@ -25,7 +25,7 @@
             position: relative; height: 21px; padding: 0 27px; line-height: 15px;
             display: flex; align-items: center; justify-content: center; gap: 5px;
             background: var(--color-10); color: #000;
-            border: var(--border-width) solid var(--border-color); border-radius: 8px;
+            border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius);
             font: 700 min(.74rem, 2.95vw) Arial, sans-serif; text-transform: uppercase;
             white-space: nowrap; overflow: hidden; cursor: pointer; user-select: none;
         }
@@ -87,7 +87,7 @@
             position: relative; min-height: var(--card-height); padding: 6px 40px 6px 12px;
             display: flex; flex-direction: column; justify-content: center; gap: 2px; text-align: left;
             background: var(--bg-2); color: var(--color-10);
-            border: var(--border-width) solid var(--border-color); border-radius: 8px; cursor: pointer;
+            border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); cursor: pointer;
             font-family: inherit;
         }
         .gt-opt b { font-size: 14px; font-weight: 700; }

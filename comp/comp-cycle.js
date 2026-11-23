@@ -363,7 +363,7 @@
             mainCard.style.cssText = `
                 background: ${bgColor};
                 border: var(--border-width) solid var(--border-color);
-                border-radius: 8px;
+                border-radius: var(--card-radius);
                 height: var(--card-height);
                 display: flex;
                 flex-direction: column;
@@ -498,7 +498,7 @@
                 customCard.style.cssText = `
                     background: ${bgColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     flex-direction: column;
@@ -685,7 +685,7 @@
                 hourlyCard.style.cssText = `
                     background: ${bgColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     flex-direction: column;
@@ -798,7 +798,7 @@
                 timeCard.style.cssText = `
                     background: ${bgColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     flex-direction: column;
@@ -913,7 +913,7 @@
                 dayCard.style.cssText = `
                     background: ${bgColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     flex-direction: column;
@@ -972,7 +972,7 @@
                 monthCard.style.cssText = `
                     background: ${bgColor};
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     flex-direction: column;
@@ -1053,7 +1053,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;
@@ -1180,7 +1180,7 @@
                 <div style="
                     background: var(--bg-2);
                     border: var(--border-width) solid var(--border-color);
-                    border-radius: 8px;
+                    border-radius: var(--card-radius);
                     height: var(--card-height);
                     display: flex;
                     align-items: center;

@@ -132,6 +132,10 @@
                         const percent = threshold > 0 ? Math.min(completed / threshold, 1) : 0;
                         completedValue += percent;
                         
+                    } else if (card.type === 'path' && GT50Lib.Path) {
+                        // a path counts the cards that matter right now (not optional, not on a branch you didn't take)
+                        processComponents(GT50Lib.Path.countedCards(card.state));
+                        
                     } else if ((card.type === 'nest' || card.type === 'cycle') && nestState.summaryIncludeChildren) {
                         // Recursively process child nests if option is enabled
                         if (card.state.tabComponents) {

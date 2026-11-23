@@ -46,6 +46,7 @@
                 name: importData.name,
                 description: importData.description || '',
                 testing: importData.testing === true, // temporary: shows in Create New > Testing only
+                path: importData.path === true, // built from PATH cards: shows in Create New under PATH only
                 data: importData.data // Keep original format
             });
             

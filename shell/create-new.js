@@ -117,8 +117,17 @@ createEntry: function(state, nextId, currentComponents) {
         return newEntry;
     }
     
-    // NORMAL CASE: Creating nest/cycle
+    // NORMAL CASE: Creating nest/cycle/path
     if (!state.name || state.name.trim() === '') return null;
+    
+    // PATH: an empty path card, built straight after in its own builder
+    if (state.pathMode && GT50Lib.Path) {
+        const ci = (typeof state.currentColorIndex === 'number' && this.colors[state.currentColorIndex]) ? state.currentColorIndex : 0;
+        const pathEntry = { id: nextId, type: 'path', state: GT50Lib.Path.defaultState() };
+        pathEntry.state.name = state.name.trim();
+        pathEntry.state.color = this.colors[ci].variations[state.currentVariationIndex || 0];
+        return pathEntry;
+    }
     
     // Safety check: ensure currentColorIndex is valid, default to 0 (GRAY) if not
     let colorIndex = state.currentColorIndex;
@@ -207,6 +216,7 @@ createEntry: function(state, nextId, currentComponents) {
     state.currentColorIndex = 0; // Changed from 7 to 0 (GRAY is now first)
     state.currentVariationIndex = 0; // Reset to base variation
     state.cycleMode = false;
+    state.pathMode = false;
     state.autoSortByLastUpdated = false;
                 state.summaryState = {
                     showSummary: false,
@@ -312,8 +322,8 @@ createEntry: function(state, nextId, currentComponents) {
                     <div style="
                         position: absolute;
                         top: 50%;
-                        left: calc(var(--border-width) * -1);
-                        right: calc(var(--border-width) * -1);
+                        left: 0;
+                        right: 0;
                         height: var(--border-width);
                         background: var(--border-color);
                         transform: translateY(-50%);
@@ -397,8 +407,8 @@ createEntry: function(state, nextId, currentComponents) {
                     <div style="
                         position: absolute;
                         top: 50%;
-                        left: calc(var(--border-width) * -1);
-                        right: calc(var(--border-width) * -1);
+                        left: 0;
+                        right: 0;
                         height: var(--border-width);
                         background: var(--border-color);
                         transform: translateY(-50%);
@@ -461,6 +471,12 @@ createEntry: function(state, nextId, currentComponents) {
             // Cycle only shows when its comp file is installed
             const cycleInstalled = !(window.GT50 && window.GT50.getType) || !!window.GT50.getType('cycle');
             if (!cycleInstalled) state.cycleMode = false;
+            const pathInstalled = !!(window.GT50 && window.GT50.getType && window.GT50.getType('path') && GT50Lib.Path);
+            if (!pathInstalled || state.editMode) state.pathMode = false;
+            const kind = state.pathMode ? 'path' : (state.cycleMode ? 'cycle' : 'nest');
+            const kinds = [['nest', 'Nest', 'Container for organizing cards']];
+            if (cycleInstalled) kinds.push(['cycle', 'Cycle', 'Scheduled reset container']);
+            if (pathInstalled && !state.editMode) kinds.push(['path', 'Path', 'Cards that unlock as you play']);
             const typeToggleSection = `
                 <!-- Card Type Toggle -->
                 <div style="
@@ -473,64 +489,39 @@ createEntry: function(state, nextId, currentComponents) {
                     overflow: hidden;
                     margin-bottom: var(--margin);
                 ">
-                    <div data-action="toggle-nest" style="
+                    ${kinds.map(([k, label, desc], i) => `
+                    <div data-action="toggle-${k}" style="
                         flex: 1;
+                        min-width: 0;
                         height: 100%;
-                        background: ${!state.cycleMode ? 'var(--color-5-2)' : 'var(--color-10)'};
+                        background: ${kind === k ? 'var(--color-5-2)' : 'var(--color-10)'};
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
                         cursor: pointer;
-                        ${cycleInstalled ? 'border-right: var(--border-width) solid var(--border-color);' : ''}
-                        transition: filter 0.2s;
+                        ${i < kinds.length - 1 ? 'border-right: var(--border-width) solid var(--border-color);' : ''}
                         padding: 4px;
                     ">
-                        <div style="
-                            font-size: 12px;
-                            font-weight: 700;
-                            color: ${!state.cycleMode ? 'var(--color-10)' : 'var(--color-5)'};
-                            text-transform: uppercase;
-                        ">Nest</div>
-                        <div style="
-                            font-size: 7px;
-                            font-weight: 700;
-                            color: ${!state.cycleMode ? 'var(--color-10)' : 'var(--color-5)'};
-                            opacity: 0.7;
-                            margin-top: 2px;
-                            text-align: center;
-                            line-height: 1.2;
-                        ">Container for organizing cards</div>
-                    </div>
-                    ${cycleInstalled ? `                    <div data-action="toggle-cycle" style="
-                        flex: 1;
-                        height: 100%;
-                        background: ${state.cycleMode ? 'var(--color-5-2)' : 'var(--color-10)'};
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        cursor: pointer;
-                        transition: filter 0.2s;
-                        padding: 4px;
-                    ">
-                        <div style="
-                            font-size: 12px;
-                            font-weight: 700;
-                            color: ${state.cycleMode ? 'var(--color-10)' : 'var(--color-5)'};
-                            text-transform: uppercase;
-                        ">Cycle</div>
-                        <div style="
-                            font-size: 7px;
-                            font-weight: 700;
-                            color: ${state.cycleMode ? 'var(--color-10)' : 'var(--color-5)'};
-                            opacity: 0.7;
-                            margin-top: 2px;
-                            text-align: center;
-                            line-height: 1.2;
-                        ">Scheduled reset container</div>
-                    </div>` : ''}
+                        <div style="font-size: 12px; font-weight: 700; color: ${kind === k ? 'var(--color-10)' : 'var(--color-5)'}; text-transform: uppercase;">${label}</div>
+                        <div style="font-size: 7px; font-weight: 700; color: ${kind === k ? 'var(--color-10)' : 'var(--color-5)'}; opacity: 0.7; margin-top: 2px; text-align: center; line-height: 1.2;">${desc}</div>
+                    </div>`).join('')}
                 </div>
+            `;
+            // A path has no templates, imports or nest settings: it starts empty and opens in its builder
+            const pathNote = `
+                <div style="
+                    background: var(--bg-3);
+                    border: var(--border-width) solid var(--border-color);
+                    border-radius: var(--card-radius);
+                    padding: 10px 12px;
+                    text-align: center;
+                    color: var(--color-10);
+                    font-size: 11px;
+                    font-weight: 600;
+                    line-height: 1.4;
+                    margin-bottom: var(--margin);
+                ">A path starts empty. After you create it, its builder opens so you can add cards and link them up. Or pick a game below.</div>
             `;
             
             // ===== SETTINGS TAB CONTENT =====
@@ -550,8 +541,8 @@ createEntry: function(state, nextId, currentComponents) {
                     <div style="
                         position: absolute;
                         top: 50%;
-                        left: calc(var(--border-width) * -1);
-                        right: calc(var(--border-width) * -1);
+                        left: 0;
+                        right: 0;
                         height: var(--border-width);
                         background: var(--border-color);
                         transform: translateY(-50%);
@@ -962,8 +953,8 @@ createEntry: function(state, nextId, currentComponents) {
                     <div style="
                         position: absolute;
                         top: 50%;
-                        left: calc(var(--border-width) * -1);
-                        right: calc(var(--border-width) * -1);
+                        left: 0;
+                        right: 0;
                         height: var(--border-width);
                         background: var(--border-color);
                         transform: translateY(-50%);
@@ -1090,8 +1081,8 @@ createEntry: function(state, nextId, currentComponents) {
                     <div style="
                         position: absolute;
                         top: 50%;
-                        left: calc(var(--border-width) * -1);
-                        right: calc(var(--border-width) * -1);
+                        left: 0;
+                        right: 0;
                         height: var(--border-width);
                         background: var(--border-color);
                         transform: translateY(-50%);
@@ -1180,7 +1171,9 @@ createEntry: function(state, nextId, currentComponents) {
             // ===== IMPORT TAB CONTENT =====
             // Files registered with testing: true show in the temporary Testing tab only
             const allImports = (window.GT50 && window.GT50.Imports) ? window.GT50.Imports.getAll() : [];
-            const imports = allImports.filter(imp => activeTab === 'testing' ? imp.testing : !imp.testing);
+            const imports = allImports.filter(imp => !imp.path && (activeTab === 'testing' ? imp.testing : !imp.testing));
+            // Games built from PATH cards show under PATH only
+            const pathImports = allImports.filter(imp => imp.path && !imp.testing);
             const hasImports = imports && imports.length > 0;
             const importsLoading = window.GT50ImportsLoading === true;
             
@@ -1200,8 +1193,8 @@ createEntry: function(state, nextId, currentComponents) {
                     <div style="
                         position: absolute;
                         top: 50%;
-                        left: calc(var(--border-width) * -1);
-                        right: calc(var(--border-width) * -1);
+                        left: 0;
+                        right: 0;
                         height: var(--border-width);
                         background: var(--border-color);
                         transform: translateY(-50%);
@@ -1258,97 +1251,54 @@ createEntry: function(state, nextId, currentComponents) {
                 ">${importsLoading ? 'Loading imports...' : 'No imports available'}</div>
             `);
             
+            // ===== PATH TEMPLATES (shown under PATH) =====
+            const pathImportsHTML = pathImports.length ? `
+                <div class="divider" style="height: var(--card-height); background: transparent; border: var(--border-width) solid rgba(0,0,0,0); border-radius: var(--card-radius); display: flex; align-items: center; justify-content: center; margin-bottom: var(--margin); position: relative;">
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: var(--border-width); background: var(--border-color); transform: translateY(-50%); z-index: 1;"></div>
+                    <div style="background: var(--bg-2); padding: 0 12px; font-size: 12px; font-weight: 700; color: var(--font-color-3); text-transform: uppercase; letter-spacing: 0.5px; position: relative; z-index: 2;">PATH TEMPLATES</div>
+                </div>
+                ${pathImports.map(imp => `
+                    <div data-import="${imp.id}" style="background: var(--bg-3); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); height: var(--card-height); margin-bottom: var(--margin); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 12px;">
+                        <div style="font-size: 14px; font-weight: 700; color: var(--color-10); text-transform: uppercase;">${imp.name}</div>
+                        <div style="font-size: 10px; color: var(--color-10); text-align: center; margin-top: 2px;">${imp.description || 'Imported structure'}</div>
+                    </div>`).join('')}
+            ` : '';
+            
             // ===== MAIN LAYOUT =====
             console.log('CreateNew: About to set container.innerHTML...');
+            const tabCards = state.tabs.tabs.map((t, i) => `
+                <div class="gt-tab ${state.tabs.activeViewTab === i ? 'active' : ''}" data-cn-tab="${i}" style="--tab-color: var(--color-5-2)"><span>${(t.label || t.name || '').toUpperCase()}</span></div>`).join('');
+            const canCreate = !!(state.name && state.name.trim() !== '');
             container.innerHTML = `
-                <!-- Header -->
-                <div style="
-                    height: var(--card-height);
-                    background: var(--bg-3);
-                    border-bottom: var(--border-width) solid var(--border-color);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                ">
-                    <div style="
-                        font-size: 14px;
-                        font-weight: 700;
-                        color: var(--color-10);
-                        text-transform: uppercase;
-                    ">${isEditMode ? 'EDIT NEST' : 'NEW ENTRY'}</div>
+                <!-- Tabs: cards in the band, like the main window -->
+                <div class="gt-band" style="flex: none; position: relative; z-index: 2;">
+                    <div class="gt-top">${tabCards}</div>
                 </div>
-                
-                <!-- Tabs (using GT50Lib.Tabs) -->
-                <div id="create-new-tabs"></div>
                 
                 <div id="create-new-content" style="
                     flex: 1;
                     overflow-y: auto;
-                    padding: var(--margin);
-                    padding-top: calc(var(--card-height) + var(--margin) + var(--margin));
-                    padding-bottom: calc(var(--card-height) + var(--margin));
+                    padding: 8px var(--margin) var(--margin);
                 "></div>
                 
-                <div id="create-new-footer" style="
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    height: var(--card-height);
-                    background: var(--bg-3);
-                    border-top: var(--border-width) solid var(--border-color);
-                    display: flex;
-                    align-items: center;
-                    z-index: 1000;
-                ">
-                    <button data-action="cancel" style="
-                        flex: 1;
-                        height: 100%;
-                        background: var(--color-1);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 14px;
-                        font-weight: 700;
-                        color: var(--color-10);
-                        cursor: pointer;
-                        transition: filter 0.2s;
-                        border: none;
-                        border-right: var(--border-width) solid var(--border-color);
-                        font-family: inherit;
-                    ">CANCEL</button>
-                    <button data-action="create" ${!(state.name && state.name.trim() !== '') ? 'disabled' : ''} style="
-                        flex: 1;
-                        height: 100%;
-                        background: ${(state.name && state.name.trim() !== '') ? 'var(--color-4)' : 'var(--bg-4)'};
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 14px;
-                        font-weight: 700;
-                        color: ${(state.name && state.name.trim() !== '') ? 'var(--color-10)' : 'var(--color-9)'};
-                        cursor: ${(state.name && state.name.trim() !== '') ? 'pointer' : 'not-allowed'};
-                        transition: filter 0.2s;
-                        border: none;
-                        font-family: inherit;
-                    ">${isEditMode ? 'SAVE CHANGES' : 'CREATE ENTRY'}</button>
+                <div id="create-new-footer" class="gt-foot" style="flex: none;">
+                    <div class="gt-add" role="button" data-action="cancel" style="background: var(--color-1);">Cancel</div>
+                    <div class="gt-add" role="button" data-action="create" ${canCreate ? '' : 'aria-disabled="true"'} style="
+                        background: ${canCreate ? 'var(--color-4)' : 'var(--bg-4)'};
+                        color: ${canCreate ? 'var(--color-10)' : 'var(--color-9)'};
+                        cursor: ${canCreate ? 'pointer' : 'not-allowed'};
+                    ">${isEditMode ? 'Save' : 'Create'}</div>
                 </div>
             `;
             
-            console.log('CreateNew: container.innerHTML has been set');
-            
-            // Render tabs using GT50Lib.Tabs (pass actual state.tabs object)
-            const tabsContainer = container.querySelector('#create-new-tabs');
-            if (GT50Lib && GT50Lib.Tabs && GT50Lib.Tabs.renderView) {
-                GT50Lib.Tabs.renderView(tabsContainer, state.tabs, onChange);
-            } else {
-                console.error('GT50Lib.Tabs.renderView not available');
-                tabsContainer.innerHTML = '<div style="padding: 20px; color: red;">Error: Tabs component not loaded</div>';
-            }
+            container.querySelectorAll('[data-cn-tab]').forEach(el => {
+                el.onclick = () => { state.tabs.activeViewTab = parseInt(el.dataset.cnTab); onChange(); };
+            });
             
             // Render appropriate tab content
             const contentContainer = container.querySelector('#create-new-content');
-            contentContainer.innerHTML = activeTab === 'templates' ? templatesTabHTML : 
+            contentContainer.innerHTML = state.pathMode ? typeToggleSection + nameSection + colorSection + pathNote + pathImportsHTML :
+                                       activeTab === 'templates' ? templatesTabHTML : 
                                        activeTab === 'settings' ? settingsTabHTML : importTabHTML;
             
             console.log('CreateNew: Content has been rendered, activeTab =', activeTab);
@@ -1367,11 +1317,13 @@ createEntry: function(state, nextId, currentComponents) {
                     if (createBtn) {
                         if (hasName) {
                             createBtn.disabled = false;
+                            createBtn.removeAttribute('aria-disabled');
                             createBtn.style.background = 'var(--color-4)';
                             createBtn.style.color = 'var(--color-10)';
                             createBtn.style.cursor = 'pointer';
                         } else {
                             createBtn.disabled = true;
+                            createBtn.setAttribute('aria-disabled', 'true');
                             createBtn.style.background = 'var(--bg-4)';
                             createBtn.style.color = 'var(--color-9)';
                             createBtn.style.cursor = 'not-allowed';
@@ -1417,6 +1369,7 @@ createEntry: function(state, nextId, currentComponents) {
             if (nestBtn) {
                 nestBtn.onclick = () => {
                     state.cycleMode = false;
+                    state.pathMode = false;
                     onChange();
                 };
                 nestBtn.onmouseover = () => nestBtn.style.filter = 'brightness(1.2)';
@@ -1427,10 +1380,21 @@ createEntry: function(state, nextId, currentComponents) {
             if (cycleBtn) {
                 cycleBtn.onclick = () => {
                     state.cycleMode = true;
+                    state.pathMode = false;
                     onChange();
                 };
                 cycleBtn.onmouseover = () => cycleBtn.style.filter = 'brightness(1.2)';
                 cycleBtn.onmouseout = () => cycleBtn.style.filter = 'brightness(1)';
+            }
+            
+            const pathBtn = contentContainer.querySelector('[data-action="toggle-path"]');
+            if (pathBtn) {
+                pathBtn.onclick = () => {
+                    state.pathMode = true;
+                    state.cycleMode = false;
+                    state.selectedImport = null;
+                    onChange();
+                };
             }
             
             // Settings tab listeners
@@ -1621,7 +1585,7 @@ createEntry: function(state, nextId, currentComponents) {
             }
             
             // Import tab listeners
-            if (activeTab === 'import' || activeTab === 'testing') {
+            if (state.pathMode || activeTab === 'import' || activeTab === 'testing') {
                 const importCards = contentContainer.querySelectorAll('[data-import]');
                 importCards.forEach(card => {
                     const importId = card.getAttribute('data-import');

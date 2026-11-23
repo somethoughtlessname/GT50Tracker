@@ -231,6 +231,24 @@
                 return;
             }
             
+            // PATH: its cards one after another, each led by a path-node line
+            //   path-node|<number>|<after: 2,5:1 = card 2, and option 1 of card 5>|<flags: o optional, m missable>|<done order>
+            if (type === 'path') {
+                output.push(`--- PATH START: ${this.escape(state.name || 'Path')} ---`);
+                output.push('');
+                const nodes = state.nodes || [], num = {};
+                nodes.forEach((n, i) => num[n.id] = i + 1);
+                nodes.forEach((n, i) => {
+                    const after = (n.after || []).filter(l => num[l.id]).map(l => num[l.id] + (l.opt !== undefined ? ':' + (l.opt + 1) : '')).join(',');
+                    const flags = (n.optional ? 'o' : '') + (n.missable ? 'm' : '');
+                    output.push(`path-node|${i + 1}|${after}|${flags}|${n.doneAt || 0}`);
+                    this.serializeComponent(n.card || { type: 'list', state: {} }, output, null);
+                });
+                output.push('--- PATH END ---');
+                output.push('');
+                return;
+            }
+            
             // Regular component types
             if (type === 'scale' || (type === 'divider' && state.variant === 'scale')) {
                 output.push('SCALE');
@@ -419,6 +437,21 @@
             let containerStack = [];
             let currentContainer = null;
             let currentTabInContainer = -1;
+            
+            // PATH being read, and the node waiting for its card
+            let currentPath = null;
+            let pendingNode = null;
+            const placeCard = (card) => {
+                if (currentContainer) {
+                    const idx = currentContainer.hasTabStructure ? currentTabInContainer : 0;
+                    if (!currentContainer.card.state.tabComponents[idx]) currentContainer.card.state.tabComponents[idx] = [];
+                    currentContainer.card.state.tabComponents[idx].push(card);
+                } else {
+                    const targetIndex = hasMainWindowTabs ? currentTabIndex : 0;
+                    if (!result.data.tabComponents[targetIndex]) result.data.tabComponents[targetIndex] = [];
+                    result.data.tabComponents[targetIndex].push(card);
+                }
+            };
             
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
@@ -654,6 +687,42 @@
                     }
                 }
                 
+                // PATH
+                if (line.match(/^--- PATH START:/)) {
+                    const match = line.match(/^--- PATH START: (.+) ---$/);
+                    const pathCard = { id: Date.now() + Math.random(), type: 'path',
+                        state: { name: match ? this.unescape(match[1]) : 'Path', nodes: [], gridLayout: null, seq: 0, stampSeq: 0 } };
+                    placeCard(pathCard);
+                    currentPath = pathCard;
+                    pendingNode = null;
+                    continue;
+                }
+                if (line === '--- PATH END ---') {
+                    if (currentPath) {
+                        const st = currentPath.state;
+                        st.nodes = st.nodes.filter(n => n.card);
+                        const ids = new Set(st.nodes.map(n => n.id));
+                        st.nodes.forEach(n => n.after = n.after.filter(l => ids.has(l.id)));
+                        st.seq = st.nodes.reduce((m, n) => Math.max(m, parseInt(n.id.slice(1)) || 0), 0);
+                        st.stampSeq = st.nodes.reduce((m, n) => Math.max(m, n.doneAt || 0), 0);
+                    }
+                    currentPath = null;
+                    pendingNode = null;
+                    continue;
+                }
+                if (type === 'path-node') {
+                    if (currentPath) {
+                        const after = (parts[2] || '').split(',').filter(Boolean).map(a => {
+                            const [num, opt] = a.split(':');
+                            return opt ? { id: 'p' + num, opt: (parseInt(opt) || 1) - 1 } : { id: 'p' + num };
+                        });
+                        const flags = parts[3] || '';
+                        pendingNode = { id: 'p' + parts[1], card: null, after, optional: flags.includes('o'), missable: flags.includes('m'), doneAt: parseInt(parts[4]) || null };
+                        currentPath.state.nodes.push(pendingNode);
+                    }
+                    continue;
+                }
+                
                 // Component types
                 const componentTypes = ['LIST', 'ACCUMULATION', 'PROGRESS', 'TIER', 'HISTORY', 
                                       'CHECKLIST', 'DIVIDER', 'RADIO', 'THRESHOLD', 'TEXT', 'SCALE'];
@@ -661,7 +730,10 @@
                 if (componentTypes.includes(type)) {
                     const card = this.parseCardHeader(type, parts);
                     
-                    if (currentContainer) {
+                    if (currentPath && pendingNode && !pendingNode.card) {
+                        // this card belongs to the path node just read
+                        pendingNode.card = { type: card.type, state: card.state };
+                    } else if (currentContainer) {
                         if (currentContainer.hasTabStructure) {
                             currentContainer.card.state.tabComponents[currentTabInContainer].push(card);
                         } else {

@@ -199,6 +199,7 @@ html {
 <script src="comp/comp-scale.js"></script>
 <script src="comp/comp-cycle.js"></script>
 <script src="comp/comp-import.js"></script>
+<script src="comp/comp-path.js"></script>
     
     
     <script>
@@ -1850,12 +1851,25 @@ html {
                             state.createNew.currentColorIndex = 4;
                 state.createNew.currentVariationIndex = 0;
                             state.createNew.cycleMode = false;
+                            state.createNew.pathMode = false;
                             delete state.createNew.editingEntryId;
                             
                             activeMode = 'build';
                             selectedInsertionPoint = 0;  // Default to top
                             saveState();
                             render();
+                        } else if (newEntry.type === 'path') {
+                            // A path: add it and open its builder straight away
+                            nextId++;
+                            currentComponents.unshift(newEntry);
+                            state.createNew.isOpen = false;
+                            state.createNew.name = '';
+                            state.createNew.pathMode = false;
+                            state.createNew.selectedImport = null;
+                            delete state.createNew.editingEntryId;
+                            saveState();
+                            render();
+                            if (GT50Lib.Path && GT50Lib.Path.open) GT50Lib.Path.open(newEntry.state, 'build');
                         } else {
                             // Normal nest/cycle creation - add and navigate
                             nextId++;
@@ -2353,6 +2367,8 @@ function renderNestEditWindow() {
                             GT50Lib.Threshold.renderBuild(wrapper, component.state, render, null, null, false);
                         } else if (component.type === 'text') {
                             GT50Lib.Text.renderBuild(wrapper, component.state, render, null, null, false);
+                        } else if (isTypeInstalled(component.type) && GT50.getType(component.type)) {
+                            GT50.getType(component.type).lib.renderBuild(wrapper, component.state, render, null, null, false);
                         } else if (component.type === 'scale') {
                             GT50Lib.Scale.renderBuild(wrapper, component.state, render, null, null, false);
                         }
@@ -2526,6 +2542,9 @@ layoutWrapper.style.cssText = 'display: flex; gap: var(--margin); align-items: f
                     GT50Lib.Threshold.renderBuild(wrapper, component.state, render, (dir) => moveComponent(component.id, dir), () => deleteComponent(component.id), isDeletePending);
                 } else if (component.type === 'text') {
                     GT50Lib.Text.renderBuild(wrapper, component.state, render, (dir) => moveComponent(component.id, dir), () => deleteComponent(component.id), isDeletePending);
+                } else if (GT50.getType && GT50.getType(component.type)) {
+                    // any other registered card type (e.g. PATH) draws itself through the registry
+                    GT50.getType(component.type).lib.renderBuild(wrapper, component.state, render, (dir) => moveComponent(component.id, dir), () => deleteComponent(component.id), isDeletePending);
                 }
                 
                 cardsContainer.appendChild(wrapper);
@@ -2543,7 +2562,7 @@ layoutWrapper.style.cssText = 'display: flex; gap: var(--margin); align-items: f
     if (component.type === 'import') return;
     
     const componentWrapper = document.createElement('div');
-        if ((component.type === 'nest' || component.type === 'cycle') && component.state.actionState) {
+        if ((component.type === 'nest' || component.type === 'cycle' || component.type === 'path') && component.state.actionState) {
             component.state.actionState.isOpen = false;
             component.state.actionState.deletePending = false;
         }
@@ -2683,6 +2702,9 @@ layoutWrapper.style.cssText = 'display: flex; gap: var(--margin); align-items: f
                         wrapper.querySelectorAll('button, input, textarea').forEach(el => {
                             el.style.pointerEvents = 'none';
                         });
+                    } else if (GT50.getType && GT50.getType(component.type) && GT50.getType(component.type).lib.renderView) {
+                        GT50.getType(component.type).lib.renderView(wrapper, component.state, () => {}, currentTabColor);
+                        wrapper.querySelectorAll('*').forEach(el => { el.style.pointerEvents = 'none'; });
                     }
                     
                     moveContainer.appendChild(wrapper);
@@ -2824,6 +2846,9 @@ layoutWrapper.style.cssText = 'display: flex; gap: var(--margin); align-items: f
                         wrapper.querySelectorAll('button, input, textarea').forEach(el => {
                             el.style.pointerEvents = 'none';
                         });
+                    } else if (GT50.getType && GT50.getType(component.type) && GT50.getType(component.type).lib.renderView) {
+                        GT50.getType(component.type).lib.renderView(wrapper, component.state, () => {}, currentTabColor);
+                        wrapper.querySelectorAll('*').forEach(el => { el.style.pointerEvents = 'none'; });
                     }
                     
                     cloneContainer.appendChild(wrapper);
@@ -2955,6 +2980,17 @@ components.forEach((component, componentIndex) => {
     GT50Lib.Threshold.renderView(componentWrapper, component.state, render, currentTabColor);
                     } else if (component.type === 'text') {
                         GT50Lib.Text.renderView(componentWrapper, component.state, render);
+                    } else if (GT50.getType && GT50.getType(component.type) && GT50.getType(component.type).lib.renderView) {
+                        // any other registered card type (e.g. PATH) draws itself through the registry
+                        // 5th argument: the same swipe-menu hooks nests get (move, delete, clone, move mode)
+                        GT50.getType(component.type).lib.renderView(componentWrapper, component.state, render, currentTabColor, {
+                            depth,
+                            onMove: (dir) => moveComponent(component.id, dir),
+                            onDelete: () => deleteComponent(component.id),
+                            closeAllActions: closeAllNestActions,
+                            onEnterMoveMode: () => enterMoveMode(component.id),
+                            onEnterCloneMode: () => enterCloneMode(component.id)
+                        });
                     }
                     
                     const dropdownSections = componentWrapper.querySelectorAll('div[style*="border-radius: 0 0 8px 8px"]');
@@ -3128,6 +3164,9 @@ if (GT50Lib.Search) {
         state: GT50Lib.Import.defaultState()
     };
 
+            } else if (GT50.getType && GT50.getType(type)) {
+                // any other registered card type (e.g. PATH) makes its own fresh state
+                newComponent = { id: nextId++, type: type, state: GT50.getType(type).lib.defaultState() };
             }
             
             if (newComponent) {

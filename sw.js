@@ -1,6 +1,6 @@
 // The Joystick Journal service worker: keeps the app's files so it works fully offline.
 // Same approach as Stack Tracker. Bump VERSION whenever files change so phones pick up the update.
-const VERSION = 'joystick-journal-v635';
+const VERSION = 'joystick-journal-v643';
 const FILES = [
   "./",
   "./index.html",
@@ -48,11 +48,14 @@ const FILES = [
   "./comp/comp-scale.js",
   "./comp/comp-cycle.js",
   "./comp/comp-import.js",
+  "./comp/comp-path.js",
+  "./templates/game-falloutnewvegas.js",
   "./templates/game-gta5.js",
   "./templates/game-hogwarts.js",
   "./templates/game-holygoshdarn.js",
   "./templates/game-infamous2.js",
   "./templates/game-legoharrypottercollection.js",
+  "./templates/game-lifeisstrange.js",
   "./templates/game-spiderman2.js",
   "./templates/game-splitfiction.js",
   "./templates/game-stray.js",
@@ -60,6 +63,7 @@ const FILES = [
   "./templates/game-tonyhawksproskater12.js",
   "./templates/game-tonyhawksproskater34.js",
   "./templates/game-uncharted2.js",
+  "./templates/game-undertale.js",
   "./templates/import-example-rpg.js",
   "./templates/template-game-tracker.js",
   "./pwa/icons/icon-128.png",

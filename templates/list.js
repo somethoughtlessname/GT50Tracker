@@ -24,7 +24,10 @@ window.GT50ImportsList = [
     'game-uncharted2.js',
     'game-spiderman2.js',
     'game-tonyhawksproskater12.js',
-    'game-tonyhawksproskater34.js'
+    'game-tonyhawksproskater34.js',
+    'game-lifeisstrange.js',
+    'game-falloutnewvegas.js',
+    'game-undertale.js'
 
     // Not listed:
     //   import-example-rpg.js - a sample to copy from

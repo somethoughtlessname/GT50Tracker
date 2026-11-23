@@ -138,6 +138,9 @@
                 if (slotMap[baseType]) {
                     const slot = slotMap[baseType];
                     
+                    // PATH is made from Add New only, never from the card footer
+                    if (slot.variants) slot.variants = slot.variants.filter(v => v.type !== 'path');
+                    if (slot.currentVariant === 'path') { slot.currentVariant = baseType; slot.type = baseType; }
                     // MIGRATION: Ensure divider slot has scale variant
                     if (baseType === 'divider') {
                         const hasScale = slot.variants && slot.variants.some(v => v.type === 'scale');
@@ -417,7 +420,8 @@
                 const borderRight = pos < shown.length - 1 
                     ? 'border-right: var(--border-width) solid var(--border-color);' 
                     : '';
-                const label = labels[slot.currentVariant || slot.type] || '+';
+                const t = slot.currentVariant || slot.type, def = window.GT50 && GT50.getType ? GT50.getType(t) : null;
+                const label = labels[t] || (def && def.label) || '+';
                 
                 return `
                     <div data-bottom-slot="${index}" style="

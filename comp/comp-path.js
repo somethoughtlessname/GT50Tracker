@@ -80,7 +80,8 @@
         if (memo.has(n.id)) return memo.get(n.id);
         memo.set(n.id, false);
         let v;
-        if (n.slot && n.after[0]) v = linkCut(P, n.after[0], memo) || allCut(P, extra(n), memo);
+        // an option card closes only with its option; extra links that were cut are simply ignored, like any other way in
+        if (n.slot && n.after[0]) v = linkCut(P, n.after[0], memo);
         else v = n.after.length > 0 && (isGate(n) ? n.after.filter(l => !linkCut(P, l, memo)).length < gateNeed(n) : allCut(P, n.after, memo));
         memo.set(n.id, v); return v;
     }
@@ -508,7 +509,7 @@
             const sl = slotOf(P, c.id, i);
             if (sl) {
                 const st = status(P, sl);
-                if (st === 'locked') return;                      // an option whose other needs went another way: gone
+                if (st === 'locked') return;
                 if (st === 'later') {                             // still waiting on something else: shown, but not yet doable
                     const w = document.createElement('div'); w.className = 'gp-wait'; body.appendChild(w);
                     const needs = extra(sl).filter(l => !linkCut(P, l, new Map()) && !linkMet(P, l)).map(l => { const q = byId(P, l.id); return q ? (l.opt !== undefined ? options(q)[l.opt] : title(q)) : ''; }).filter(Boolean);

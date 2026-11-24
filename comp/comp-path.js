@@ -68,6 +68,28 @@
             : n.after.every(l => linkCut(P, l, memo)));
         memo.set(n.id, v); return v;
     }
+    // ===== OPTION CARDS =====
+    // A choice's options are cards. By default an option is a plain LIST card (just its text, nothing stored);
+    // an option can instead hold a real card (checklist, progress, another choice...) marked slot: true and linked
+    // to that option. Doing an option's card picks that option, which closes the others.
+    const slotOf = (P, cid, i) => P.nodes.find(n => n.slot && n.after[0] && n.after[0].id === cid && n.after[0].opt === i);
+    const slotHome = (P, n) => n.slot && n.after[0] ? { c: byId(P, n.after[0].id), i: n.after[0].opt } : null;
+    function syncPicks(P) {
+        for (let pass = 0; pass < 6; pass++) {
+            let changed = false;
+            P.nodes.forEach(c => {          // an option with a card counts as picked only while that card is done
+                const st = c.card.state;
+                if (c.card.type !== 'radio' || picked(c) === null) return;
+                const sl = slotOf(P, c.id, picked(c));
+                if (sl && !cardDone(sl)) { st.selectedIndex = null; st.autoPick = false; changed = true; }
+            });
+            P.nodes.filter(n => n.slot).forEach(n => {
+                const h = slotHome(P, n); if (!h || !h.c) return;
+                if (cardDone(n) && picked(h.c) === null) { h.c.card.state.selectedIndex = h.i; h.c.card.state.autoPick = true; changed = true; }
+            });
+            if (!changed) break;
+        }
+    }
     // ===== THRESHOLD GATES =====
     // A THRESHOLD card in a path counts the cards linked into it: it's done once at least
     // its required number of them are done. Its items mirror those links and fill in by themselves.
@@ -75,6 +97,7 @@
     const gateNeed = n => Math.max(1, Math.min(Number(n.card.state.number1) || n.after.length, n.after.length || 1));
     function optText(P, l) { const p = byId(P, l.id); const o = p ? options(p)[l.opt] : null; return o ? ' → ' + o : ''; }
     function syncGates(P) {
+        syncPicks(P);
         ordered(P).filter(isGate).forEach(n => {
             const st = n.card.state, old = st.items || [];
             st.items = n.after.map((l, i) => {
@@ -102,6 +125,8 @@
         if (cardDone(n)) return 'done';
         if (lockedOut(P, n)) return 'locked';
         if (isMissed(P, n)) return 'missed';
+        const h = slotHome(P, n);
+        if (h && h.c && picked(h.c) === null) return status(P, h.c) === 'available' ? 'available' : 'later';
         const live = n.after.filter(l => !linkCut(P, l, new Map()));
         if (isGate(n)) return live.some(l => linkMet(P, l)) ? 'available' : 'later';
         return live.every(l => linkMet(P, l)) ? 'available' : 'later';
@@ -165,6 +190,11 @@
         .gp-gate [data-action="toggle-item"], .gp-gate [data-action="toggle-all"], .gp-gate input[data-field="threshold"] { pointer-events: none; }
         .gp-gate input[data-field="threshold"] { opacity: .6; }
         .gp-gate div:has(> input[data-idx]), .gp-gate [data-action="add"] { display: none !important; }
+        .gp-choice { border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); background: var(--bg-2); margin-bottom: var(--margin); overflow: hidden; }
+        .gp-choice .gp-choice { margin: 0 0 var(--margin); }
+        .gp-ch { display: flex; align-items: center; justify-content: center; min-height: 34px; padding: 4px 10px; background: var(--color-1-3); color: var(--color-10); font-weight: 800; font-size: 13px; text-align: center; border-bottom: var(--border-width) solid var(--border-color); }
+        .gp-cn { font-size: 10px; font-weight: 700; color: #e9d9b8; text-align: center; padding: 5px 8px 0; }
+        .gp-cb { padding: var(--margin) var(--margin) 0; }
         .gp-mini { --card-height: 28px; --square-section: 22px; --check-size: 12px; }
         .gp-mini input { font-size: 12px !important; }
         .gp-note { font-size: 10px; font-weight: 700; color: var(--color-10); background: var(--bg-3); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); padding: 5px 8px; text-align: center; margin-bottom: var(--margin); }
@@ -199,6 +229,11 @@
         .gp-bn .gp-ab .gp-startpill::before { border-left-width: 4px; border-top-width: 3px; border-bottom-width: 3px; }
         .gp-bn .gp-ab .gp-endpill::before { width: 4px; height: 4px; border: none; }
         .gp-bn .gp-af { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.7); padding-right: 8px; display: flex; align-items: center; white-space: nowrap; max-width: 45%; overflow: hidden; }
+        .gp-slotinfo { display: flex; align-items: center; gap: 8px; border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); background: var(--bg-5); padding: 5px 6px 5px 8px; color: var(--color-10); }
+        .gp-slotinfo b { flex: none; width: 22px; height: 22px; border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+        .gp-slotinfo span { flex: 1; min-width: 0; font-size: 11px; font-weight: 800; letter-spacing: .03em; display: flex; flex-direction: column; }
+        .gp-slotinfo small { font-size: 9px; font-weight: 600; opacity: .75; letter-spacing: 0; }
+        .gp-slotinfo .gp-btn { height: 26px; font-size: 10px; flex: none; }
         .gp-optnum { color: var(--color-10); font-size: 12px; font-weight: 800; }
         .gp-optrow { display: flex; height: var(--card-height); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; background: var(--color-1-3); }
         .gp-optin { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--color-10); font: 600 16px inherit; font-family: inherit; padding: 0 10px; }
@@ -441,12 +476,37 @@
             if (last && !last.style.marginBottom) last.style.marginBottom = 'var(--margin)';
         });
     }
+    function choiceBlock(host, c) {
+        const P = W.P, box = document.createElement('div');
+        box.className = 'gp-choice';
+        const branches = P.nodes.some(k => k.after.some(l => l.id === c.id && l.opt !== undefined));
+        box.innerHTML = `<div class="gp-ch"><span>${esc(title(c))}</span></div>
+            <div class="gp-cn">${branches ? 'Do one: it closes the other paths' : 'Do one: the story continues either way'}</div><div class="gp-cb"></div>`;
+        host.appendChild(box);
+        const body = box.querySelector('.gp-cb');
+        options(c).forEach((o, i) => {
+            const sl = slotOf(P, c.id, i);
+            if (sl && sl.card.type === 'radio' && picked(sl) === null) return choiceBlock(body, sl);
+            if (sl) return mountCard(body, sl, false);
+            // a plain option: a list card whose tick is the pick
+            const d = typeDef('list'); if (!d) return;
+            const wrap = document.createElement('div'); body.appendChild(wrap);
+            const tmp = Object.assign(d.lib.defaultState(), { title: o || 'Option ' + (i + 1), completed: picked(c) === i });
+            d.lib.renderView(wrap, tmp, () => {
+                if (tmp.completed) { c.card.state.selectedIndex = i; c.card.state.autoPick = false; }
+                else if (picked(c) === i) c.card.state.selectedIndex = null;
+                stamp(P); save(); drawPlay();
+            }, W.tabColor);
+        });
+    }
     function drawPlay() {
         const P = W.P, main = W.el.querySelector('.gp-main');
         const keep = main.querySelector('.gp-play'); const top = keep ? keep.scrollTop : 0;
         stamp(P);
         const st = new Map(P.nodes.map(n => [n.id, status(P, n)]));
-        const availAll = P.nodes.filter(n => st.get(n.id) === 'available');
+        // option cards of an undecided choice are shown inside that choice's block
+        const inBlock = n => { const h = slotHome(P, n); return h && h.c && picked(h.c) === null; };
+        const availAll = P.nodes.filter(n => st.get(n.id) === 'available' && !inBlock(n));
         const spare = n => n.optional || isSpare(P, n);
         const avail = availAll.filter(n => !spare(n)), extra = availAll.filter(spare);
         const done = P.nodes.filter(n => st.get(n.id) === 'done').sort((a, b) => a.doneAt - b.doneAt);
@@ -466,15 +526,8 @@
         W.forced = W.forced || new Set();
         P.nodes.forEach(n => { if (W.forced.has(n.id) && st.get(n.id) !== 'available') { n.card.state.open = false; W.forced.delete(n.id); } });
         avail.forEach(n => {
-            // an undecided choice: always open, with a note
-            if (n.card.type === 'radio') {
-                n.card.state.open = true; W.forced.add(n.id);
-                const branches = P.nodes.some(c => c.after.some(l => l.id === n.id && l.opt !== undefined));
-                const note = document.createElement('div');
-                note.className = 'gp-note';
-                note.textContent = branches ? 'Picking one closes the other paths' : 'Records your choice. The story continues either way';
-                slot('avail').appendChild(note);
-            }
+            // an undecided choice: its options as cards; doing one picks it
+            if (n.card.type === 'radio' && picked(n) === null) return choiceBlock(slot('avail'), n);
             mountCard(slot('avail'), n, false);
         });
         if (slot('extra')) extra.forEach(n => mountCard(slot('extra'), n, true));
@@ -621,7 +674,8 @@
             <div class="gp-types">${NODE_TYPES.filter(t => typeDef(t)).map(t => `<div class="${t === n.card.type ? 'on' : ''}" data-gp="type" data-t="${t}">${TYPE_NAME[t]}</div>`).join('')}</div>
             <div class="gp-lbl">CARD</div><div class="gp-cardwrap"></div>
             <div class="gp-lbl">PATH</div>
-            <div class="gp-after ${W.afterOpen ? 'open' : ''}"><div class="gp-ah" data-gp="afteropen">
+            ${slotHome(P, n) ? `<div class="gp-slotinfo"><b style="background:${OPT_TAG[slotHome(P, n).i % OPT_TAG.length]}">${slotHome(P, n).i + 1}</b><span>OPTION ${slotHome(P, n).i + 1} OF ${esc(title(slotHome(P, n).c))}<small>Doing this card picks this option</small></span><div class="gp-btn" data-gp="unslot">PLAIN OPTION</div></div>` : ''}
+            <div class="gp-after ${W.afterOpen ? 'open' : ''}" ${slotHome(P, n) ? 'style="display:none"' : ''}><div class="gp-ah" data-gp="afteropen">
                 <div class="gp-ak"><small>COMES AFTER</small>${n.after.length ? `<span>${esc(afterLabel(P, n))}</span>` : `<span><b class="gp-startpill">START</b></span>`}</div>
                 <div class="gp-ac">${n.after.length || ''}</div><div class="gp-aa">${ICON.down}</div></div>
                 <div class="gp-ad">${rows.join('') || '<div class="gp-hint">No other cards yet</div>'}
@@ -656,6 +710,7 @@
             }, null, null, false);
             // typing a title doesn't call onChange: keep the row label in step
             host.addEventListener('input', () => {
+                const h = slotHome(P, n); if (h && h.c && h.c.card.state.items[h.i]) h.c.card.state.items[h.i].text = n.card.state.title || '';
                 const nm = ed.parentElement && ed.parentElement.querySelector('.gp-bn .gp-nm span');
                 if (nm) nm.textContent = title(n);
                 drawMap({ noScroll: true });
@@ -682,6 +737,12 @@
             case 'select': W.selected = W.selected === n.id ? null : n.id; W.afterOpen = false; W.beforeOpen = false; break;
             case 'afteropen': W.afterOpen = !W.afterOpen; break;
             case 'tostart': n.after = []; break;
+            case 'unslot': {        // back to a plain list option: its links move onto the option itself
+                const h = slotHome(P, n);
+                P.nodes.forEach(k => k.after = k.after.map(l => l.id === n.id ? { id: h.c.id, opt: h.i } : l));
+                P.nodes = P.nodes.filter(k => k !== n); W.selected = null; W.selOpt = h.c.id + '#' + h.i;
+                break;
+            }
             case 'beforeopen': W.beforeOpen = !W.beforeOpen; break;
             case 'toend': P.nodes.forEach(c => c.after = c.after.filter(l => l.id !== n.id)); break;
             case 'blink': {
@@ -923,16 +984,19 @@
     // Keys: a card's id, or "<choiceId>#<option>". Grid keeps its own layout (P.gridLayout, node centres).
     function gridGraph(P) {
         const nodes = [], links = [];
+        const keyOf = id => { const n = byId(P, id), h = n && slotHome(P, n); return h && h.c ? h.c.id + '#' + h.i : id; };
         P.nodes.forEach(n => {
-            nodes.push({ key: n.id, n });
+            const inSpot = n.slot && slotHome(P, n).c;        // an option card is drawn in its option's spot
+            if (!inSpot) nodes.push({ key: n.id, n });
             options(n).forEach((o, i) => {
                 nodes.push({ key: n.id + '#' + i, choice: n, opt: i });
-                links.push({ from: n.id, to: n.id + '#' + i, stem: true, choice: n, opt: i });
+                links.push({ from: keyOf(n.id), to: n.id + '#' + i, stem: true, choice: n, opt: i });
             });
         });
         P.nodes.forEach(n => n.after.forEach(l => {
             const p = byId(P, l.id); if (!p) return;
-            links.push({ from: l.opt !== undefined && p.card.type === 'radio' ? l.id + '#' + l.opt : l.id, to: n.id, l, child: n, parent: p });
+            if (n.slot && n.after[0] === l) return;           // an option card's own tie to its option
+            links.push({ from: l.opt !== undefined && p.card.type === 'radio' ? l.id + '#' + l.opt : keyOf(l.id), to: keyOf(n.id), l, child: n, parent: p });
         }));
         return { nodes, links };
     }
@@ -1041,7 +1105,17 @@
                 if (n.id === W.linkFrom && W.linkOpt === null) ring += `<circle r="${R + 6}" fill="none" stroke="#7d93d9" stroke-width="3" stroke-dasharray="6 4"/>`;
                 body = `<circle r="${R}" fill="${FILL[st]}" stroke="#000" stroke-width="3" ${n.optional ? 'stroke-dasharray="6 4"' : ''}/><g transform="translate(-9.1,-9.1) scale(1.3)">${ICON.type[n.card.type] || ''}</g>`;
             } else {
-                const s = optState(nd.choice, nd.opt);
+                const s = optState(nd.choice, nd.opt), sl = slotOf(P, nd.choice.id, nd.opt);
+                if (sl) {       // an option holding a card: the card's own node, with the option's number badge
+                    const st = status(P, sl);
+                    if (sl.id === W.selected) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
+                    body = `<circle r="${R}" fill="${FILL[st]}" stroke="${OPT_COLORS[nd.opt % OPT_COLORS.length]}" stroke-width="3" ${sl.optional ? 'stroke-dasharray="6 4"' : ''}/>
+                        <circle r="${R + 1.5}" fill="none" stroke="#000" stroke-width="1"/>
+                        <g transform="translate(-9.1,-9.1) scale(1.3)">${ICON.type[sl.card.type] || ''}</g>
+                        <g transform="translate(${R * 0.78},${-R * 0.78})"><circle r="8" fill="${OPT_TAG[nd.opt % OPT_TAG.length]}" stroke="#000" stroke-width="2"/><text y="3.6" text-anchor="middle" font-size="10" font-weight="800" fill="#fff">${nd.opt + 1}</text></g>`;
+                    boxes += `<g data-id="${nd.key}" style="cursor:pointer" transform="translate(${q.x},${q.y})">${ring}${body}</g>`;
+                    return;
+                }
                 if (nd.key === W.selOpt) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
                 if (W.linkFrom === nd.choice.id && W.linkOpt === nd.opt) ring += `<circle r="${R + 6}" fill="none" stroke="#7d93d9" stroke-width="3" stroke-dasharray="6 4"/>`;
                 body = `<circle r="${R}" fill="${s.pk ? '#9a6b09' : s.dead ? '#7a2f2b' : OPT_TAG[nd.opt % OPT_TAG.length]}" stroke="#000" stroke-width="3"/>
@@ -1162,6 +1236,7 @@
     function deleteOption(key) {
         const P = W.P, [cid, oi] = key.split('#'), c = byId(P, cid), i = +oi, items = c.card.state.items;
         if (items.length < 2) { toast('A choice needs at least one option'); return; }
+        const sl = slotOf(P, cid, i); if (sl) removeNode(P, sl.id);
         items.splice(i, 1);
         const s = c.card.state.selectedIndex;
         if (s === i) c.card.state.selectedIndex = null; else if (s > i) c.card.state.selectedIndex = s - 1;
@@ -1202,8 +1277,11 @@
         el.innerHTML = `<div class="gp-bn" data-go="close"><div class="gp-ico gp-optnum" style="background:${OPT_TAG[i % OPT_TAG.length]}">${i + 1}</div>
                 <div class="gp-nm"><span>Option ${i + 1} · ${esc(title(c))}</span></div><div class="gp-x">×</div></div>
             <div class="gp-ed">
+                <div class="gp-lbl">OPTION CARD</div>
+                <div class="gp-types">${['list', 'checklist', 'progress', 'radio'].filter(t => typeDef(t)).map(t => `<div class="${t === 'list' ? 'on' : ''}" data-go="type" data-t="${t}">${t === 'radio' ? 'CHOICE' : TYPE_NAME[t]}</div>`).join('')}</div>
                 <div class="gp-lbl">OPTION</div>
                 <div class="gp-optrow"><input class="gp-optin" value="${esc(options(c)[i] || '')}" placeholder="Option ${i + 1}"></div>
+                <div class="gp-hint">Ticking this option picks it and closes the others. Give it a card type to make doing that card the pick.</div>
                 <div class="gp-lbl">LEADS TO</div>
                 ${after.length ? after.map(n => `<div class="gp-row" data-go="pick" data-id="${n.id}"><div class="gp-sq">${ICON.type[n.card.type] ? ICON.type[n.card.type].replace(/#fff/g, '#000') : ''}</div><div class="gp-rn"><span>${esc(title(n))}</span></div></div>`).join('')
                     : '<div class="gp-hint">Nothing yet. Picking this option leads nowhere.</div>'}
@@ -1220,6 +1298,13 @@
             if (a === 'add') return addAfterOption(key, 'list');
             if (a === 'link') { W.selOpt = null; W.tool = 'link'; W.linkFrom = cid; W.linkOpt = i; return drawGridUI(); }
             if (a === 'del') return deleteOption(key);
+            if (a === 'type' && t.dataset.t !== 'list') {
+                const n = addNode(P, t.dataset.t, { slot: true, after: [{ id: cid, opt: i }] });
+                n.card.state.title = options(c)[i] || '';
+                if (t.dataset.t === 'checklist') n.card.state.items = [{ text: '', completed: false }, { text: '', completed: false }];
+                if (t.dataset.t === 'radio') n.card.state.items = [{ text: '' }, { text: '' }];
+                W.selOpt = null; W.selected = n.id; save(); return drawGridUI();
+            }
         });
         return el;
     }
@@ -1230,7 +1315,11 @@
         if (p.dot && W.tool === 'delete') { deleteOption(p.dot); return; }   // deleting an option node removes that option from its choice
         if (p.dot && W.tool === 'link' && W.linkFrom) { toast('Options come from their choice'); return; }
         // SELECT on an option: its own sheet (add a card after it, link one, rename, delete)
-        if (p.dot && W.tool === 'select') { W.selected = null; W.selOpt = p.dot; return drawGridUI(); }
+        if (p.dot && W.tool === 'select') {
+            const [cid, oi] = p.dot.split('#'), sl = slotOf(P, cid, +oi);
+            if (sl) { W.selOpt = null; W.selected = sl.id; W.afterOpen = false; } else { W.selected = null; W.selOpt = p.dot; }
+            return drawGridUI();
+        }
         // ADD on an option: the new card comes straight after that option
         if (p.dot && W.tool === 'add') { addAfterOption(p.dot, W.addType); return; }
         if (p.dot && W.tool !== 'link') p.id = p.dot.split('#')[0];

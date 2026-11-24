@@ -1239,7 +1239,7 @@
         const P = W.P, b = W.el.querySelector('.gp-build');
         const hint = {
             select: 'Tap a node to edit · drag it to move · drag empty space to pan',
-            link: W.linkFrom ? `Now tap the card that comes after “${esc(W.linkOpt === null ? title(byId(P, W.linkFrom)) : (options(byId(P, W.linkFrom))[W.linkOpt] || ''))}”` : 'Tap a card or a choice’s numbered option, then the card after it',
+            link: W.linkFrom ? (W.linkOpt === null && byId(P, W.linkFrom) && byId(P, W.linkFrom).card.type === 'radio' ? `Now tap a card to make it an option of “${esc(title(byId(P, W.linkFrom)))}”` : `Now tap the card that comes after “${esc(W.linkOpt === null ? title(byId(P, W.linkFrom)) : (options(byId(P, W.linkFrom))[W.linkOpt] || ''))}”`) : 'Tap a card or a choice’s numbered option, then the card after it',
             cut: 'Tap a line to remove it',
             delete: 'Tap a node to delete it'
         };
@@ -1442,6 +1442,19 @@
                 const A = byId(P, W.linkFrom), B = byId(P, p.id), opt = W.linkOpt;
                 W.linkFrom = null; W.linkOpt = null;
                 if (descendants(P, B.id).has(A.id)) { toast('That would make a loop'); break; }
+                // from a choice itself: the card becomes that choice's next option
+                if (opt === null && A.card.type === 'radio') {
+                    const h = slotHome(P, B);
+                    if (h && h.c === A) { toast('Already one of its options'); break; }
+                    const items = A.card.state.items = A.card.state.items || [];
+                    items.push({ text: title(B) === 'Untitled' ? '' : title(B) });
+                    const i = items.length - 1;
+                    // its old place (if it was another option's card) and other links stay as extra ways in
+                    B.after = [{ id: A.id, opt: i }].concat(B.after.filter(l => !(l.id === A.id)));
+                    B.slot = true;
+                    toast('Added as option ' + (i + 1));
+                    break;
+                }
                 if (B.after.some(l => l.id === A.id && l.opt === (opt === null ? undefined : opt))) { toast('Already linked'); break; }
                 addLink(B, A.id, opt === null ? undefined : opt);
                 break;

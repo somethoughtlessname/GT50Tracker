@@ -58,8 +58,8 @@
         if (lockedOut(P, p, memo)) return true;
         return link.opt !== undefined && picked(p) !== null && picked(p) !== link.opt;
     }
-    // Locked out = every way in is cut, or every option it hangs off went another way. Closing cascades down the
-    // path and stops at the first card that still has an open way in (a card fed by rival branches survives either choice)
+    // Locked out = every way in is cut. Closing cascades down the path and stops at the first card that still
+    // has an open way in; cut links are ignored (a card fed by rival branches survives either choice)
     // linking: a plain link to a card replaces any option links to it; option links to one choice can sit side by side
     function addLink(child, pid, opt) {
         if (opt === undefined || opt === null) { child.after = child.after.filter(l => l.id !== pid); child.after.push({ id: pid }); return; }
@@ -68,8 +68,7 @@
     }
     // an option card's first link ties it to its option; anything after that is an extra link it also waits for
     const extra = n => n.slot ? n.after.slice(1) : n.after;
-    const allCut = (P, links, memo) => links.length > 0 && (links.every(l => linkCut(P, l, memo))
-        || (links.some(l => l.opt !== undefined) && links.filter(l => l.opt !== undefined).every(l => linkCut(P, l, memo))));
+    const allCut = (P, links, memo) => links.length > 0 && links.every(l => linkCut(P, l, memo));
     // plain links are all needed; option links are alternatives: any one picked option is enough
     function linksOpen(P, links) {
         const live = links.filter(l => !linkCut(P, l, new Map()));

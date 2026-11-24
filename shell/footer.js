@@ -36,7 +36,8 @@
                 'scale': '--color-6-3',
                 'nest': '--color-5',
                 'cycle': '--color-5-2',
-                'import': '--color-5-3'
+                'import': '--color-5-3',
+                'path': '--color-5-4'
             };
             
             const varName = colorMap[type];
@@ -97,7 +98,8 @@
                         variants: [
                             { type: 'nest', label: 'NEST' },
                             { type: 'cycle', label: 'CYCLE' },
-                            { type: 'import', label: 'IMPORT' }
+                            { type: 'import', label: 'IMPORT' },
+                            { type: 'path', label: 'PATH' }
                         ]
                     },
                     {
@@ -138,9 +140,10 @@
                 if (slotMap[baseType]) {
                     const slot = slotMap[baseType];
                     
-                    // PATH is made from Add New only, never from the card footer
-                    if (slot.variants) slot.variants = slot.variants.filter(v => v.type !== 'path');
-                    if (slot.currentVariant === 'path') { slot.currentVariant = baseType; slot.type = baseType; }
+                    // MIGRATION: the nest slot offers PATH after IMPORT
+                    if (baseType === 'nest' && slot.variants && slot.variants.length && !slot.variants.some(v => v.type === 'path')) {
+                        slot.variants.push({ type: 'path', label: 'PATH' });
+                    }
                     // MIGRATION: Ensure divider slot has scale variant
                     if (baseType === 'divider') {
                         const hasScale = slot.variants && slot.variants.some(v => v.type === 'scale');
@@ -409,7 +412,8 @@
                 'scale': 'SCALE',
                 'nest': 'NEST',
                 'cycle': 'CYCLE',
-                'import': 'IMPORT'
+                'import': 'IMPORT',
+                'path': 'PATH'
             };
             
             const shown = this.visibleSlots(state);

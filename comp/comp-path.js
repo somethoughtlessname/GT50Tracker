@@ -345,6 +345,8 @@
         .gp-mapin svg { display: block; margin: auto; flex: none; }
         .gp-build.grid .gp-mapin { touch-action: none; padding-bottom: 0; }
         .gp-build.grid .gp-mapin svg { margin: 0; }
+        .gp-copy { display: none; position: absolute; top: 8px; left: 6px; z-index: 3; height: 32px; padding: 0 14px; align-items: center; border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); background: var(--bg-4); color: var(--color-10); font-size: 11px; font-weight: 800; letter-spacing: .06em; cursor: pointer; }
+        .gp-build.grid .gp-copy { display: flex; }
         .gp-undo { display: none; position: absolute; top: 8px; right: 6px; z-index: 3; height: 32px; border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; background: var(--bg-4); }
         .gp-build.grid .gp-undo { display: flex; }
         .gp-undo > div { width: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -389,6 +391,21 @@
         const b = W && W.el && W.el.querySelector('.gp-undo'); if (!b) return;
         b.querySelector('[data-u="undo"]').classList.toggle('off', !W.undo.length);
         b.querySelector('[data-u="redo"]').classList.toggle('off', !W.redo.length);
+    }
+    // COPY: this path card's own data (name, every node with its card, links and flags, grid spots) as JSON
+    function copyPath() {
+        const clean = JSON.parse(JSON.stringify(W.P));
+        delete clean.actionState; delete clean.editWindow; delete clean.ui;
+        const txt = JSON.stringify({ type: 'path', state: clean }, null, 2);
+        const done = () => toast('Copied ' + clean.nodes.length + ' cards');
+        const fallback = () => {
+            const ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', '');
+            ta.style.cssText = 'position:fixed;top:-1000px;opacity:0'; document.body.appendChild(ta); ta.select();
+            let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+            ta.remove(); ok ? done() : toast('Couldn’t copy');
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback);
+        else fallback();
     }
     function step(back) {
         const from = back ? W.undo : W.redo, to = back ? W.redo : W.undo;
@@ -610,6 +627,7 @@
             main.innerHTML = `<div class="gp-build">
                 <div class="gp-list"></div>
                 <div class="gp-map ${W.mapHidden ? 'off' : ''}"><div class="gp-mapwrap"><div class="gp-mapin"></div><div class="gp-zoom"></div>
+                    <div class="gp-copy" data-u="copy">COPY</div>
                     <div class="gp-undo"><div data-u="undo" aria-label="Undo"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4L3 8l4 4"/><path d="M3 8h9a5 5 0 0 1 0 10H8"/></svg></div><div data-u="redo" aria-label="Redo"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4l4 4-4 4"/><path d="M17 8H8a5 5 0 0 0 0 10h4"/></svg></div></div>
                     <div class="gp-hide" data-gp="hidemap"><svg viewBox="0 0 12 12" width="10" height="10"><path d="M1.5 3.5h9L6 9z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>HIDE</div>
                     <div class="gp-key"><span style="--c:#c9a227">done</span><span style="--c:#8f7658">available</span><span style="--c:#4a3f35">later</span><span style="--c:#7a2f2b">locked / missed</span></div></div></div>
@@ -827,6 +845,7 @@
         ['mousedown', 'mouseup', 'click', 'touchend'].forEach(ev => sheet.addEventListener(ev, e => { if (guarded()) { e.preventDefault(); e.stopPropagation(); } }, true));
         sheet.addEventListener('focusin', e => { if (guarded()) e.target.blur(); });
         sheet.addEventListener('click', onEdit);
+        b.querySelector('.gp-copy').onclick = () => copyPath();
         b.querySelector('.gp-undo').onclick = e => { const u = e.target.closest('[data-u]'); if (u) step(u.dataset.u === 'undo'); };
         b.querySelector('.gp-zoom').onclick = () => { W.zoom = (W.zoom + 1) % ZOOMS.length; drawMap({ noScroll: true, center: ZOOMS[W.zoom] === 'fit' }); };
         b.querySelector('.gp-tools').addEventListener('click', e => {

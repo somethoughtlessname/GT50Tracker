@@ -199,6 +199,11 @@
         .gp-bn .gp-ab .gp-startpill::before { border-left-width: 4px; border-top-width: 3px; border-bottom-width: 3px; }
         .gp-bn .gp-ab .gp-endpill::before { width: 4px; height: 4px; border: none; }
         .gp-bn .gp-af { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.7); padding-right: 8px; display: flex; align-items: center; white-space: nowrap; max-width: 45%; overflow: hidden; }
+        .gp-optnum { color: var(--color-10); font-size: 12px; font-weight: 800; }
+        .gp-optrow { display: flex; height: var(--card-height); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; background: var(--color-1-3); }
+        .gp-optin { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--color-10); font: 600 16px inherit; font-family: inherit; padding: 0 10px; }
+        .gp-optsheet .gp-row { margin-bottom: 4px; }
+        .gp-optsheet .gp-btns + .gp-btns { margin-top: 4px; }
         .gp-bn .gp-x { width: var(--square-section); border-left: var(--border-width) solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--color-10); font-weight: 800; background: var(--color-1); }
         .gp-ed { background: var(--bg-2); border-top: var(--border-width) solid var(--border-color); padding: var(--margin); }
         .gp-lbl { font-size: 9px; font-weight: 800; letter-spacing: .08em; color: #c9bfae; margin: 8px 2px 3px; }
@@ -698,7 +703,7 @@
             const at = e.target.closest('[data-addtype]'); if (at) { W.addType = at.dataset.addtype; return drawGridUI(); }
             const d = e.target.closest('[data-tool]'); if (!d) return;
             if (d.dataset.tool === 'tidy') { W.P.gridLayout = null; toast('Back to the automatic layout'); save(); drawGridUI(); return drawMap({ center: true }); }
-            W.tool = d.dataset.tool; W.linkFrom = null; W.linkOpt = null;
+            W.tool = d.dataset.tool; W.linkFrom = null; W.linkOpt = null; W.selOpt = null;
             if (W.tool !== 'select' && W.tool !== 'add') W.selected = null;
             drawGridUI();
         });
@@ -994,11 +999,12 @@
             let ring = '', body;
             if (nd.n) {
                 const n = nd.n, st = status(P, n);
-                if (n.id === W.selected) ring += `<circle r="${R + 5}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
+                if (n.id === W.selected) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
                 if (n.id === W.linkFrom && W.linkOpt === null) ring += `<circle r="${R + 6}" fill="none" stroke="#7d93d9" stroke-width="3" stroke-dasharray="6 4"/>`;
                 body = `<circle r="${R}" fill="${FILL[st]}" stroke="#000" stroke-width="3" ${n.optional ? 'stroke-dasharray="6 4"' : ''}/><g transform="translate(-9.1,-9.1) scale(1.3)">${ICON.type[n.card.type] || ''}</g>`;
             } else {
                 const s = optState(nd.choice, nd.opt);
+                if (nd.key === W.selOpt) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
                 if (W.linkFrom === nd.choice.id && W.linkOpt === nd.opt) ring += `<circle r="${R + 6}" fill="none" stroke="#7d93d9" stroke-width="3" stroke-dasharray="6 4"/>`;
                 body = `<circle r="${R}" fill="${s.pk ? '#9a6b09' : s.dead ? '#7a2f2b' : OPT_TAG[nd.opt % OPT_TAG.length]}" stroke="#000" stroke-width="3"/>
                     <circle r="${R - 6}" fill="none" stroke="${s.pk ? '#fff' : s.dead ? '#a8443d' : OPT_COLORS[nd.opt % OPT_COLORS.length]}" stroke-width="2"/>
@@ -1049,8 +1055,10 @@
         const sheet = b.querySelector('.gp-sheet');
         sheet.innerHTML = '';
         const n = W.selected && (W.tool === 'select' || W.tool === 'add') ? byId(P, W.selected) : null;
+        const os = !n && W.selOpt && W.tool === 'select' ? optionSheet(W.selOpt) : null;
         if (n) sheet.appendChild(nodeBlock(n, true));
-        sheet.classList.toggle('on', !!n);
+        if (os) sheet.appendChild(os);
+        sheet.classList.toggle('on', !!(n || os));
     }
     // A dropped node snaps to the grid; if that spot is too close to another node it glides to the nearest free spot
     function settleNode(key) {
@@ -1112,28 +1120,83 @@
         });
         mapEl.addEventListener('pointercancel', () => { ptr = null; });
     }
+    function deleteOption(key) {
+        const P = W.P, [cid, oi] = key.split('#'), c = byId(P, cid), i = +oi, items = c.card.state.items;
+        if (items.length < 2) { toast('A choice needs at least one option'); return; }
+        items.splice(i, 1);
+        const s = c.card.state.selectedIndex;
+        if (s === i) c.card.state.selectedIndex = null; else if (s > i) c.card.state.selectedIndex = s - 1;
+        P.nodes.forEach(n => n.after = n.after.filter(l => !(l.id === cid && l.opt === i)).map(l => (l.id === cid && l.opt > i) ? { id: l.id, opt: l.opt - 1 } : l));
+        if (P.gridLayout) {
+            const L = P.gridLayout;
+            Object.keys(L).filter(k => k.startsWith(cid + '#')).map(k => +k.split('#')[1]).sort((a, b) => a - b)
+                .forEach(j => { if (j === i) delete L[cid + '#' + j]; else if (j > i) { L[cid + '#' + (j - 1)] = L[cid + '#' + j]; delete L[cid + '#' + j]; } });
+        }
+        W.selOpt = null; save(); drawGridUI();
+    }
+    // nearest spot on the grid to `want` that isn't too close to another node
+    function freeSpot(pos, want) {
+        const base = { x: snapG(want.x), y: snapG(want.y) };
+        if (!tooClose(base, pos)) return base;
+        const c = [];
+        for (let i = -10; i <= 10; i++) for (let j = -10; j <= 10; j++) c.push({ x: base.x + i * SNAP, y: base.y + j * SNAP });
+        c.sort((a, b) => Math.hypot(a.x - want.x, a.y - want.y) - Math.hypot(b.x - want.x, b.y - want.y));
+        return c.find(q => !tooClose(q, pos)) || base;
+    }
+    function addAfterOption(key, type) {
+        const P = W.P, [cid, oi] = key.split('#');
+        snapshotGrid(P);
+        const from = gridPositions(P)[key] || { x: 0, y: 0 };
+        const n = type === 'optional' ? addNode(P, 'list', { optional: true, after: [{ id: cid, opt: +oi }] }) : addNode(P, type, { after: [{ id: cid, opt: +oi }] });
+        if (type === 'threshold') { n.card.state.number1 = 1; }
+        if (type === 'checklist') n.card.state.items = [{ text: '', completed: false }, { text: '', completed: false }];
+        P.gridLayout[n.id] = freeSpot(gridPositions(P), { x: from.x + COLW, y: from.y });
+        W.selOpt = null; W.selected = n.id; W.afterOpen = false;
+        save(); drawGridUI();
+    }
+    function optionSheet(key) {
+        const P = W.P, [cid, oi] = key.split('#'), c = byId(P, cid), i = +oi;
+        if (!c || !options(c)[i] === undefined) return null;
+        const el = document.createElement('div');
+        el.className = 'gp-node sel gp-optsheet';
+        const after = P.nodes.filter(n => n.after.some(l => l.id === cid && l.opt === i));
+        el.innerHTML = `<div class="gp-bn" data-go="close"><div class="gp-ico gp-optnum" style="background:${OPT_TAG[i % OPT_TAG.length]}">${i + 1}</div>
+                <div class="gp-nm"><span>Option ${i + 1} · ${esc(title(c))}</span></div><div class="gp-x">×</div></div>
+            <div class="gp-ed">
+                <div class="gp-lbl">OPTION</div>
+                <div class="gp-optrow"><input class="gp-optin" value="${esc(options(c)[i] || '')}" placeholder="Option ${i + 1}"></div>
+                <div class="gp-lbl">LEADS TO</div>
+                ${after.length ? after.map(n => `<div class="gp-row" data-go="pick" data-id="${n.id}"><div class="gp-sq">${ICON.type[n.card.type] ? ICON.type[n.card.type].replace(/#fff/g, '#000') : ''}</div><div class="gp-rn"><span>${esc(title(n))}</span></div></div>`).join('')
+                    : '<div class="gp-hint">Nothing yet. Picking this option leads nowhere.</div>'}
+                <div class="gp-btns"><div class="gp-btn green" data-go="add" style="flex:1">+ ADD CARD AFTER THIS OPTION</div></div>
+                <div class="gp-btns"><div class="gp-btn" data-go="link" style="flex:1">LINK A CARD AFTER IT</div><div class="gp-btn red" data-go="del">DELETE OPTION</div></div>
+            </div>`;
+        el.querySelector('.gp-optin').addEventListener('input', e => { c.card.state.items[i].text = e.target.value; });
+        el.querySelector('.gp-optin').addEventListener('change', () => save());
+        el.addEventListener('click', e => {
+            const t = e.target.closest('[data-go]'); if (!t) return;
+            const a = t.dataset.go;
+            if (a === 'close') { W.selOpt = null; return drawGridUI(); }
+            if (a === 'pick') { W.selOpt = null; W.selected = t.dataset.id; return drawGridUI(); }
+            if (a === 'add') return addAfterOption(key, 'list');
+            if (a === 'link') { W.selOpt = null; W.tool = 'link'; W.linkFrom = cid; W.linkOpt = i; return drawGridUI(); }
+            if (a === 'del') return deleteOption(key);
+        });
+        return el;
+    }
     function gridTap(p, e) {
         const P = W.P, svg = W.el.querySelector('.gp-mapin svg'); if (!svg) return;
         const r = svg.getBoundingClientRect();
         const x = (e.clientX - r.left) / W.curZ + W.gridView.ox, y = (e.clientY - r.top) / W.curZ + W.gridView.oy;
-        if (p.dot && W.tool === 'delete') {      // deleting an option node removes that option from its choice
-            const [cid, oi] = p.dot.split('#'), c = byId(P, cid), i = +oi, items = c.card.state.items;
-            if (items.length < 2) { toast('A choice needs at least one option'); return; }
-            items.splice(i, 1);
-            const s = c.card.state.selectedIndex;
-            if (s === i) c.card.state.selectedIndex = null; else if (s > i) c.card.state.selectedIndex = s - 1;
-            P.nodes.forEach(n => n.after = n.after.filter(l => !(l.id === cid && l.opt === i)).map(l => (l.id === cid && l.opt > i) ? { id: l.id, opt: l.opt - 1 } : l));
-            if (P.gridLayout) {
-                const L = P.gridLayout;
-                Object.keys(L).filter(k => k.startsWith(cid + '#')).map(k => +k.split('#')[1]).sort((a, b) => a - b)
-                    .forEach(j => { if (j === i) delete L[cid + '#' + j]; else if (j > i) { L[cid + '#' + (j - 1)] = L[cid + '#' + j]; delete L[cid + '#' + j]; } });
-            }
-            save(); return drawGridUI();
-        }
+        if (p.dot && W.tool === 'delete') { deleteOption(p.dot); return; }   // deleting an option node removes that option from its choice
         if (p.dot && W.tool === 'link' && W.linkFrom) { toast('Options come from their choice'); return; }
+        // SELECT on an option: its own sheet (add a card after it, link one, rename, delete)
+        if (p.dot && W.tool === 'select') { W.selected = null; W.selOpt = p.dot; return drawGridUI(); }
+        // ADD on an option: the new card comes straight after that option
+        if (p.dot && W.tool === 'add') { addAfterOption(p.dot, W.addType); return; }
         if (p.dot && W.tool !== 'link') p.id = p.dot.split('#')[0];
         switch (W.tool) {
-            case 'select': W.selected = p.id || null; W.afterOpen = false; break;
+            case 'select': W.selected = p.id || null; W.selOpt = null; W.afterOpen = false; break;
             case 'add': {
                 if (p.id) { W.selected = p.id; break; }
                 const spot = { x: snapG(x), y: snapG(y) };

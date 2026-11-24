@@ -374,6 +374,8 @@
         .gp-tools .gp-seg { height: 34px; } .gp-tools .gp-seg > div { font-size: 9.5px; } .gp-tools .gp-seg > div.act { background: var(--bg-4); color: var(--color-10); }
         .gp-tools .gp-seg + .gp-seg { margin-top: var(--margin); }
         .gp-tools .gp-info > div { flex: 1 1 0; min-width: 0; cursor: default; font-size: 10px; font-weight: 700; letter-spacing: 0; padding: 0 8px; text-align: center; line-height: 1.2; }
+        .gp-tools .gp-types2 > div.gp-optsw { border-left-style: dashed; }
+        .gp-tools .gp-types2 > div.gp-optsw.on { background: var(--bg-5); color: var(--color-10); }
         .gp-tools .gp-types2 > div { flex: 1 1 0; min-width: 0; font-size: 8.5px; letter-spacing: 0; cursor: pointer; }
         .gp-sheet { display: none; position: absolute; left: 0; right: 0; bottom: 0; max-height: 62%; overflow-y: auto; z-index: 10; background: var(--bg-1); border-top: var(--border-width) solid var(--border-color); padding: var(--margin); box-shadow: 0 -6px 14px rgba(0,0,0,.35); }
         .gp-sheet.on { display: block; }
@@ -862,7 +864,8 @@
         b.querySelector('.gp-undo').onclick = e => { const u = e.target.closest('[data-u]'); if (u) step(u.dataset.u === 'undo'); };
         b.querySelector('.gp-zoom').onclick = () => { W.zoom = (W.zoom + 1) % ZOOMS.length; drawMap({ noScroll: true, center: ZOOMS[W.zoom] === 'fit' }); };
         b.querySelector('.gp-tools').addEventListener('click', e => {
-            const at = e.target.closest('[data-addtype]'); if (at) { W.addType = at.dataset.addtype; return drawGridUI(); }
+            const at = e.target.closest('[data-addtype]');
+            if (at) { if (at.dataset.addtype === 'optional') W.addOpt = !W.addOpt; else W.addType = at.dataset.addtype; return drawGridUI(); }
             const d = e.target.closest('[data-tool]'); if (!d) return;
             if (d.dataset.tool === 'tidy') { W.P.gridLayout = null; toast('Back to the automatic layout'); save(); drawGridUI(); return drawMap({ center: true }); }
             W.tool = d.dataset.tool; W.linkFrom = null; W.linkOpt = null; W.selOpt = null;
@@ -886,7 +889,15 @@
     const FILL = { done: '#9a6b09', available: '#8f7658', later: '#4a3f35', locked: '#7a2f2b', missed: '#7a2f2b' };
     const snapG = v => Math.round(v / SNAP) * SNAP;
     // ENDINGS: cards nothing comes after are white, with their symbol and text in a status colour
-    const isEnding = (P, n) => !P.nodes.some(c => c.after.some(l => l.id === n.id)) && !(n.card.type === 'radio' && options(n).length);
+    // (an option card also leads on through links to its option)
+    // (a choice is an ending when none of its options lead anywhere; on the grid its option nodes show it instead)
+    const optEnds = (P, c, i) => !c.optional && !slotOf(P, c.id, i) && !P.nodes.some(k => k.after.some(l => l.id === c.id && l.opt === i));
+    const isEnding = (P, n, onGrid) => {
+        if (n.optional) return false;
+        if (n.card.type === 'radio' && options(n).length && (onGrid || !options(n).every((o, i) => optEnds(P, n, i)))) return false;
+        const h = slotHome(P, n);
+        return !P.nodes.some(c => c !== n && c.after.some(l => l.id === n.id || (h && h.c && l.id === h.c.id && l.opt === h.i)));
+    };
     const INK = { done: '#9a6b09', available: '#000', later: '#7a746a', locked: '#7a2f2b', missed: '#7a2f2b' };
     const inked = (svg, col) => (svg || '').replace(/#fff/g, col);
 
@@ -1171,7 +1182,7 @@
                 const n = nd.n, st = status(P, n);
                 if (n.id === W.selected) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
                 if (n.id === W.linkFrom && W.linkOpt === null) ring += `<circle r="${R + 6}" fill="none" stroke="#7d93d9" stroke-width="3" stroke-dasharray="6 4"/>`;
-                const end = isEnding(P, n);
+                const end = isEnding(P, n, true);
                 body = `<circle r="${R}" fill="${end ? '#fff' : FILL[st]}" stroke="#000" stroke-width="3" ${n.optional ? 'stroke-dasharray="6 4"' : ''}/><g transform="translate(-9.1,-9.1) scale(1.3)">${end ? inked(ICON.type[n.card.type], INK[st]) : ICON.type[n.card.type] || ''}</g>`;
             } else {
                 const s = optState(nd.choice, nd.opt), sl = slotOf(P, nd.choice.id, nd.opt);
@@ -1188,7 +1199,12 @@
                 }
                 if (nd.key === W.selOpt) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
                 if (W.linkFrom === nd.choice.id && W.linkOpt === nd.opt) ring += `<circle r="${R + 6}" fill="none" stroke="#7d93d9" stroke-width="3" stroke-dasharray="6 4"/>`;
-                body = `<circle r="${R}" fill="${s.pk ? '#9a6b09' : s.dead ? '#7a2f2b' : OPT_TAG[nd.opt % OPT_TAG.length]}" stroke="#000" stroke-width="3"/>
+                // an option that leads nowhere is an ending: white, its number in the option's colour (gold if picked, red if closed)
+                const oe = optEnds(P, nd.choice, nd.opt), oc = s.pk ? '#9a6b09' : s.dead ? '#7a2f2b' : OPT_TAG[nd.opt % OPT_TAG.length];
+                body = oe ? `<circle r="${R}" fill="#fff" stroke="#000" stroke-width="3"/>
+                    <circle r="${R - 6}" fill="none" stroke="${oc}" stroke-width="2"/>
+                    <text y="5" text-anchor="middle" font-size="14" font-weight="800" fill="${oc}">${nd.opt + 1}</text>`
+                    : `<circle r="${R}" fill="${oc}" stroke="#000" stroke-width="3"/>
                     <circle r="${R - 6}" fill="none" stroke="${s.pk ? '#fff' : s.dead ? '#a8443d' : OPT_COLORS[nd.opt % OPT_COLORS.length]}" stroke-width="2"/>
                     <text y="5" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">${nd.opt + 1}</text>`;
             }
@@ -1228,9 +1244,10 @@
             delete: 'Tap a node to delete it'
         };
         // second card under the tools: the hint, or in ADD the card types split into equal parts
-        const addTypes = NODE_TYPES.filter(t => typeDef(t)).map(t => [t, TYPE_NAME[t]]).concat([['optional', 'OPTIONAL']]);
+        if (W.addType === 'optional') W.addType = 'list';
+        const addTypes = NODE_TYPES.filter(t => typeDef(t)).map(t => [t, TYPE_NAME[t]]);
         const sub = W.tool === 'add'
-            ? `<div class="gp-seg gp-types2">${addTypes.map(([t, nm]) => `<div class="${t === W.addType ? 'on' : ''}" data-addtype="${t}">${nm}</div>`).join('')}</div>`
+            ? `<div class="gp-seg gp-types2">${addTypes.map(([t, nm]) => `<div class="${t === W.addType ? 'on' : ''}" data-addtype="${t}">${nm}</div>`).join('')}<div class="gp-optsw ${W.addOpt ? 'on' : ''}" data-addtype="optional">OPTIONAL</div></div>`
             : `<div class="gp-seg gp-info"><div>${hint[W.tool]}</div></div>`;
         b.querySelector('.gp-tools').innerHTML = `<div class="gp-seg">${Object.keys(TOOLS).map(k => `<div class="${k === W.tool ? 'on' : ''}" data-tool="${k}">${TOOLS[k]}</div>`).join('')}<div class="act" data-tool="tidy">TIDY</div></div>${sub}`;
         drawMap();      // after the tool bar is in, so the map knows its real height
@@ -1327,11 +1344,11 @@
         c.sort((a, b) => Math.hypot(a.x - want.x, a.y - want.y) - Math.hypot(b.x - want.x, b.y - want.y));
         return c.find(q => !tooClose(q, pos)) || base;
     }
-    function addAfterOption(key, type) {
+    function addAfterOption(key, type, opt) {
         const P = W.P, [cid, oi] = key.split('#');
         snapshotGrid(P);
         const from = gridPositions(P)[key] || { x: 0, y: 0 };
-        const n = type === 'optional' ? addNode(P, 'list', { optional: true, after: [{ id: cid, opt: +oi }] }) : addNode(P, type, { after: [{ id: cid, opt: +oi }] });
+        const n = addNode(P, type, Object.assign({ after: [{ id: cid, opt: +oi }] }, opt ? { optional: true } : {}));
         if (type === 'threshold') { n.card.state.number1 = 1; }
         if (type === 'checklist') n.card.state.items = [{ text: '', completed: false }, { text: '', completed: false }];
         P.gridLayout[n.id] = freeSpot(gridPositions(P), { x: from.x + COLW, y: from.y });
@@ -1400,7 +1417,7 @@
             return drawGridUI();
         }
         // ADD on an option: the new card comes straight after that option
-        if (p.dot && W.tool === 'add') { addAfterOption(p.dot, W.addType); return; }
+        if (p.dot && W.tool === 'add') { addAfterOption(p.dot, W.addType, W.addOpt); return; }
         if (p.dot && W.tool !== 'link') p.id = p.dot.split('#')[0];
         switch (W.tool) {
             case 'select': W.selected = p.id || null; W.selOpt = null; W.afterOpen = false; break;
@@ -1409,7 +1426,7 @@
                 const spot = { x: snapG(x), y: snapG(y) };
                 snapshotGrid(P);
                 if (tooClose(spot, gridPositions(P))) { toast('Too close to another node'); return; }
-                const n = W.addType === 'optional' ? addNode(P, 'list', { optional: true }) : addNode(P, W.addType);
+                const n = addNode(P, W.addType, W.addOpt ? { optional: true } : {});
                 if (W.addType === 'threshold') { n.card.state.items = [{ text: '', completed: false }, { text: '', completed: false }]; n.card.state.number1 = 1; n.card.state.threshold = 1; }
                 if (W.addType === 'checklist') n.card.state.items = [{ text: '', completed: false }, { text: '', completed: false }];
                 P.gridLayout[n.id] = spot; W.selected = n.id; W.afterOpen = false;

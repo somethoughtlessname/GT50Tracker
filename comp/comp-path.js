@@ -66,13 +66,22 @@
         child.after = child.after.filter(l => !(l.id === pid && l.opt === undefined));
         if (!child.after.some(l => l.id === pid && l.opt === opt)) child.after.push({ id: pid, opt });
     }
+    // an option card's first link ties it to its option; anything after that is an extra link it also waits for
+    const extra = n => n.slot ? n.after.slice(1) : n.after;
+    const allCut = (P, links, memo) => links.length > 0 && (links.every(l => linkCut(P, l, memo))
+        || (links.some(l => l.opt !== undefined) && links.filter(l => l.opt !== undefined).every(l => linkCut(P, l, memo))));
+    // plain links are all needed; option links are alternatives: any one picked option is enough
+    function linksOpen(P, links) {
+        const live = links.filter(l => !linkCut(P, l, new Map()));
+        const plain = live.filter(l => l.opt === undefined), alt = live.filter(l => l.opt !== undefined);
+        return plain.every(l => linkMet(P, l)) && (!alt.length || alt.some(l => linkMet(P, l)));
+    }
     function lockedOut(P, n, memo = new Map()) {
         if (memo.has(n.id)) return memo.get(n.id);
         memo.set(n.id, false);
-        const v = n.after.length > 0 && (isGate(n)
-            ? n.after.filter(l => !linkCut(P, l, memo)).length < gateNeed(n)
-            : (n.after.every(l => linkCut(P, l, memo))
-               || (n.after.some(l => l.opt !== undefined) && n.after.filter(l => l.opt !== undefined).every(l => linkCut(P, l, memo)))));
+        let v;
+        if (n.slot && n.after[0]) v = linkCut(P, n.after[0], memo) || allCut(P, extra(n), memo);
+        else v = n.after.length > 0 && (isGate(n) ? n.after.filter(l => !linkCut(P, l, memo)).length < gateNeed(n) : allCut(P, n.after, memo));
         memo.set(n.id, v); return v;
     }
     // ===== OPTION CARDS =====
@@ -133,12 +142,12 @@
         if (lockedOut(P, n)) return 'locked';
         if (isMissed(P, n)) return 'missed';
         const h = slotHome(P, n);
-        if (h && h.c && picked(h.c) === null) return status(P, h.c) === 'available' ? 'available' : 'later';
-        const live = n.after.filter(l => !linkCut(P, l, new Map()));
-        if (isGate(n)) return live.some(l => linkMet(P, l)) ? 'available' : 'later';
-        // plain links are all needed; option links are alternatives: any one picked option is enough
-        const plain = live.filter(l => l.opt === undefined), alt = live.filter(l => l.opt !== undefined);
-        return plain.every(l => linkMet(P, l)) && (!alt.length || alt.some(l => linkMet(P, l))) ? 'available' : 'later';
+        if (h && h.c) {          // an option card: open while its choice is open (or once its option is picked), plus its extra links
+            const home = picked(h.c) === null ? status(P, h.c) === 'available' : linkMet(P, n.after[0]);
+            return home && linksOpen(P, extra(n)) ? 'available' : 'later';
+        }
+        if (isGate(n)) return n.after.filter(l => !linkCut(P, l, new Map())).some(l => linkMet(P, l)) ? 'available' : 'later';
+        return linksOpen(P, n.after) ? 'available' : 'later';
     }
     // Spare = an unfinished card that only feeds threshold gates which are already met: it no longer counts
     function isSpare(P, n) {
@@ -203,6 +212,8 @@
         .gp-choice .gp-choice { margin: 0 0 var(--margin); }
         .gp-ch { display: flex; align-items: center; justify-content: center; min-height: 34px; padding: 4px 10px; background: var(--color-1-3); color: var(--color-10); font-weight: 800; font-size: 13px; text-align: center; border-bottom: var(--border-width) solid var(--border-color); }
         .gp-cn { font-size: 10px; font-weight: 700; color: #e9d9b8; text-align: center; padding: 5px 8px 0; }
+        .gp-wait { opacity: .5; pointer-events: none; }
+        .gp-wl { font-size: 9px; font-weight: 800; letter-spacing: .05em; color: #e9d9b8; margin: 0 2px 2px; }
         .gp-cb { padding: var(--margin) var(--margin) 0; }
         .gp-mini { --card-height: 28px; --square-section: 22px; --check-size: 12px; }
         .gp-mini input { font-size: 12px !important; }
@@ -495,6 +506,16 @@
         const body = box.querySelector('.gp-cb');
         options(c).forEach((o, i) => {
             const sl = slotOf(P, c.id, i);
+            if (sl) {
+                const st = status(P, sl);
+                if (st === 'locked') return;                      // an option whose other needs went another way: gone
+                if (st === 'later') {                             // still waiting on something else: shown, but not yet doable
+                    const w = document.createElement('div'); w.className = 'gp-wait'; body.appendChild(w);
+                    const needs = extra(sl).filter(l => !linkCut(P, l, new Map()) && !linkMet(P, l)).map(l => { const q = byId(P, l.id); return q ? (l.opt !== undefined ? options(q)[l.opt] : title(q)) : ''; }).filter(Boolean);
+                    w.innerHTML = `<div class="gp-wl">NEEDS ${esc(needs.join(' + ').toUpperCase() || 'MORE FIRST')}</div>`;
+                    return mountCard(w, sl, false);
+                }
+            }
             if (sl && sl.card.type === 'radio' && picked(sl) === null) return choiceBlock(body, sl);
             if (sl) return mountCard(body, sl, false);
             // a plain option: a list card whose tick is the pick
@@ -631,9 +652,10 @@
         const P = W.P, ed = document.createElement('div');
         ed.className = 'gp-ed';
         const banned = descendants(P, n.id); banned.add(n.id);
+        const home = slotHome(P, n); if (home && home.c) banned.add(home.c.id);    // an option card's own choice is fixed
         const rows = [];
         // START: no cards before it, so it's open from the beginning
-        const isStart = !n.after.length;
+        const isStart = !extra(n).length;
         rows.push(`<div class="gp-row gp-startrow ${isStart ? 'on' : ''}" data-gp="tostart"><div class="gp-sq">${isStart ? ICON.check() : ''}</div><div class="gp-rn"><span>START OF THE PATH</span></div></div>`);
         P.nodes.filter(p => !banned.has(p.id)).forEach(p => {
             if (p.card.type === 'radio') {
@@ -686,9 +708,9 @@
             <div class="gp-lbl">CARD</div><div class="gp-cardwrap"></div>
             <div class="gp-lbl">PATH</div>
             ${slotHome(P, n) ? `<div class="gp-slotinfo"><b style="background:${OPT_TAG[slotHome(P, n).i % OPT_TAG.length]}">${slotHome(P, n).i + 1}</b><span>OPTION ${slotHome(P, n).i + 1} OF ${esc(title(slotHome(P, n).c))}<small>Doing this card picks this option</small></span><div class="gp-btn" data-gp="unslot">PLAIN OPTION</div></div>` : ''}
-            <div class="gp-after ${W.afterOpen ? 'open' : ''}" ${slotHome(P, n) ? 'style="display:none"' : ''}><div class="gp-ah" data-gp="afteropen">
-                <div class="gp-ak"><small>COMES AFTER</small>${n.after.length ? `<span>${esc(afterLabel(P, n))}</span>` : `<span><b class="gp-startpill">START</b></span>`}</div>
-                <div class="gp-ac">${n.after.length || ''}</div><div class="gp-aa">${ICON.down}</div></div>
+            <div class="gp-after ${W.afterOpen ? 'open' : ''}"><div class="gp-ah" data-gp="afteropen">
+                <div class="gp-ak"><small>${home && home.c ? 'ALSO NEEDS' : 'COMES AFTER'}</small>${extra(n).length ? `<span>${esc(extra(n).map(l => { const q = byId(P, l.id); return q ? (l.opt !== undefined ? (options(q)[l.opt] || '?') : title(q)) : '?'; }).join(' + '))}</span>` : home && home.c ? '<span>Nothing else</span>' : `<span><b class="gp-startpill">START</b></span>`}</div>
+                <div class="gp-ac">${extra(n).length || ''}</div><div class="gp-aa">${ICON.down}</div></div>
                 <div class="gp-ad">${rows.join('') || '<div class="gp-hint">No other cards yet</div>'}
                 <div class="gp-hint">${isGate(n) ? `Threshold: needs ${n.after.length ? gateNeed(n) + ' of these ' + n.after.length : 'some of the'} cards done. Set the number in the card above.` : 'Needs every card ticked here.'} A choice's options are alternatives: any one ticked option being picked is enough.</div></div></div>
             <div class="gp-after gp-before ${W.beforeOpen ? 'open' : ''}"><div class="gp-ah" data-gp="beforeopen">
@@ -747,7 +769,7 @@
         switch (act) {
             case 'select': W.selected = W.selected === n.id ? null : n.id; W.afterOpen = false; W.beforeOpen = false; break;
             case 'afteropen': W.afterOpen = !W.afterOpen; break;
-            case 'tostart': n.after = []; break;
+            case 'tostart': n.after = n.slot ? n.after.slice(0, 1) : []; break;
             case 'unslot': {        // back to a plain list option: its links move onto the option itself
                 const h = slotHome(P, n);
                 P.nodes.forEach(k => k.after = k.after.map(l => l.id === n.id ? { id: h.c.id, opt: h.i } : l));
@@ -1323,8 +1345,13 @@
         const x = (e.clientX - r.left) / W.curZ + W.gridView.ox, y = (e.clientY - r.top) / W.curZ + W.gridView.oy;
         if (p.dot && W.tool === 'delete') { deleteOption(p.dot); return; }   // deleting an option node removes that option from its choice
         if (p.dot && W.tool === 'link' && W.linkFrom) {
-            const [cid, oi] = p.dot.split('#'), sl = slotOf(P, cid, +oi);
-            if (!sl) { toast('Options come from their choice'); return; }
+            const [cid, oi] = p.dot.split('#'), c = byId(P, cid);
+            if (cid === W.linkFrom) { toast('An option can’t come after its own choice'); W.linkFrom = null; W.linkOpt = null; return drawGridUI(); }
+            let sl = slotOf(P, cid, +oi);
+            if (!sl) {          // a plain option: it becomes a list card so it can take the link
+                sl = addNode(P, 'list', { slot: true, after: [{ id: cid, opt: +oi }] });
+                sl.card.state.title = options(c)[+oi] || '';
+            }
             p = { ...p, dot: null, id: sl.id };
         }
         // SELECT on an option: its own sheet (add a card after it, link one, rename, delete)

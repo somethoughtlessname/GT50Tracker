@@ -53,8 +53,17 @@
 
     // ===== PATH LOGIC =====
     const byId = (P, id) => P.nodes.find(n => n.id === id);
+    // a link to an option that holds a card also runs through that card: it stays open while the card can still be
+    // reached (even if the choice itself is closed) and is met once the card is done
+    function viaCard(P, link) {
+        if (link.opt === undefined) return null;
+        const sl = slotOf(P, link.id, link.opt);
+        return sl && sl.after[0] !== link ? sl : null;
+    }
     function linkCut(P, link, memo) {
         const p = byId(P, link.id); if (!p) return true;
+        const sl = viaCard(P, link);
+        if (sl && (picked(p) === null || picked(p) === link.opt) && !lockedOut(P, sl, memo)) return false;
         if (lockedOut(P, p, memo)) return true;
         return link.opt !== undefined && picked(p) !== null && picked(p) !== link.opt;
     }
@@ -79,8 +88,8 @@
         if (memo.has(n.id)) return memo.get(n.id);
         memo.set(n.id, false);
         let v;
-        // an option card closes only with its option; extra links that were cut are simply ignored, like any other way in
-        if (n.slot && n.after[0]) v = linkCut(P, n.after[0], memo);
+        // an option card is reached through its option or its extra links: like any card, it closes only when every way in is cut
+        if (n.slot && n.after[0]) v = allCut(P, n.after, memo);
         else v = n.after.length > 0 && (isGate(n) ? n.after.filter(l => !linkCut(P, l, memo)).length < gateNeed(n) : allCut(P, n.after, memo));
         memo.set(n.id, v); return v;
     }
@@ -101,7 +110,7 @@
             });
             P.nodes.filter(n => n.slot).forEach(n => {
                 const h = slotHome(P, n); if (!h || !h.c) return;
-                if (cardDone(n) && picked(h.c) === null) { h.c.card.state.selectedIndex = h.i; h.c.card.state.autoPick = true; changed = true; }
+                if (cardDone(n) && picked(h.c) === null && !lockedOut(P, h.c)) { h.c.card.state.selectedIndex = h.i; h.c.card.state.autoPick = true; changed = true; }
             });
             if (!changed) break;
         }
@@ -126,6 +135,8 @@
         });
     }
     function linkMet(P, link) {
+        const sl = viaCard(P, link);
+        if (sl && cardDone(sl)) return true;
         const p = byId(P, link.id);
         if (!p || !cardDone(p)) return false;
         return link.opt === undefined || picked(p) === link.opt;
@@ -142,9 +153,11 @@
         if (lockedOut(P, n)) return 'locked';
         if (isMissed(P, n)) return 'missed';
         const h = slotHome(P, n);
-        if (h && h.c) {          // an option card: open while its choice is open (or once its option is picked), plus its extra links
-            const home = picked(h.c) === null ? status(P, h.c) === 'available' : linkMet(P, n.after[0]);
-            return home && linksOpen(P, extra(n)) ? 'available' : 'later';
+        if (h && h.c) {          // an option card: its option counts as open while its choice is undecided and open
+            const tie = n.after[0], home = picked(h.c) === null ? status(P, h.c) === 'available' : linkMet(P, tie);
+            const live = n.after.filter(l => !linkCut(P, l, new Map())), met = l => l === tie ? home : linkMet(P, l);
+            const plain = live.filter(l => l.opt === undefined), alt = live.filter(l => l.opt !== undefined);
+            return plain.every(met) && (!alt.length || alt.some(met)) ? 'available' : 'later';
         }
         if (isGate(n)) return n.after.filter(l => !linkCut(P, l, new Map())).some(l => linkMet(P, l)) ? 'available' : 'later';
         return linksOpen(P, n.after) ? 'available' : 'later';
@@ -552,7 +565,7 @@
         stamp(P);
         const st = new Map(P.nodes.map(n => [n.id, status(P, n)]));
         // option cards of an undecided choice are shown inside that choice's block
-        const inBlock = n => { const h = slotHome(P, n); return h && h.c && picked(h.c) === null; };
+        const inBlock = n => { const h = slotHome(P, n); return h && h.c && picked(h.c) === null && st.get(h.c.id) === 'available'; };
         const availAll = P.nodes.filter(n => st.get(n.id) === 'available' && !inBlock(n));
         const spare = n => n.optional || isSpare(P, n);
         const avail = availAll.filter(n => !spare(n)), extra = availAll.filter(spare);
@@ -872,6 +885,10 @@
     const OPT_TAG = ['#304a8a', '#46632c', '#6a3f86', '#87531f', '#22625e'];
     const FILL = { done: '#9a6b09', available: '#8f7658', later: '#4a3f35', locked: '#7a2f2b', missed: '#7a2f2b' };
     const snapG = v => Math.round(v / SNAP) * SNAP;
+    // ENDINGS: cards nothing comes after are white, with their symbol and text in a status colour
+    const isEnding = (P, n) => !P.nodes.some(c => c.after.some(l => l.id === n.id)) && !(n.card.type === 'radio' && options(n).length);
+    const INK = { done: '#9a6b09', available: '#000', later: '#7a746a', locked: '#7a2f2b', missed: '#7a2f2b' };
+    const inked = (svg, col) => (svg || '').replace(/#fff/g, col);
 
     // A line that skips past other cards must not run through them: use the plain S-curve when it's clear,
     // otherwise run along a free lane, changing height only in the open gaps at either end.
@@ -1007,13 +1024,14 @@
         }));
         P.nodes.forEach(n => {
             const p = pos[n.id], st = status(P, n), t = title(n), short = t.length > 17 ? t.slice(0, 16) + '…' : t;
+            const end = isEnding(P, n), ink = end ? INK[st] : '#fff';
             boxes += `<g data-id="${n.id}" style="cursor:pointer" transform="translate(${p.x},${p.y})">
                 ${n.id === W.selected ? `<rect x="-3" y="-3" width="${NW + 6}" height="${NH + 6}" rx="11" fill="none" stroke="#c9a227" stroke-width="3"/>` : ''}
-                <rect width="${NW}" height="${NH}" rx="8" fill="${FILL[st]}" stroke="#000" stroke-width="3" ${n.optional ? 'stroke-dasharray="6 4"' : ''}/>
-                <rect x="1.5" y="1.5" width="24" height="${NH - 3}" rx="6" fill="rgba(255,255,255,.12)"/>
+                <rect width="${NW}" height="${NH}" rx="8" fill="${end ? '#fff' : FILL[st]}" stroke="#000" stroke-width="3" ${n.optional ? 'stroke-dasharray="6 4"' : ''}/>
+                <rect x="1.5" y="1.5" width="24" height="${NH - 3}" rx="6" fill="${end ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.12)'}"/>
                 <line x1="26" y1="1.5" x2="26" y2="${NH - 1.5}" stroke="#000" stroke-width="3"/>
-                <g transform="translate(6,${NH / 2 - 7})">${ICON.type[n.card.type] || ''}</g>
-                <text x="32" y="${NH / 2 + 4}" font-size="11" font-weight="700" fill="#fff" ${st === 'locked' || st === 'missed' ? 'text-decoration="line-through"' : ''}>${esc(short)}</text></g>`;
+                <g transform="translate(6,${NH / 2 - 7})">${inked(ICON.type[n.card.type], ink)}</g>
+                <text x="32" y="${NH / 2 + 4}" font-size="11" font-weight="700" fill="${ink}" ${st === 'locked' || st === 'missed' ? 'text-decoration="line-through"' : ''}>${esc(short)}</text></g>`;
         });
         const mapEl = W.el.querySelector('.gp-mapin'), VH = Math.max(H, 200);
         const z = W.curZ = ZOOMS[W.zoom] === 'fit' ? Math.min(1, (mapEl.clientWidth - 12) / Wd, (mapEl.clientHeight - 36) / VH) : ZOOMS[W.zoom];
@@ -1153,15 +1171,17 @@
                 const n = nd.n, st = status(P, n);
                 if (n.id === W.selected) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
                 if (n.id === W.linkFrom && W.linkOpt === null) ring += `<circle r="${R + 6}" fill="none" stroke="#7d93d9" stroke-width="3" stroke-dasharray="6 4"/>`;
-                body = `<circle r="${R}" fill="${FILL[st]}" stroke="#000" stroke-width="3" ${n.optional ? 'stroke-dasharray="6 4"' : ''}/><g transform="translate(-9.1,-9.1) scale(1.3)">${ICON.type[n.card.type] || ''}</g>`;
+                const end = isEnding(P, n);
+                body = `<circle r="${R}" fill="${end ? '#fff' : FILL[st]}" stroke="#000" stroke-width="3" ${n.optional ? 'stroke-dasharray="6 4"' : ''}/><g transform="translate(-9.1,-9.1) scale(1.3)">${end ? inked(ICON.type[n.card.type], INK[st]) : ICON.type[n.card.type] || ''}</g>`;
             } else {
                 const s = optState(nd.choice, nd.opt), sl = slotOf(P, nd.choice.id, nd.opt);
                 if (sl) {       // an option holding a card: the card's own node, with the option's number badge
                     const st = status(P, sl);
                     if (sl.id === W.selected) ring += `<circle r="${R + 3}" fill="none" stroke="#c9a227" stroke-width="3"/>`;
-                    body = `<circle r="${R}" fill="${FILL[st]}" stroke="${OPT_COLORS[nd.opt % OPT_COLORS.length]}" stroke-width="3" ${sl.optional ? 'stroke-dasharray="6 4"' : ''}/>
+                    const end = isEnding(P, sl);
+                    body = `<circle r="${R}" fill="${end ? '#fff' : FILL[st]}" stroke="${OPT_COLORS[nd.opt % OPT_COLORS.length]}" stroke-width="3" ${sl.optional ? 'stroke-dasharray="6 4"' : ''}/>
                         <circle r="${R + 1.5}" fill="none" stroke="#000" stroke-width="1"/>
-                        <g transform="translate(-9.1,-9.1) scale(1.3)">${ICON.type[sl.card.type] || ''}</g>
+                        <g transform="translate(-9.1,-9.1) scale(1.3)">${end ? inked(ICON.type[sl.card.type], INK[st]) : ICON.type[sl.card.type] || ''}</g>
                         <g transform="translate(${R * 0.78},${-R * 0.78})"><circle r="8" fill="${OPT_TAG[nd.opt % OPT_TAG.length]}" stroke="#000" stroke-width="2"/><text y="3.6" text-anchor="middle" font-size="10" font-weight="800" fill="#fff">${nd.opt + 1}</text></g>`;
                     boxes += `<g data-id="${nd.key}" style="cursor:pointer" transform="translate(${q.x},${q.y})">${ring}${body}</g>`;
                     return;

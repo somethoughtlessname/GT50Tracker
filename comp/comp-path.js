@@ -99,7 +99,20 @@
     // to that option. Doing an option's card picks that option, which closes the others.
     // An option card can be the option of more than one choice (a shared option): each such link is marked home: true.
     // (Older paths marked nothing: their option card's first link is its home.)
-    function normSlots(P) { P.nodes.forEach(n => { if (n.slot && n.after.length && !n.after.some(l => l.home)) n.after[0].home = true; }); }
+    function normSlots(P) {
+        P.nodes.forEach(n => { if (n.slot && n.after.length && !n.after.some(l => l.home)) n.after[0].home = true; });
+        // earlier versions moved an option card into a second choice and left its first option as a plain link:
+        // an option card linked to a plain option with the same name is that option's card too (a shared option)
+        const fixed = new Set();
+        P.nodes.filter(n => n.slot).forEach(n => n.after.forEach(l => {
+            if (l.home || l.opt === undefined) return;
+            const c = byId(P, l.id);
+            if (!c || c.card.type !== 'radio' || slotOf(P, c.id, l.opt)) return;
+            if ((options(c)[l.opt] || '').trim() !== (n.card.state.title || '').trim()) return;
+            l.home = true; fixed.add(c); homes(n).forEach(h => fixed.add(byId(P, h.id)));
+        }));
+        if (fixed.size) sharedFirst(P, [...fixed].filter(Boolean));
+    }
     const homes = n => n.slot ? n.after.filter(l => l.home) : [];
     const slotOf = (P, cid, i) => P.nodes.find(n => n.slot && n.after.some(l => l.home && l.id === cid && l.opt === i));
     const slotHomes = (P, n) => homes(n).map(l => ({ c: byId(P, l.id), i: l.opt, l })).filter(h => h.c);
@@ -1480,9 +1493,12 @@
                 if (opt === null && A.card.type === 'radio') {
                     if (slotHomes(P, B).some(h => h.c === A)) { toast('Already one of its options'); break; }
                     const items = A.card.state.items = A.card.state.items || [];
-                    items.push({ text: title(B) === 'Untitled' ? '' : title(B) });
+                    // already hanging off one of this choice's plain options: it becomes that option's card
+                    const prev = B.after.find(l => l.id === A.id && l.opt !== undefined && !slotOf(P, A.id, l.opt));
+                    const oi = prev ? prev.opt : (items.push({ text: title(B) === 'Untitled' ? '' : title(B) }), items.length - 1);
+                    if (prev) items[oi].text = title(B) === 'Untitled' ? items[oi].text : title(B);
                     B.after = B.after.filter(l => !(l.id === A.id));
-                    B.after.push({ id: A.id, opt: items.length - 1, home: true });
+                    B.after.push({ id: A.id, opt: oi, home: true });
                     if (!B.slot) { B.slot = true; B.after = B.after.filter(l => l.home).concat(B.after.filter(l => !l.home)); }
                     const touched = [A].concat(slotHomes(P, B).map(h => h.c).filter(c => c !== A));
                     sharedFirst(P, touched);

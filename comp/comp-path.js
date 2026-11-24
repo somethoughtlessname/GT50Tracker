@@ -383,6 +383,8 @@
         .gp-optsheet .gp-btns + .gp-btns { margin-top: 4px; }
         .gp-bn .gp-x { width: var(--square-section); border-left: var(--border-width) solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--color-10); font-weight: 800; background: var(--color-1); }
         .gp-ed { background: var(--bg-2); border-top: var(--border-width) solid var(--border-color); padding: var(--margin); }
+        .gp-ed:not(.gp-optsheet) { display: flex; flex-direction: column; gap: var(--margin); }
+        .gp-ed:not(.gp-optsheet) > * { margin-top: 0 !important; margin-bottom: 0 !important; }
         .gp-lbl { font-size: 9px; font-weight: 800; letter-spacing: .08em; color: #c9bfae; margin: 8px 2px 3px; }
         .gp-lbl:first-child { margin-top: 2px; }
         .gp-types { display: flex; border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; height: 30px; background: var(--bg-4); }
@@ -430,6 +432,11 @@
         .gp-subhead { display: flex; align-items: center; gap: 6px; color: var(--bg-3); font-size: 10px; font-weight: 800; letter-spacing: .04em; margin: 6px 2px 4px; }
         .gp-hint { font-size: 10px; font-weight: 600; color: var(--color-10); background: var(--bg-3); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); padding: 6px 8px; margin-top: 4px; }
         .gp-tog { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--color-10); cursor: pointer; margin-top: 4px; }
+        .gp-togs { display: flex; gap: var(--margin); margin-top: 4px; }
+        .gp-togs > * { flex: 1 1 0; min-width: 0; }
+        .gp-togs .gp-tog { margin-top: 0; line-height: 1.15; }
+        .gp-togs .gp-tog b { display: block; font-size: 12px; font-weight: 800; }
+        .gp-togs .gp-tog small { display: block; font-size: 10px; font-weight: 600; opacity: .85; }
         .gp-tog .gp-box { width: 22px; height: 22px; min-width: 22px; border: var(--border-width) solid var(--border-color); border-radius: 6px; background: var(--color-10); display: flex; align-items: center; justify-content: center; }
         .gp-tog.on .gp-box { background: var(--accent); }
         .gp-btns { display: flex; gap: 4px; margin-top: 8px; }
@@ -773,6 +780,9 @@
         list.appendChild(add);
         ordered(P).forEach(n => list.appendChild(nodeBlock(n, false)));
         fitAB(list);
+        if (W.fitFor && W.fitFor !== W.selected) { W.fitFor = null; const m = b.querySelector('.gp-map'); if (m) { m.style.transition = 'none'; m.style.removeProperty('--mh'); m.offsetHeight; m.style.transition = ''; } }
+        const fitRow = W.fitFor && list.querySelector(`.gp-node.sel[data-id="${W.fitFor}"]`);
+        if (fitRow) sizeMapToCard(fitRow);
         list.scrollTop = keep;
         drawMap();
     }
@@ -845,10 +855,8 @@
         }
         const kidLabel = beforeItems(P, n).join(' + ');
         ed.innerHTML = `
-            <div class="gp-lbl">CARD TYPE</div>
             <div class="gp-types">${NODE_TYPES.filter(t => typeDef(t)).map(t => `<div class="${t === n.card.type ? 'on' : ''}" data-gp="type" data-t="${t}">${TYPE_NAME[t]}</div>`).join('')}</div>
-            <div class="gp-lbl">CARD</div><div class="gp-cardwrap"></div>
-            <div class="gp-lbl">PATH</div>
+            <div class="gp-cardwrap"></div>
             ${slotHome(P, n) ? `<div class="gp-slotinfo"><b style="background:${OPT_TAG[slotHome(P, n).i % OPT_TAG.length]}">${slotHome(P, n).i + 1}</b><span>${slotHomes(P, n).map(h => `OPTION ${h.i + 1} OF ${esc(title(h.c))}`).join('<br>')}<small>Doing this card picks ${slotHomes(P, n).length > 1 ? 'it in each of these' : 'this option'}</small></span><div class="gp-btn" data-gp="unslot">PLAIN OPTION</div></div>` : ''}
             <div class="gp-after ${W.afterOpen ? 'open' : ''}"><div class="gp-ah" data-gp="afteropen">
                 <div class="gp-ak"><small>${home && home.c ? 'ALSO NEEDS' : 'COMES AFTER'}</small>${extra(n).length ? `<span>${esc(extra(n).map(l => { const q = byId(P, l.id); return q ? (l.opt !== undefined ? (options(q)[l.opt] || '?') : title(q)) : '?'; }).join(' + '))}</span>` : home && home.c ? '<span>Nothing else</span>' : `<span><b class="gp-startpill">START</b></span>`}</div>
@@ -860,9 +868,8 @@
                 <div class="gp-ac">${kids.length || ''}</div><div class="gp-aa">${ICON.down}</div></div>
                 <div class="gp-ad">${brows.join('')}
                 <div class="gp-hint">Each card ticked here waits for this one.${n.card.type === 'radio' ? ' Tap the option that leads to it: ' + options(n).map((o, i) => (i + 1) + ' = ' + (o || 'Option ' + (i + 1))).join(', ') + '.' : ''}</div></div></div>
-            <div class="gp-lbl">EXTRA</div>
-            <div class="gp-tog ${n.optional ? 'on' : ''}" data-gp="optional"><div class="gp-box">${n.optional ? ICON.check() : ''}</div>Optional: shown on the path, doesn't count toward progress</div>
-            ${n.optional ? `<div class="gp-tog ${n.missable ? 'on' : ''}" data-gp="missable"><div class="gp-box">${n.missable ? ICON.check() : ''}</div>Missable: drops off once you move past this point</div>` : ''}
+            <div class="gp-togs"><div class="gp-tog ${n.optional ? 'on' : ''}" data-gp="optional"><div class="gp-box">${n.optional ? ICON.check() : ''}</div><div><b>OPTIONAL</b><small>Doesn't count toward progress</small></div></div>
+            ${n.optional ? `<div class="gp-tog ${n.missable ? 'on' : ''}" data-gp="missable"><div class="gp-box">${n.missable ? ICON.check() : ''}</div><div><b>MISSABLE</b><small>Drops off once you move past</small></div></div>` : '<div></div>'}</div>
             <div class="gp-btns"><div class="gp-btn green" data-gp="addafter">+ ADD CARD AFTER THIS</div><div class="gp-btn red" data-gp="delete">DELETE</div></div>`;
         // the real card's own edit card
         const d = typeDef(n.card.type), host = ed.querySelector('.gp-cardwrap');
@@ -1394,6 +1401,26 @@
         };
         requestAnimationFrame(step);
     }
+    // LIST mode: an opened card sits 4px under the header and the map takes the rest of the height, leaving 4px below the card
+    function sizeMapToCard(row) {
+        const list = row.closest('.gp-list'), map = W.el.querySelector('.gp-map');
+        if (!map || W.mapHidden) return;
+        const cur = parseFloat(getComputedStyle(map).height) || 0;
+        const room = list.clientHeight + cur;
+        const want = Math.max(140, Math.min(room - 120, room - (row.offsetHeight + 8)));
+        if (Math.abs(want - cur) < 1) return;
+        map.style.transition = 'none';
+        map.style.setProperty('--mh', want + 'px');
+        map.offsetHeight;
+        map.style.transition = '';
+    }
+    function fitMapToCard(row) {
+        const list = row.closest('.gp-list');
+        W.fitFor = W.selected;
+        sizeMapToCard(row);
+        list.scrollTop = Math.max(0, list.scrollTop + row.getBoundingClientRect().top - list.getBoundingClientRect().top - 4);
+        drawMap();
+    }
     function wireMapPointer(mapEl) {
         let ptr = null;
         mapEl.addEventListener('click', e => {      // LIST mode: tap a card on the map to select it
@@ -1401,7 +1428,7 @@
             const g = e.target.closest('g[data-id]'); if (!g) return;
             W.selected = g.dataset.id; W.afterOpen = false; drawBuild();
             const row = W.el.querySelector(`.gp-list .gp-node[data-id="${g.dataset.id}"]`);
-            if (row) row.scrollIntoView({ block: 'start' });
+            if (row) fitMapToCard(row);
         });
         mapEl.addEventListener('pointerdown', e => {
             if (W.buildMode !== 'grid') return;

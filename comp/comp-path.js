@@ -58,14 +58,14 @@
         if (lockedOut(P, p, memo)) return true;
         return link.opt !== undefined && picked(p) !== null && picked(p) !== link.opt;
     }
-    // Locked out = every way in is cut (a card fed by rival branches survives either choice),
-    // or a choice it depends on went another way
+    // Locked out = every way in is cut. Closing cascades down the path and stops at the first card
+    // that still has an open way in (a card fed by rival branches survives either choice)
     function lockedOut(P, n, memo = new Map()) {
         if (memo.has(n.id)) return memo.get(n.id);
         memo.set(n.id, false);
         const v = n.after.length > 0 && (isGate(n)
             ? n.after.filter(l => !linkCut(P, l, memo)).length < gateNeed(n)
-            : (n.after.every(l => linkCut(P, l, memo)) || n.after.some(l => l.opt !== undefined && linkCut(P, l, memo))));
+            : n.after.every(l => linkCut(P, l, memo)));
         memo.set(n.id, v); return v;
     }
     // ===== THRESHOLD GATES =====

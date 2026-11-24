@@ -100,7 +100,11 @@
     // An option card can be the option of more than one choice (a shared option): each such link is marked home: true.
     // (Older paths marked nothing: their option card's first link is its home.)
     function normSlots(P) {
-        P.nodes.forEach(n => { if (n.slot && n.after.length && !n.after.some(l => l.home)) n.after[0].home = true; });
+        P.nodes.forEach(n => {
+            if (!n.slot || n.after.some(l => l.home)) return;
+            const c = n.after[0] && byId(P, n.after[0].id);
+            if (c && c.card.type === 'radio' && n.after[0].opt !== undefined) n.after[0].home = true; else delete n.slot;
+        });
         // earlier versions moved an option card into a second choice and left its first option as a plain link:
         // an option card linked to a plain option with the same name is that option's card too (a shared option)
         const fixed = new Set();
@@ -137,18 +141,20 @@
     // A THRESHOLD card in a path counts the cards linked into it: it's done once at least
     // its required number of them are done. Its items mirror those links and fill in by themselves.
     const isGate = n => n.card.type === 'threshold';
-    const gateNeed = n => Math.max(1, Math.min(Number(n.card.state.number1) || n.after.length, n.after.length || 1));
+    const gateLinks = n => n.slot ? n.after.filter(l => !l.home) : n.after;     // an option card's own option isn't counted
+    const gateNeed = n => { const k = gateLinks(n).length; return Math.max(1, Math.min(Number(n.card.state.number1) || k, k || 1)); };
     function optText(P, l) { const p = byId(P, l.id); const o = p ? options(p)[l.opt] : null; return o ? ' → ' + o : ''; }
     function syncGates(P) {
         syncPicks(P);
         ordered(P).filter(isGate).forEach(n => {
             const st = n.card.state, old = st.items || [];
-            st.items = n.after.map((l, i) => {
+            const links = gateLinks(n);
+            st.items = links.map((l, i) => {
                 const p = byId(P, l.id);
                 return Object.assign({}, old[i] || {}, { text: (p ? title(p) : '?') + (l.opt !== undefined ? optText(P, l) : ''), completed: linkMet(P, l) });
             });
-            st.threshold = n.after.length || null;
-            st.number1 = n.after.length ? gateNeed(n) : (Number(st.number1) || null);
+            st.threshold = links.length || null;
+            st.number1 = links.length ? gateNeed(n) : (Number(st.number1) || null);
             st.manuallyChecked = false;
         });
     }
@@ -166,7 +172,13 @@
         if (n.missable && n.after.some(l => P.nodes.some(c => c !== n && !c.optional && c.after.some(cl => cl.id === l.id) && cardDone(c)))) return true;
         return n.after.every(l => { const p = byId(P, l.id); return p && p.optional && status(P, p) === 'missed'; });
     }
+    const inStatus = new Set();
     function status(P, n) {
+        if (inStatus.has(n.id)) return 'later';        // a loop in bad data: don't go round forever
+        inStatus.add(n.id);
+        try { return statusOf(P, n); } finally { inStatus.delete(n.id); }
+    }
+    function statusOf(P, n) {
         if (cardDone(n)) return 'done';
         if (lockedOut(P, n)) return 'locked';
         if (isMissed(P, n)) return 'missed';
@@ -187,15 +199,94 @@
     }
     const counted = P => P.nodes.filter(n => !n.optional && !lockedOut(P, n) && !isSpare(P, n));
     function progress(P) { syncGates(P); const c = counted(P); return { done: c.filter(cardDone).length, total: c.length }; }
+    // ===== ESTIMATED PERCENT =====
+    // Percent = work done ÷ (work done + work still expected). Every card still reachable counts by the chance it
+    // ends up on your route: an undecided choice splits its chance evenly between its open options, and a
+    // threshold's feeders only count for the share it still needs. Checklists and progress give partial credit.
+    function cardFrac(n) {
+        if (cardDone(n)) return 1;
+        const st = n.card.state || {};
+        if (n.card.type === 'checklist') { const it = st.items || []; return it.length ? 0.95 * it.filter(i => i.completed).length / it.length : 0; }
+        if (n.card.type === 'progress') { const t = Number(st.total) || 0; return t ? 0.95 * Math.min(1, (Number(st.current) || 0) / t) : 0; }
+        return 0;
+    }
+    function estimate(P) {
+        syncGates(P);
+        const r = new Map(), live = l => !linkCut(P, l, new Map());
+        const lp = l => {
+            const p = byId(P, l.id); if (!p) return 0;
+            const rp = r.has(p.id) ? r.get(p.id) : 0;
+            if (l.opt === undefined) return rp;
+            const pk = picked(p);
+            if (pk !== null) return pk === l.opt ? rp : 0;
+            const open = options(p).map((_, i) => i).filter(i => { const sl = slotOf(P, p.id, i); return !sl || !lockedOut(P, sl); });
+            return open.includes(l.opt) ? rp / open.length : 0;
+        };
+        ordered(P).forEach(n => {
+            let v;
+            if (cardDone(n)) v = 1;
+            else if (lockedOut(P, n)) v = 0;
+            else if (!n.after.length) v = 1;
+            else {
+                const ls = n.after.filter(live);
+                if (!ls.length) v = 0;
+                else if (isGate(n)) {
+                    const sum = gateLinks(n).filter(live).reduce((a, l) => a + lp(l), 0);
+                    v = Math.min(1, sum / gateNeed(n));
+                    const hs = ls.filter(l => l.home);
+                    if (hs.length) v = Math.min(v, hs.reduce((a, l) => a + lp(l), 0));
+                } else {
+                    const plain = ls.filter(l => l.opt === undefined), alt = ls.filter(l => l.opt !== undefined);
+                    v = Math.min(plain.length ? Math.min(...plain.map(lp)) : 1, alt.length ? Math.min(1, alt.reduce((a, l) => a + lp(l), 0)) : 1);
+                }
+            }
+            r.set(n.id, Math.max(0, Math.min(1, v)));
+        });
+        // a card that only feeds thresholds counts for the share of those thresholds still needed
+        const weight = n => {
+            if (n.optional) return 0;
+            if (cardDone(n)) return 1;
+            const kids = P.nodes.filter(c => c.after.some(l => l.id === n.id));
+            if (!kids.length || !kids.every(isGate)) return 1;
+            return Math.max(...kids.map(g => {
+                if (cardDone(g)) return 0;
+                const ls = gateLinks(g), met = ls.filter(l => linkMet(P, l)).length;
+                const left = ls.filter(l => !linkMet(P, l) && live(l)).length;
+                return left ? Math.min(1, Math.max(0, gateNeed(g) - met) / left) : 0;
+            }));
+        };
+        let done = 0, total = 0;
+        P.nodes.forEach(n => { const w = weight(n) * r.get(n.id); total += w; done += w * cardFrac(n); });
+        return { done, total, left: Math.max(0, total - done) };
+    }
+    // the shown percent never drops while you move forward (picking a longer branch holds it); undoing lowers it
+    function pctOf(P) {
+        const p = progress(P);
+        if (p.total && p.done === p.total) { P.pctHold = { c: Infinity, v: 100 }; return { pct: 100, left: 0, full: true }; }
+        const e = estimate(P), raw = e.total ? Math.min(99.9, e.done / e.total * 100) : 0;
+        const h = P.pctHold;
+        const v = !h || e.done < h.c - 1e-6 ? raw : Math.max(h.v === 100 ? raw : h.v, raw);
+        P.pctHold = { c: e.done, v };
+        return { pct: v, left: Math.round(e.left), full: false };
+    }
     function stamp(P) {
         syncGates(P);
         P.nodes.forEach(n => { const c = cardDone(n); if (c && !n.doneAt) n.doneAt = ++P.stampSeq; if (!c) n.doneAt = null; });
     }
-    function depthOf(P, n, seen = new Set()) {
-        if (!n.after.length || seen.has(n.id)) return 0;
-        seen.add(n.id);
-        return 1 + Math.max(...n.after.map(l => { const p = byId(P, l.id); return p ? depthOf(P, p, new Set(seen)) : -1; }));
+    // depth = longest chain of links back to a start; worked out once per pass (paths can branch and re-join a lot)
+    function depths(P) {
+        const d = new Map(), busy = new Set();
+        const go = n => {
+            if (d.has(n.id)) return d.get(n.id);
+            if (busy.has(n.id)) return 0;            // a loop in bad data: stop here
+            busy.add(n.id);
+            const v = n.after.length ? 1 + Math.max(...n.after.map(l => { const p = byId(P, l.id); return p ? go(p) : -1; })) : 0;
+            busy.delete(n.id); d.set(n.id, v); return v;
+        };
+        P.nodes.forEach(go);
+        return d;
     }
+    const depthOf = (P, n) => depths(P).get(n.id) || 0;
     function ancestors(P, id, acc = new Set()) {
         const n = byId(P, id); if (!n) return acc;
         n.after.forEach(l => { if (!acc.has(l.id)) { acc.add(l.id); ancestors(P, l.id, acc); } });
@@ -205,7 +296,7 @@
         P.nodes.forEach(c => { if (c.after.some(l => l.id === id) && !acc.has(c.id)) { acc.add(c.id); descendants(P, c.id, acc); } });
         return acc;
     }
-    const ordered = P => [...P.nodes].sort((a, b) => depthOf(P, a) - depthOf(P, b) || P.nodes.indexOf(a) - P.nodes.indexOf(b));
+    const ordered = P => { const d = depths(P), ix = new Map(P.nodes.map((n, i) => [n.id, i])); return [...P.nodes].sort((a, b) => d.get(a.id) - d.get(b.id) || ix.get(a.id) - ix.get(b.id)); };
     function addNode(P, type, extra = {}) {
         const n = { id: 'p' + (++P.seq), card: newCard(type), after: [], optional: false, missable: false, doneAt: null, ...extra };
         P.nodes.push(n); return n;
@@ -213,6 +304,7 @@
     function removeNode(P, id) {
         P.nodes = P.nodes.filter(x => x.id !== id);
         P.nodes.forEach(c => c.after = c.after.filter(l => l.id !== id));
+        P.nodes.forEach(c => { if (c.slot && !c.after.some(l => l.home)) delete c.slot; });
         if (P.gridLayout) Object.keys(P.gridLayout).forEach(k => { if (k === id || k.startsWith(id + '#')) delete P.gridLayout[k]; });
     }
 
@@ -426,7 +518,7 @@
     }
     // COPY: this path card's own data (name, every node with its card, links and flags, grid spots) as JSON
     function copyPath() {
-        const clean = JSON.parse(JSON.stringify(W.P));
+        const clean = JSON.parse(JSON.stringify(W.P)); delete clean.pctHold;
         delete clean.actionState; delete clean.editWindow; delete clean.ui;
         const txt = JSON.stringify({ type: 'path', state: clean }, null, 2);
         const done = () => toast('Copied ' + clean.nodes.length + ' cards');
@@ -590,9 +682,9 @@
         const avail = availAll.filter(n => !spare(n)), extra = availAll.filter(spare);
         const done = P.nodes.filter(n => st.get(n.id) === 'done').sort((a, b) => a.doneAt - b.doneAt);
         const missed = P.nodes.filter(n => st.get(n.id) === 'missed');
-        const p = progress(P), pct = p.total ? Math.round(p.done / p.total * 100) : 0;
+        const p = progress(P), e = pctOf(P), pct = e.full ? '100' : e.pct.toFixed(1);
         main.innerHTML = `<div class="gp-play">
-            <div class="gp-bar ${p.total && p.done === p.total ? 'full' : ''}"><i style="width:${pct}%"></i><b>${p.done} / ${p.total} · ${pct}%</b></div>
+            <div class="gp-bar ${e.full ? 'full' : ''}"><i style="width:${pct}%"></i><b>${pct}%</b></div>
             <div data-slot="avail"></div>
             ${extra.length ? `<div class="gp-sec gp-opt toggle ${W.optOpen ? 'open' : ''}"><div class="gp-sh" data-gp="opt">OPTIONAL · ${extra.length}<div class="gp-arr">${ICON.down}</div></div><div class="gp-sb" data-slot="extra"></div></div>` : ''}
             ${done.length ? `<div class="gp-sec gp-done open"><div class="gp-sh">DONE · ${done.length}</div><div class="gp-sb" data-slot="done"></div></div>` : ''}
@@ -1007,7 +1099,8 @@
     // LIST mode map: automatic columns by depth, each column ordered by where its parents sit
     function autoPositions(P) {
         const cols = [];
-        ordered(P).forEach(n => { const d = depthOf(P, n); (cols[d] = cols[d] || []).push(n); });
+        const dm = depths(P);
+        ordered(P).forEach(n => { const d = dm.get(n.id) || 0; (cols[d] = cols[d] || []).push(n); });
         const rank = {};
         cols.forEach((col, d) => {
             if (d > 0) {
@@ -1557,7 +1650,7 @@
             const card = container.querySelector('.nest-view-card');
             if (card && p.total > 0 && p.done > 0) {      // progress fill behind the name
                 const fill = document.createElement('div');
-                fill.style.cssText = `position:absolute; top:0; left:0; height:100%; width:${full ? 100 : (p.done / p.total * 100)}%; background:${full ? 'var(--gold)' : (tabColor || 'var(--color-4)')}; pointer-events:none; z-index:0;`;
+                fill.style.cssText = `position:absolute; top:0; left:0; height:100%; width:${full ? 100 : pctOf(state).pct}%; background:${full ? 'var(--gold)' : (tabColor || 'var(--color-4)')}; pointer-events:none; z-index:0;`;
                 card.insertBefore(fill, card.firstChild);
             }
             const nav = container.querySelector('[data-action="navigate"]');
@@ -1576,7 +1669,7 @@
             if (exp) exp.onclick = (e) => {
                 e.stopPropagation();
                 const clean = JSON.parse(JSON.stringify(state));
-                delete clean.actionState; delete clean.editWindow; delete clean.ui;
+                delete clean.actionState; delete clean.editWindow; delete clean.ui; delete clean.pctHold;
                 const name = state.name || 'Path';
                 const pkg = { version: '1.0', timestamp: new Date().toISOString(), app: 'The Joystick Journal', type: 'path', name,
                               data: { tabs: { tabs: [], activeViewTab: 0, selectedBuildTab: 0 }, tabComponents: [[{ id: Date.now(), type: 'path', state: clean }]] } };

@@ -27,7 +27,8 @@ window.GT50ImportsList = [
     'game-tonyhawksproskater34.js',
     'game-lifeisstrange.js',
     'game-falloutnewvegas.js',
-    'game-undertale.js'
+    'game-undertale.js',
+    'test-hollowcrown.js'
 
     // Not listed:
     //   import-example-rpg.js - a sample to copy from

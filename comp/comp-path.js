@@ -290,6 +290,11 @@
         .gp-mapin svg { display: block; margin: auto; flex: none; }
         .gp-build.grid .gp-mapin { touch-action: none; padding-bottom: 0; }
         .gp-build.grid .gp-mapin svg { margin: 0; }
+        .gp-undo { display: none; position: absolute; top: 8px; right: 6px; z-index: 3; height: 32px; border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); overflow: hidden; background: var(--bg-4); }
+        .gp-build.grid .gp-undo { display: flex; }
+        .gp-undo > div { width: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .gp-undo > div + div { border-left: var(--border-width) solid var(--border-color); }
+        .gp-undo > div.off { opacity: .35; cursor: default; }
         .gp-zoom { position: absolute; bottom: 8px; left: 6px; z-index: 3; height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 8px 0 6px; background: var(--bg-4); border: var(--border-width) solid var(--border-color); border-radius: var(--card-radius); cursor: pointer; color: var(--color-10); font-size: 10px; font-weight: 800; letter-spacing: .05em; }
         .gp-zoom .gp-dots { display: flex; gap: 3px; } .gp-zoom .gp-dots i { width: 7px; height: 7px; border-radius: 50%; border: 2px solid #000; background: #fff; } .gp-zoom .gp-dots i.on { background: var(--gold); }
         .gp-key { position: absolute; right: 6px; bottom: 12px; display: flex; gap: 7px; font-size: 9px; font-weight: 700; color: #c9bfae; z-index: 3; background: rgba(43,38,32,.85); padding: 3px 6px; border-radius: 6px; }
@@ -313,13 +318,43 @@
     // One window at a time. It holds a reference to the path's state, so the app's own render()
     // can run underneath (that's how changes get saved) without closing it.
     let W = null;   // { P, mode: 'view'|'build', tabColor, el, ...builder ui state }
-    const save = () => { if (typeof window.render === 'function') { const y = W && W.el ? W.el.querySelector('.gp-play, .gp-list') : null; const top = y ? y.scrollTop : 0; window.render(true); if (y) y.scrollTop = top; } };
+    // ===== UNDO / REDO =====
+    // every save records what the path looked like before it (cards, links, grid spots); up to 60 steps back
+    const snap = P => JSON.stringify({ nodes: P.nodes, gridLayout: P.gridLayout, seq: P.seq, name: P.name });
+    function record() {
+        if (!W || !W.P) return;
+        const cur = snap(W.P);
+        if (W.last === undefined) { W.last = cur; return; }
+        if (cur === W.last) return;
+        W.undo.push(W.last); if (W.undo.length > 60) W.undo.shift();
+        W.redo = []; W.last = cur;
+        syncUndo();
+    }
+    function syncUndo() {
+        const b = W && W.el && W.el.querySelector('.gp-undo'); if (!b) return;
+        b.querySelector('[data-u="undo"]').classList.toggle('off', !W.undo.length);
+        b.querySelector('[data-u="redo"]').classList.toggle('off', !W.redo.length);
+    }
+    function step(back) {
+        const from = back ? W.undo : W.redo, to = back ? W.redo : W.undo;
+        if (!from.length) return;
+        to.push(W.last); W.last = from.pop();
+        const d = JSON.parse(W.last);
+        W.P.nodes = d.nodes; W.P.gridLayout = d.gridLayout; W.P.seq = d.seq; W.P.name = d.name;
+        if (W.selected && !byId(W.P, W.selected)) W.selected = null;
+        if (W.selOpt) { const [c, i] = W.selOpt.split('#'), n = byId(W.P, c); if (!n || !options(n)[+i] === undefined || +i >= options(n).length) W.selOpt = null; }
+        W.linkFrom = null; W.linkOpt = null;
+        if (typeof window.render === 'function') window.render(true);
+        drawBuild();
+        toast(back ? 'Undone' : 'Redone');
+    }
+    const save = () => { record(); if (typeof window.render === 'function') { const y = W && W.el ? W.el.querySelector('.gp-play, .gp-list') : null; const top = y ? y.scrollTop : 0; window.render(true); if (y) y.scrollTop = top; } };
 
     function open(P, mode, tabColor) {
         injectStyles();
         close(false);
         W = { P, mode, tabColor, buildMode: (P.ui && P.ui.buildMode) || 'list', tool: 'select', addType: 'list', linkFrom: null, linkOpt: null,
-              selected: null, afterOpen: false, zoom: 0, gridView: null, mapHidden: !!(P.ui && P.ui.mapHidden), optOpen: true, missOpen: false, sheetGuard: 0 };
+              selected: null, afterOpen: false, zoom: 0, gridView: null, mapHidden: !!(P.ui && P.ui.mapHidden), undo: [], redo: [], last: undefined, optOpen: true, missOpen: false, sheetGuard: 0 };
         const el = document.createElement('div');
         el.className = 'gp-ov';
         el.innerHTML = `<div class="gp-band"><div class="gp-nbar"></div><div class="gp-sub"></div></div>
@@ -328,6 +363,7 @@
         document.body.style.overflow = 'hidden';
         W.el = el;
         if (W.mode === 'build' && W.buildMode === 'grid') enterGrid();
+        record();
         drawHeader();
         draw();
     }
@@ -491,6 +527,7 @@
             main.innerHTML = `<div class="gp-build">
                 <div class="gp-list"></div>
                 <div class="gp-map ${W.mapHidden ? 'off' : ''}"><div class="gp-mapwrap"><div class="gp-mapin"></div><div class="gp-zoom"></div>
+                    <div class="gp-undo"><div data-u="undo" aria-label="Undo"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4L3 8l4 4"/><path d="M3 8h9a5 5 0 0 1 0 10H8"/></svg></div><div data-u="redo" aria-label="Redo"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4l4 4-4 4"/><path d="M17 8H8a5 5 0 0 0 0 10h4"/></svg></div></div>
                     <div class="gp-hide" data-gp="hidemap"><svg viewBox="0 0 12 12" width="10" height="10"><path d="M1.5 3.5h9L6 9z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>HIDE</div>
                     <div class="gp-key"><span style="--c:#c9a227">done</span><span style="--c:#8f7658">available</span><span style="--c:#4a3f35">later</span><span style="--c:#7a2f2b">locked / missed</span></div></div></div>
                 <div class="gp-showtab ${W.mapHidden ? 'on' : ''}" data-gp="showmap"><svg viewBox="0 0 12 12" width="10" height="10"><path d="M1.5 8.5h9L6 3z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>SHOW</div>
@@ -698,6 +735,7 @@
         ['mousedown', 'mouseup', 'click', 'touchend'].forEach(ev => sheet.addEventListener(ev, e => { if (guarded()) { e.preventDefault(); e.stopPropagation(); } }, true));
         sheet.addEventListener('focusin', e => { if (guarded()) e.target.blur(); });
         sheet.addEventListener('click', onEdit);
+        b.querySelector('.gp-undo').onclick = e => { const u = e.target.closest('[data-u]'); if (u) step(u.dataset.u === 'undo'); };
         b.querySelector('.gp-zoom').onclick = () => { W.zoom = (W.zoom + 1) % ZOOMS.length; drawMap({ noScroll: true, center: ZOOMS[W.zoom] === 'fit' }); };
         b.querySelector('.gp-tools').addEventListener('click', e => {
             const at = e.target.closest('[data-addtype]'); if (at) { W.addType = at.dataset.addtype; return drawGridUI(); }
@@ -1052,6 +1090,7 @@
             : `<div class="gp-seg gp-info"><div>${hint[W.tool]}</div></div>`;
         b.querySelector('.gp-tools').innerHTML = `<div class="gp-seg">${Object.keys(TOOLS).map(k => `<div class="${k === W.tool ? 'on' : ''}" data-tool="${k}">${TOOLS[k]}</div>`).join('')}<div class="act" data-tool="tidy">TIDY</div></div>${sub}`;
         drawMap();      // after the tool bar is in, so the map knows its real height
+        syncUndo();
         const sheet = b.querySelector('.gp-sheet');
         sheet.innerHTML = '';
         const n = W.selected && (W.tool === 'select' || W.tool === 'add') ? byId(P, W.selected) : null;

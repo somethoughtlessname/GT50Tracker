@@ -58,7 +58,7 @@
     function viaCard(P, link) {
         if (link.opt === undefined) return null;
         const sl = slotOf(P, link.id, link.opt);
-        return sl && sl.after[0] !== link ? sl : null;
+        return sl && !link.home ? sl : null;
     }
     function linkCut(P, link, memo) {
         const p = byId(P, link.id); if (!p) return true;
@@ -76,7 +76,7 @@
         if (!child.after.some(l => l.id === pid && l.opt === opt)) child.after.push({ id: pid, opt });
     }
     // an option card's first link ties it to its option; anything after that is an extra link it also waits for
-    const extra = n => n.slot ? n.after.slice(1) : n.after;
+    const extra = n => n.slot ? n.after.filter(l => !l.home) : n.after;
     const allCut = (P, links, memo) => links.length > 0 && links.every(l => linkCut(P, l, memo));
     // plain links are all needed; option links are alternatives: any one picked option is enough
     function linksOpen(P, links) {
@@ -97,9 +97,15 @@
     // A choice's options are cards. By default an option is a plain LIST card (just its text, nothing stored);
     // an option can instead hold a real card (checklist, progress, another choice...) marked slot: true and linked
     // to that option. Doing an option's card picks that option, which closes the others.
-    const slotOf = (P, cid, i) => P.nodes.find(n => n.slot && n.after[0] && n.after[0].id === cid && n.after[0].opt === i);
-    const slotHome = (P, n) => n.slot && n.after[0] ? { c: byId(P, n.after[0].id), i: n.after[0].opt } : null;
+    // An option card can be the option of more than one choice (a shared option): each such link is marked home: true.
+    // (Older paths marked nothing: their option card's first link is its home.)
+    function normSlots(P) { P.nodes.forEach(n => { if (n.slot && n.after.length && !n.after.some(l => l.home)) n.after[0].home = true; }); }
+    const homes = n => n.slot ? n.after.filter(l => l.home) : [];
+    const slotOf = (P, cid, i) => P.nodes.find(n => n.slot && n.after.some(l => l.home && l.id === cid && l.opt === i));
+    const slotHomes = (P, n) => homes(n).map(l => ({ c: byId(P, l.id), i: l.opt, l })).filter(h => h.c);
+    const slotHome = (P, n) => slotHomes(P, n)[0] || null;
     function syncPicks(P) {
+        normSlots(P);
         for (let pass = 0; pass < 6; pass++) {
             let changed = false;
             P.nodes.forEach(c => {          // an option with a card counts as picked only while that card is done
@@ -108,10 +114,9 @@
                 const sl = slotOf(P, c.id, picked(c));
                 if (sl && !cardDone(sl)) { st.selectedIndex = null; st.autoPick = false; changed = true; }
             });
-            P.nodes.filter(n => n.slot).forEach(n => {
-                const h = slotHome(P, n); if (!h || !h.c) return;
+            P.nodes.filter(n => n.slot).forEach(n => slotHomes(P, n).forEach(h => {
                 if (cardDone(n) && picked(h.c) === null && !lockedOut(P, h.c)) { h.c.card.state.selectedIndex = h.i; h.c.card.state.autoPick = true; changed = true; }
-            });
+            }));
             if (!changed) break;
         }
     }
@@ -152,10 +157,9 @@
         if (cardDone(n)) return 'done';
         if (lockedOut(P, n)) return 'locked';
         if (isMissed(P, n)) return 'missed';
-        const h = slotHome(P, n);
-        if (h && h.c) {          // an option card: its option counts as open while its choice is undecided and open
-            const tie = n.after[0], home = picked(h.c) === null ? status(P, h.c) === 'available' : linkMet(P, tie);
-            const live = n.after.filter(l => !linkCut(P, l, new Map())), met = l => l === tie ? home : linkMet(P, l);
+        if (slotHome(P, n)) {    // an option card: each of its options counts as open while that choice is undecided and open
+            const homeOpen = l => { const c = byId(P, l.id); return picked(c) === null ? status(P, c) === 'available' : linkMet(P, l); };
+            const live = n.after.filter(l => !linkCut(P, l, new Map())), met = l => l.home ? homeOpen(l) : linkMet(P, l);
             const plain = live.filter(l => l.opt === undefined), alt = live.filter(l => l.opt !== undefined);
             return plain.every(met) && (!alt.length || alt.some(met)) ? 'available' : 'later';
         }
@@ -567,7 +571,7 @@
         stamp(P);
         const st = new Map(P.nodes.map(n => [n.id, status(P, n)]));
         // option cards of an undecided choice are shown inside that choice's block
-        const inBlock = n => { const h = slotHome(P, n); return h && h.c && picked(h.c) === null && st.get(h.c.id) === 'available'; };
+        const inBlock = n => slotHomes(P, n).some(h => picked(h.c) === null && st.get(h.c.id) === 'available');
         const availAll = P.nodes.filter(n => st.get(n.id) === 'available' && !inBlock(n));
         const spare = n => n.optional || isSpare(P, n);
         const avail = availAll.filter(n => !spare(n)), extra = availAll.filter(spare);
@@ -685,7 +689,7 @@
         const P = W.P, ed = document.createElement('div');
         ed.className = 'gp-ed';
         const banned = descendants(P, n.id); banned.add(n.id);
-        const home = slotHome(P, n); if (home && home.c) banned.add(home.c.id);    // an option card's own choice is fixed
+        const home = slotHome(P, n); slotHomes(P, n).forEach(h => banned.add(h.c.id));    // an option card's own choices are fixed
         const rows = [];
         // START: no cards before it, so it's open from the beginning
         const isStart = !extra(n).length;
@@ -740,7 +744,7 @@
             <div class="gp-types">${NODE_TYPES.filter(t => typeDef(t)).map(t => `<div class="${t === n.card.type ? 'on' : ''}" data-gp="type" data-t="${t}">${TYPE_NAME[t]}</div>`).join('')}</div>
             <div class="gp-lbl">CARD</div><div class="gp-cardwrap"></div>
             <div class="gp-lbl">PATH</div>
-            ${slotHome(P, n) ? `<div class="gp-slotinfo"><b style="background:${OPT_TAG[slotHome(P, n).i % OPT_TAG.length]}">${slotHome(P, n).i + 1}</b><span>OPTION ${slotHome(P, n).i + 1} OF ${esc(title(slotHome(P, n).c))}<small>Doing this card picks this option</small></span><div class="gp-btn" data-gp="unslot">PLAIN OPTION</div></div>` : ''}
+            ${slotHome(P, n) ? `<div class="gp-slotinfo"><b style="background:${OPT_TAG[slotHome(P, n).i % OPT_TAG.length]}">${slotHome(P, n).i + 1}</b><span>${slotHomes(P, n).map(h => `OPTION ${h.i + 1} OF ${esc(title(h.c))}`).join('<br>')}<small>Doing this card picks ${slotHomes(P, n).length > 1 ? 'it in each of these' : 'this option'}</small></span><div class="gp-btn" data-gp="unslot">PLAIN OPTION</div></div>` : ''}
             <div class="gp-after ${W.afterOpen ? 'open' : ''}"><div class="gp-ah" data-gp="afteropen">
                 <div class="gp-ak"><small>${home && home.c ? 'ALSO NEEDS' : 'COMES AFTER'}</small>${extra(n).length ? `<span>${esc(extra(n).map(l => { const q = byId(P, l.id); return q ? (l.opt !== undefined ? (options(q)[l.opt] || '?') : title(q)) : '?'; }).join(' + '))}</span>` : home && home.c ? '<span>Nothing else</span>' : `<span><b class="gp-startpill">START</b></span>`}</div>
                 <div class="gp-ac">${extra(n).length || ''}</div><div class="gp-aa">${ICON.down}</div></div>
@@ -768,7 +772,7 @@
                     P.nodes.forEach(c => c.after = c.after.map(l => {
                         if (l.id !== n.id || l.opt === undefined) return l;
                         const i = now.indexOf(before[l.opt]);
-                        return i < 0 ? null : { id: l.id, opt: i };
+                        return i < 0 ? null : { ...l, opt: i };
                     }).filter(Boolean));
                     before = now.slice();
                 }
@@ -776,7 +780,7 @@
             }, null, null, false);
             // typing a title doesn't call onChange: keep the row label in step
             host.addEventListener('input', () => {
-                const h = slotHome(P, n); if (h && h.c && h.c.card.state.items[h.i]) h.c.card.state.items[h.i].text = n.card.state.title || '';
+                slotHomes(P, n).forEach(h => { if (h.c.card.state.items[h.i]) h.c.card.state.items[h.i].text = n.card.state.title || ''; });
                 const nm = ed.parentElement && ed.parentElement.querySelector('.gp-bn .gp-nm span');
                 if (nm) nm.textContent = title(n);
                 drawMap({ noScroll: true });
@@ -802,7 +806,7 @@
         switch (act) {
             case 'select': W.selected = W.selected === n.id ? null : n.id; W.afterOpen = false; W.beforeOpen = false; break;
             case 'afteropen': W.afterOpen = !W.afterOpen; break;
-            case 'tostart': n.after = n.slot ? n.after.slice(0, 1) : []; break;
+            case 'tostart': n.after = n.slot ? n.after.filter(l => l.home) : []; break;
             case 'unslot': {        // back to a plain list option: its links move onto the option itself
                 const h = slotHome(P, n);
                 P.nodes.forEach(k => k.after = k.after.map(l => l.id === n.id ? { id: h.c.id, opt: h.i } : l));
@@ -895,8 +899,8 @@
     const isEnding = (P, n, onGrid) => {
         if (n.optional) return false;
         if (n.card.type === 'radio' && options(n).length && (onGrid || !options(n).every((o, i) => optEnds(P, n, i)))) return false;
-        const h = slotHome(P, n);
-        return !P.nodes.some(c => c !== n && c.after.some(l => l.id === n.id || (h && h.c && l.id === h.c.id && l.opt === h.i)));
+        const hs = slotHomes(P, n);
+        return !P.nodes.some(c => c !== n && c.after.some(l => l.id === n.id || hs.some(h => l.id === h.c.id && l.opt === h.i)));
     };
     const INK = { done: '#9a6b09', available: '#000', later: '#7a746a', locked: '#7a2f2b', missed: '#7a2f2b' };
     const inked = (svg, col) => (svg || '').replace(/#fff/g, col);
@@ -1063,19 +1067,22 @@
     // Keys: a card's id, or "<choiceId>#<option>". Grid keeps its own layout (P.gridLayout, node centres).
     function gridGraph(P) {
         const nodes = [], links = [];
-        const keyOf = id => { const n = byId(P, id), h = n && slotHome(P, n); return h && h.c ? h.c.id + '#' + h.i : id; };
+        normSlots(P);
+        const keyOf = id => { const n = byId(P, id), h = n && slotHome(P, n); return h ? h.c.id + '#' + h.i : id; };
+        const optKey = (c, i) => { const sl = slotOf(P, c.id, i); return sl ? keyOf(sl.id) : c.id + '#' + i; };
         P.nodes.forEach(n => {
-            const inSpot = n.slot && slotHome(P, n).c;        // an option card is drawn in its option's spot
+            const inSpot = !!slotHome(P, n);                  // an option card is drawn in its (first) option's spot
             if (!inSpot) nodes.push({ key: n.id, n });
             options(n).forEach((o, i) => {
-                nodes.push({ key: n.id + '#' + i, choice: n, opt: i });
-                links.push({ from: keyOf(n.id), to: n.id + '#' + i, stem: true, choice: n, opt: i });
+                const k = optKey(n, i);
+                if (k === n.id + '#' + i) nodes.push({ key: k, choice: n, opt: i });
+                links.push({ from: keyOf(n.id), to: k, stem: true, choice: n, opt: i });
             });
         });
         P.nodes.forEach(n => n.after.forEach(l => {
             const p = byId(P, l.id); if (!p) return;
-            if (n.slot && n.after[0] === l) return;           // an option card's own tie to its option
-            links.push({ from: l.opt !== undefined && p.card.type === 'radio' ? l.id + '#' + l.opt : keyOf(l.id), to: keyOf(n.id), l, child: n, parent: p });
+            if (n.slot && l.home) return;                     // an option card's own tie to its option
+            links.push({ from: l.opt !== undefined && p.card.type === 'radio' ? optKey(p, l.opt) : keyOf(l.id), to: keyOf(n.id), l, child: n, parent: p });
         }));
         return { nodes, links };
     }
@@ -1320,14 +1327,40 @@
         });
         mapEl.addEventListener('pointercancel', () => { ptr = null; });
     }
+    // a choice's options in a new order (order = old indexes): picks, links and grid spots follow
+    function reorderOptions(P, c, order) {
+        const st = c.card.state, items = st.items || [];
+        if (order.every((o, k) => o === k)) return;
+        const map = {}; order.forEach((o, k) => map[o] = k);
+        st.items = order.map(o => items[o]);
+        if (st.selectedIndex !== null && st.selectedIndex !== undefined) st.selectedIndex = map[st.selectedIndex];
+        P.nodes.forEach(n => n.after = n.after.map(l => l.id === c.id && l.opt !== undefined && map[l.opt] !== undefined ? { ...l, opt: map[l.opt] } : l));
+        if (P.gridLayout) {
+            const L = P.gridLayout, old = {};
+            Object.keys(L).filter(k => k.startsWith(c.id + '#')).forEach(k => { old[k] = L[k]; delete L[k]; });
+            Object.entries(old).forEach(([k, v]) => { const o = +k.split('#')[1]; L[c.id + '#' + (map[o] !== undefined ? map[o] : o)] = v; });
+        }
+    }
+    // shared options come first in each choice (top to bottom on the grid), then that choice's own ones
+    function sharedFirst(P, choices) {
+        const pos = gridPositions(P);
+        choices.forEach(c => {
+            const n = options(c).length, idx = [...Array(n).keys()];
+            const shared = idx.filter(i => { const sl = slotOf(P, c.id, i); return sl && homes(sl).length > 1; });
+            const y = i => { const sl = slotOf(P, c.id, i), h = sl && slotHome(P, sl), q = h ? pos[h.c.id + '#' + h.i] : pos[c.id + '#' + i]; return q ? q.y : i; };
+            shared.sort((a, b) => y(a) - y(b));
+            reorderOptions(P, c, shared.concat(idx.filter(i => !shared.includes(i))));
+        });
+    }
     function deleteOption(key) {
         const P = W.P, [cid, oi] = key.split('#'), c = byId(P, cid), i = +oi, items = c.card.state.items;
         if (items.length < 2) { toast('A choice needs at least one option'); return; }
-        const sl = slotOf(P, cid, i); if (sl) removeNode(P, sl.id);
+        const sl = slotOf(P, cid, i);
+        if (sl) { sl.after = sl.after.filter(l => !(l.home && l.id === cid && l.opt === i)); if (!sl.after.some(l => l.home)) removeNode(P, sl.id); }
         items.splice(i, 1);
         const s = c.card.state.selectedIndex;
         if (s === i) c.card.state.selectedIndex = null; else if (s > i) c.card.state.selectedIndex = s - 1;
-        P.nodes.forEach(n => n.after = n.after.filter(l => !(l.id === cid && l.opt === i)).map(l => (l.id === cid && l.opt > i) ? { id: l.id, opt: l.opt - 1 } : l));
+        P.nodes.forEach(n => n.after = n.after.filter(l => !(l.id === cid && l.opt === i)).map(l => (l.id === cid && l.opt > i) ? { ...l, opt: l.opt - 1 } : l));
         if (P.gridLayout) {
             const L = P.gridLayout;
             Object.keys(L).filter(k => k.startsWith(cid + '#')).map(k => +k.split('#')[1]).sort((a, b) => a - b)
@@ -1386,7 +1419,7 @@
             if (a === 'link') { W.selOpt = null; W.tool = 'link'; W.linkFrom = cid; W.linkOpt = i; return drawGridUI(); }
             if (a === 'del') return deleteOption(key);
             if (a === 'type' && t.dataset.t !== 'list') {
-                const n = addNode(P, t.dataset.t, { slot: true, after: [{ id: cid, opt: i }] });
+                const n = addNode(P, t.dataset.t, { slot: true, after: [{ id: cid, opt: i, home: true }] });
                 n.card.state.title = options(c)[i] || '';
                 if (t.dataset.t === 'checklist') n.card.state.items = [{ text: '', completed: false }, { text: '', completed: false }];
                 if (t.dataset.t === 'radio') n.card.state.items = [{ text: '' }, { text: '' }];
@@ -1405,7 +1438,7 @@
             if (cid === W.linkFrom) { toast('An option can’t come after its own choice'); W.linkFrom = null; W.linkOpt = null; return drawGridUI(); }
             let sl = slotOf(P, cid, +oi);
             if (!sl) {          // a plain option: it becomes a list card so it can take the link
-                sl = addNode(P, 'list', { slot: true, after: [{ id: cid, opt: +oi }] });
+                sl = addNode(P, 'list', { slot: true, after: [{ id: cid, opt: +oi, home: true }] });
                 sl.card.state.title = options(c)[+oi] || '';
             }
             p = { ...p, dot: null, id: sl.id };
@@ -1442,17 +1475,19 @@
                 const A = byId(P, W.linkFrom), B = byId(P, p.id), opt = W.linkOpt;
                 W.linkFrom = null; W.linkOpt = null;
                 if (descendants(P, B.id).has(A.id)) { toast('That would make a loop'); break; }
-                // from a choice itself: the card becomes that choice's next option
+                // from a choice itself: the card becomes one of that choice's options. If it's already another
+                // choice's option it is shared: one card, an option of both, numbered first in each.
                 if (opt === null && A.card.type === 'radio') {
-                    const h = slotHome(P, B);
-                    if (h && h.c === A) { toast('Already one of its options'); break; }
+                    if (slotHomes(P, B).some(h => h.c === A)) { toast('Already one of its options'); break; }
                     const items = A.card.state.items = A.card.state.items || [];
                     items.push({ text: title(B) === 'Untitled' ? '' : title(B) });
-                    const i = items.length - 1;
-                    // its old place (if it was another option's card) and other links stay as extra ways in
-                    B.after = [{ id: A.id, opt: i }].concat(B.after.filter(l => !(l.id === A.id)));
-                    B.slot = true;
-                    toast('Added as option ' + (i + 1));
+                    B.after = B.after.filter(l => !(l.id === A.id));
+                    B.after.push({ id: A.id, opt: items.length - 1, home: true });
+                    if (!B.slot) { B.slot = true; B.after = B.after.filter(l => l.home).concat(B.after.filter(l => !l.home)); }
+                    const touched = [A].concat(slotHomes(P, B).map(h => h.c).filter(c => c !== A));
+                    sharedFirst(P, touched);
+                    const h = slotHomes(P, B).find(x => x.c === A);
+                    toast(slotHomes(P, B).length > 1 ? 'Shared as option ' + (h.i + 1) : 'Added as option ' + (h.i + 1));
                     break;
                 }
                 if (B.after.some(l => l.id === A.id && l.opt === (opt === null ? undefined : opt))) { toast('Already linked'); break; }

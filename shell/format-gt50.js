@@ -232,14 +232,14 @@
             }
             
             // PATH: its cards one after another, each led by a path-node line
-            //   path-node|<number>|<after: 2,5:1 = card 2, and option 1 of card 5>|<flags: o optional, m missable, s the card of the option it comes after>|<done order>
+            //   path-node|<number>|<after: 2,5:1 = card 2, and option 1 of card 5; 5:1h = this card is option 1 of card 5>|<flags: o optional, m missable, s the card of the option it comes after>|<done order>
             if (type === 'path') {
                 output.push(`--- PATH START: ${this.escape(state.name || 'Path')} ---`);
                 output.push('');
                 const nodes = state.nodes || [], num = {};
                 nodes.forEach((n, i) => num[n.id] = i + 1);
                 nodes.forEach((n, i) => {
-                    const after = (n.after || []).filter(l => num[l.id]).map(l => num[l.id] + (l.opt !== undefined ? ':' + (l.opt + 1) : '')).join(',');
+                    const after = (n.after || []).filter(l => num[l.id]).map(l => num[l.id] + (l.opt !== undefined ? ':' + (l.opt + 1) : '') + (l.home ? 'h' : '')).join(',');
                     const flags = (n.optional ? 'o' : '') + (n.missable ? 'm' : '') + (n.slot ? 's' : '');
                     output.push(`path-node|${i + 1}|${after}|${flags}|${n.doneAt || 0}`);
                     this.serializeComponent(n.card || { type: 'list', state: {} }, output, null);
@@ -714,7 +714,9 @@
                     if (currentPath) {
                         const after = (parts[2] || '').split(',').filter(Boolean).map(a => {
                             const [num, opt] = a.split(':');
-                            return opt ? { id: 'p' + num, opt: (parseInt(opt) || 1) - 1 } : { id: 'p' + num };
+                            const l = opt ? { id: 'p' + parseInt(num), opt: (parseInt(opt) || 1) - 1 } : { id: 'p' + parseInt(num) };
+                            if (/h$/.test(a)) l.home = true;      // h: this card is that option's card
+                            return l;
                         });
                         const flags = parts[3] || '';
                         pendingNode = { id: 'p' + parts[1], card: null, after, optional: flags.includes('o'), missable: flags.includes('m'), slot: flags.includes('s'), doneAt: parseInt(parts[4]) || null };

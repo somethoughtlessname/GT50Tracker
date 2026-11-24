@@ -58,14 +58,21 @@
         if (lockedOut(P, p, memo)) return true;
         return link.opt !== undefined && picked(p) !== null && picked(p) !== link.opt;
     }
-    // Locked out = every way in is cut. Closing cascades down the path and stops at the first card
-    // that still has an open way in (a card fed by rival branches survives either choice)
+    // Locked out = every way in is cut, or every option it hangs off went another way. Closing cascades down the
+    // path and stops at the first card that still has an open way in (a card fed by rival branches survives either choice)
+    // linking: a plain link to a card replaces any option links to it; option links to one choice can sit side by side
+    function addLink(child, pid, opt) {
+        if (opt === undefined || opt === null) { child.after = child.after.filter(l => l.id !== pid); child.after.push({ id: pid }); return; }
+        child.after = child.after.filter(l => !(l.id === pid && l.opt === undefined));
+        if (!child.after.some(l => l.id === pid && l.opt === opt)) child.after.push({ id: pid, opt });
+    }
     function lockedOut(P, n, memo = new Map()) {
         if (memo.has(n.id)) return memo.get(n.id);
         memo.set(n.id, false);
         const v = n.after.length > 0 && (isGate(n)
             ? n.after.filter(l => !linkCut(P, l, memo)).length < gateNeed(n)
-            : n.after.every(l => linkCut(P, l, memo)));
+            : (n.after.every(l => linkCut(P, l, memo))
+               || (n.after.some(l => l.opt !== undefined) && n.after.filter(l => l.opt !== undefined).every(l => linkCut(P, l, memo)))));
         memo.set(n.id, v); return v;
     }
     // ===== OPTION CARDS =====
@@ -129,7 +136,9 @@
         if (h && h.c && picked(h.c) === null) return status(P, h.c) === 'available' ? 'available' : 'later';
         const live = n.after.filter(l => !linkCut(P, l, new Map()));
         if (isGate(n)) return live.some(l => linkMet(P, l)) ? 'available' : 'later';
-        return live.every(l => linkMet(P, l)) ? 'available' : 'later';
+        // plain links are all needed; option links are alternatives: any one picked option is enough
+        const plain = live.filter(l => l.opt === undefined), alt = live.filter(l => l.opt !== undefined);
+        return plain.every(l => linkMet(P, l)) && (!alt.length || alt.some(l => linkMet(P, l))) ? 'available' : 'later';
     }
     // Spare = an unfinished card that only feeds threshold gates which are already met: it no longer counts
     function isSpare(P, n) {
@@ -561,8 +570,8 @@
     // the cards that wait for this one (with the option that leads there, for a choice)
     function beforeItems(P, n) {
         return P.nodes.filter(c => c.after.some(l => l.id === n.id)).map(c => {
-            const l = c.after.find(x => x.id === n.id);
-            return title(c) + (l.opt !== undefined ? ' (' + (options(n)[l.opt] || '?') + ')' : '');
+            const os = c.after.filter(x => x.id === n.id && x.opt !== undefined).map(x => options(n)[x.opt] || '?');
+            return title(c) + (os.length ? ' (' + os.join(' / ') + ')' : '');
         });
     }
     function afterItems(P, n) {
@@ -629,10 +638,12 @@
         P.nodes.filter(p => !banned.has(p.id)).forEach(p => {
             if (p.card.type === 'radio') {
                 // a choice: one row, with ANY and a numbered button per option (same numbers and colours as the grid)
-                const lk = n.after.find(l => l.id === p.id), on = !!lk;
-                const segs = [`<i class="${on && lk.opt === undefined ? 'on' : ''}" data-gp="link" data-p="${p.id}">ANY</i>`]
-                    .concat(options(p).map((o, i) => `<i class="${on && lk.opt === i ? 'on' : ''}" data-gp="link" data-p="${p.id}" data-o="${i}" style="--oc:${OPT_TAG[i % OPT_TAG.length]}">${i + 1}</i>`));
-                const which = on && lk.opt !== undefined ? ' → ' + (options(p)[lk.opt] || 'Option ' + (lk.opt + 1)) : '';
+                // several options can be ticked: any one of them picked is enough
+                const lks = n.after.filter(l => l.id === p.id), on = lks.length > 0, has = i => lks.some(l => l.opt === i);
+                const segs = [`<i class="${has(undefined) ? 'on' : ''}" data-gp="link" data-p="${p.id}">ANY</i>`]
+                    .concat(options(p).map((o, i) => `<i class="${has(i) ? 'on' : ''}" data-gp="link" data-p="${p.id}" data-o="${i}" style="--oc:${OPT_TAG[i % OPT_TAG.length]}">${i + 1}</i>`));
+                const picks = lks.filter(l => l.opt !== undefined).map(l => options(p)[l.opt] || 'Option ' + (l.opt + 1));
+                const which = picks.length ? ' → ' + picks.join(' or ') : '';
                 rows.push(`<div class="gp-row gp-orow ${on ? 'on' : ''}"><div class="gp-rn"><span>${esc(title(p) + which)}</span></div><div class="gp-opts">${segs.join('')}</div></div>`);
             } else {
                 const on = n.after.some(l => l.id === p.id);
@@ -652,12 +663,12 @@
         const isEnd = !kids.length;
         brows.push(`<div class="gp-row gp-startrow gp-endrow ${isEnd ? 'on' : ''}" data-gp="toend"><div class="gp-sq">${isEnd ? ICON.check() : ''}</div><div class="gp-rn"><span>END OF THE PATH</span></div></div>`);
         P.nodes.filter(c => c.id !== n.id && !earlier.has(c.id)).forEach(c => {
-            const lk = c.after.find(l => l.id === n.id), on = !!lk;
+            const lks = c.after.filter(l => l.id === n.id), on = lks.length > 0, has = i => lks.some(l => l.opt === i);
             if (n.card.type === 'radio') {
                 // this card is a choice: one row per card, with a numbered button per option (same numbers and colours as the grid)
                 const opts = options(n);
-                const segs = [`<i class="${on && lk.opt === undefined ? 'on' : ''}" data-gp="blink" data-c="${c.id}">ANY</i>`]
-                    .concat(opts.map((o, i) => `<i class="${on && lk.opt === i ? 'on' : ''}" data-gp="blink" data-c="${c.id}" data-o="${i}" style="--oc:${OPT_TAG[i % OPT_TAG.length]}">${i + 1}</i>`));
+                const segs = [`<i class="${has(undefined) ? 'on' : ''}" data-gp="blink" data-c="${c.id}">ANY</i>`]
+                    .concat(opts.map((o, i) => `<i class="${has(i) ? 'on' : ''}" data-gp="blink" data-c="${c.id}" data-o="${i}" style="--oc:${OPT_TAG[i % OPT_TAG.length]}">${i + 1}</i>`));
                 brows.push(`<div class="gp-row gp-orow ${on ? 'on' : ''}"><div class="gp-rn"><span>${esc(title(c))}</span></div><div class="gp-opts">${segs.join('')}</div></div>`);
             } else {
                 brows.push(`<div class="gp-row ${on ? 'on' : ''}" data-gp="blink" data-c="${c.id}"><div class="gp-sq">${on ? ICON.check() : ''}</div><div class="gp-rn"><span>${esc(title(c))}</span></div></div>`);
@@ -668,7 +679,7 @@
             brows.push(`<div class="gp-subhead">ALREADY BEFORE THIS CARD</div>`);
             before.forEach(c => brows.push(`<div class="gp-row dis"><div class="gp-sq"></div><div class="gp-rn"><span>${esc(title(c))}</span></div></div>`));
         }
-        const kidLabel = kids.map(c => { const l = c.after.find(x => x.id === n.id); return title(c) + (l && l.opt !== undefined ? ' (' + (options(n)[l.opt] || '?') + ')' : ''); }).join(' + ');
+        const kidLabel = beforeItems(P, n).join(' + ');
         ed.innerHTML = `
             <div class="gp-lbl">CARD TYPE</div>
             <div class="gp-types">${NODE_TYPES.filter(t => typeDef(t)).map(t => `<div class="${t === n.card.type ? 'on' : ''}" data-gp="type" data-t="${t}">${TYPE_NAME[t]}</div>`).join('')}</div>
@@ -679,7 +690,7 @@
                 <div class="gp-ak"><small>COMES AFTER</small>${n.after.length ? `<span>${esc(afterLabel(P, n))}</span>` : `<span><b class="gp-startpill">START</b></span>`}</div>
                 <div class="gp-ac">${n.after.length || ''}</div><div class="gp-aa">${ICON.down}</div></div>
                 <div class="gp-ad">${rows.join('') || '<div class="gp-hint">No other cards yet</div>'}
-                <div class="gp-hint">${isGate(n) ? `Threshold: needs ${n.after.length ? gateNeed(n) + ' of these ' + n.after.length : 'some of the'} cards done. Set the number in the card above.` : 'Needs every card ticked here.'} A choice's option means "only if this was picked".</div></div></div>
+                <div class="gp-hint">${isGate(n) ? `Threshold: needs ${n.after.length ? gateNeed(n) + ' of these ' + n.after.length : 'some of the'} cards done. Set the number in the card above.` : 'Needs every card ticked here.'} A choice's options are alternatives: any one ticked option being picked is enough.</div></div></div>
             <div class="gp-after gp-before ${W.beforeOpen ? 'open' : ''}"><div class="gp-ah" data-gp="beforeopen">
                 <div class="gp-ak"><small>COMES BEFORE</small>${kids.length ? `<span>${esc(kidLabel)}</span>` : `<span><b class="gp-startpill gp-endpill">END</b></span>`}</div>
                 <div class="gp-ac">${kids.length || ''}</div><div class="gp-aa">${ICON.down}</div></div>
@@ -748,16 +759,14 @@
             case 'blink': {
                 const c = byId(P, t.dataset.c), opt = t.dataset.o === undefined ? undefined : +t.dataset.o;
                 const i = c.after.findIndex(l => l.id === n.id && l.opt === opt);
-                if (i >= 0) c.after.splice(i, 1);
-                else { c.after = c.after.filter(l => l.id !== n.id); c.after.push(opt === undefined ? { id: n.id } : { id: n.id, opt }); }
+                if (i >= 0) c.after.splice(i, 1); else addLink(c, n.id, opt);
                 break;
             }
             case 'type': if (t.dataset.t !== n.card.type) convertCard(n, t.dataset.t); break;
             case 'link': {
                 const pid = t.dataset.p, opt = t.dataset.o === undefined ? undefined : +t.dataset.o;
                 const i = n.after.findIndex(l => l.id === pid && l.opt === opt);
-                if (i >= 0) n.after.splice(i, 1);
-                else { n.after = n.after.filter(l => l.id !== pid); n.after.push(opt === undefined ? { id: pid } : { id: pid, opt }); }
+                if (i >= 0) n.after.splice(i, 1); else addLink(n, pid, opt);
                 break;
             }
             case 'optional': n.optional = !n.optional; break;
@@ -1313,7 +1322,11 @@
         const r = svg.getBoundingClientRect();
         const x = (e.clientX - r.left) / W.curZ + W.gridView.ox, y = (e.clientY - r.top) / W.curZ + W.gridView.oy;
         if (p.dot && W.tool === 'delete') { deleteOption(p.dot); return; }   // deleting an option node removes that option from its choice
-        if (p.dot && W.tool === 'link' && W.linkFrom) { toast('Options come from their choice'); return; }
+        if (p.dot && W.tool === 'link' && W.linkFrom) {
+            const [cid, oi] = p.dot.split('#'), sl = slotOf(P, cid, +oi);
+            if (!sl) { toast('Options come from their choice'); return; }
+            p = { ...p, dot: null, id: sl.id };
+        }
         // SELECT on an option: its own sheet (add a card after it, link one, rename, delete)
         if (p.dot && W.tool === 'select') {
             const [cid, oi] = p.dot.split('#'), sl = slotOf(P, cid, +oi);
@@ -1347,8 +1360,7 @@
                 W.linkFrom = null; W.linkOpt = null;
                 if (descendants(P, B.id).has(A.id)) { toast('That would make a loop'); break; }
                 if (B.after.some(l => l.id === A.id && l.opt === (opt === null ? undefined : opt))) { toast('Already linked'); break; }
-                B.after = B.after.filter(l => l.id !== A.id);
-                B.after.push(opt === null ? { id: A.id } : { id: A.id, opt });
+                addLink(B, A.id, opt === null ? undefined : opt);
                 break;
             }
             case 'cut': {
